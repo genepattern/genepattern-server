@@ -708,7 +708,9 @@ public class AWSBatchJobRunner implements JobRunner {
                 while (( line = reader.readLine())!= null){
                     // expect uri \t filenameandpath
                     String[] lineParts = line.split("\t");
-                    inputUrlDownloadsToIgnore.add(lineParts[1]);
+                    if (lineParts.length == 2){
+                        inputUrlDownloadsToIgnore.add(lineParts[1]);
+                    }
                 }                     
             } catch (Exception ioe){
                 log.error(ioe);
@@ -1085,7 +1087,8 @@ public class AWSBatchJobRunner implements JobRunner {
                 while (( line = reader.readLine())!= null){
                     // expect uri \t filenameandpath
                     String[] lineParts = line.split("\t");
-                    urlsToFetch.add(lineParts);
+                    if (lineParts.length==2)
+                        urlsToFetch.add(lineParts);
                 }
                 
                 

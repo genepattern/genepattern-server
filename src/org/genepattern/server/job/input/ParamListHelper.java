@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -924,7 +925,8 @@ public class ParamListHelper {
         return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, baseGpHref, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    protected static ParamListValue initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
+    public static ParamListValue initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, 
+            final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
     throws GpFilePathException 
     {
         final String value=pval.getValue();
@@ -1047,8 +1049,13 @@ public class ParamListHelper {
         }
         else {
             //copy the external url into a new file in the user upload folder
-            org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
-
+            if (DataManager.getExternalFileManager(jobContext) != null){
+                
+                System.out.println("=====XXX "+ jobContext.getJobNumber());
+                
+            } else {
+                org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
+            }
             //add a record of the file to the DB, so that a link will appear in the Uploads tab
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(gpConfig, jobContext);
             jobInputFileUtil.updateUploadsDb(mgr, gpPath);

@@ -109,6 +109,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
@@ -149,6 +150,7 @@ import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamListValue;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
@@ -1113,7 +1115,7 @@ public class GenePatternAnalysisTask {
                                 final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
                                 final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
                                 final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
-                                
+                               
                                 if (directExternalUploadEnabled || directDownloadEnabled || directDownloadEnabled_obsolete){
                                     // Using s3 direct up/downloads so we do not actually grab the file here
                                     // instead we write the URL and destination filename to a hidden file
@@ -1125,10 +1127,8 @@ public class GenePatternAnalysisTask {
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(downloadListingFile, true));    
                                     writer.write(uri + "\t" + outFile.getAbsolutePath());
                                     writer.close();
-                                    System.out.println("CHECK FILE " + downloadListingFile.getAbsolutePath());
-                                    System.out.println(uri + "\t" + outFile.getAbsolutePath());
                                 } else {
-                                    // traditional GenePattern, the headnode does the download
+                                    // traditional GenePattern, the head-node does the download
                                     log.debug("job "+jobId+"."+pinfo.getName()+" starting download to "+outFile);
     
                                     os = new FileOutputStream(outFile);
@@ -1429,38 +1429,69 @@ public class GenePatternAnalysisTask {
         if (log.isDebugEnabled()) {
             log.debug("listing paramsCopy ...");
         }
-        for(final ParameterInfo copy : paramsCopy) {
-            log.debug("    "+copy.getName()+"="+copy.getValue());
-            log.debug("      copy.isInputFile: "+copy.isInputFile());
-            log.debug("      copy._isUrlMode: "+copy._isUrlMode());
+        
+        BufferedWriter writer = null;
+        try {
+            Map<String, URL>  fileUrlMap = new HashMap< String,URL>(); 
+            try {
+                final File path = JobManager.createJobDirectory(jobContext.getJobInfo());
+                File outDir = path.getAbsoluteFile();
+                File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
+                writer = new BufferedWriter(new FileWriter(downloadListingFile, true));  
+            } catch (Exception e){
+                // swallow it, we want to do the rest anyway
+            }
+            
+            
+            for(final ParameterInfo copy : paramsCopy) {
+                log.debug("    "+copy.getName()+"="+copy.getValue());
+                log.debug("      copy.isInputFile: "+copy.isInputFile());
+                log.debug("      copy._isUrlMode: "+copy._isUrlMode());
 
-            final ParameterInfoRecord record=paramInfoMap.get(copy.getName());
-            final ParameterInfo formal;
-            final ParameterInfo actual;
-            if (record!=null) {
-                formal=record.getFormal();
-                actual=record.getActual();
-            }
-            else {
-                formal=null;
-                actual=null;
-            }
-            if (actual != null) {
-                log.debug("      actual.value="+actual.getValue());
-            }
-            if (formal != null) {
-                log.debug("      formal.isInputFile="+formal.isInputFile());
-            }
-            if (formal != null && formal.isInputFile()) {
-                inputFilePaths.add(copy.getValue());
+                final ParameterInfoRecord record=paramInfoMap.get(copy.getName());
+                final ParameterInfo formal;
+                final ParameterInfo actual;
+                if (record!=null) {
+                    formal=record.getFormal();
+                    actual=record.getActual();
+                }
+                else {
+                    formal=null;
+                    actual=null;
+                }
+                if (actual != null) {
+                    log.debug("      actual.value="+actual.getValue());
+                }
+                if (formal != null) {
+                    log.debug("      formal.isInputFile="+formal.isInputFile());
+                }
+                if (formal != null && formal.isInputFile()) {
+                    inputFilePaths.add(copy.getValue());
 
-                //check for file list files
-                final Param actualValues=jobContext.getJobInput().getParam(formal.getName());
-                final boolean hasFilelist=ParamListHelper.isCreateFilelist(formal, actualValues);
-                if (hasFilelist) {
-                    int i=0;
-                    for(final ParamValue actualValue : actualValues.getValues()) {
-                        log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                    //check for file list files
+                    final Param actualValues=jobContext.getJobInput().getParam(formal.getName());
+                    final boolean hasFilelist=ParamListHelper.isCreateFilelist(formal, actualValues);
+                    if (hasFilelist) {
+                        int i=0;
+                        // create a map of gp files to urls so we can tell the external file manager to have them downloaded.
+                        // necessary here because batch jobs and file lists do their downloads at a different point where
+                        // the job is not yet created so we cannot add the URL as we do for other files
+
+                        for(final ParamValue actualValue : actualValues.getValues()) {
+                            log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                            if (DataManager.getExternalFileManager(jobContext) != null){
+                                // we need to add the contents to the downloadFileListing
+                                try {
+                                    final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                            jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
+                                    fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
+                                } catch(Exception e){
+
+                                }
+                            }
+                        }
+
+
                     }
                     try {
                         final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
@@ -1471,6 +1502,14 @@ public class GenePatternAnalysisTask {
                                 log.debug("        localPath["+(j++)+"]"+localPath);
                                 if (localPath!=null) {
                                     inputFilePaths.add(localPath.getPath());
+                                    if (!localPath.exists()){
+                                        URL url = fileUrlMap.get(localPath.getAbsolutePath());
+                                        if ((url != null) && (writer != null)){
+                                            writer.newLine();
+                                            writer.write(url + "\t" + localPath.getAbsolutePath());
+                                            
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1479,9 +1518,17 @@ public class GenePatternAnalysisTask {
                         log.error("Error getting gpFilePaths, job="+jobContext.getJobNumber()+", pname="+formal.getName(), t);
                     }
                 }        
-              
-                
-                
+            }
+        } catch (Exception e){
+            
+        } finally {
+            if (writer != null){
+                try {
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e){
+                    log.error(e);
+                }
                 
             }
         }
