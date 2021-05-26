@@ -15,31 +15,31 @@
             window.nb_tab_init = false;
             function init_notebooks_tab() {
                 if (window.nb_tab_init) return;
-                get_public_notebooks(function(results) {
+                get_public_notebooks(function(projects, pinned_tags, protected_tags) {
                     const all_notebooks = [];
 
-                    results.forEach(function(nb) {
+                    projects.forEach(function(nb) {
                         // Attach simplified tags to notebook
                         const tags = build_tag_list(nb);
 
                         // Create notebook model
                         const model = {
-                            "lsid": nb.url,
+                            "lsid": nb.dir + "/" + nb.owner,
                             "name": nb.name,
                             "description": nb.description,
                             "version": nb.id,
-                            "documentation": nb.url + "preview/",
-                            "categories": nb.str_tags,
+                            "documentation": notebook_repo + "/hub/preview?id=" + nb.id,
+                            "categories": tags,
                             "suites": [],
-                            "tags": nb.str_tags
+                            "tags": []
                         };
                         all_notebooks.push(model);
                     });
 
                     // Create a data structure to hold the notebook list
-                    window.notebook_models = results;
+                    window.notebook_models = projects;
                     window.all_notebooks = all_notebooks;
-                    get_pinned_tags();
+                    window.pinned_tags = pinned_tags.sort()
                     const pinned_models = get_all_pinned();
 
                     // Initialize the sliders
@@ -50,25 +50,25 @@
                     if ($("#nb-public").children().length > 1) return;
                     pinned_models.forEach(function(model) {
                         $("<div></div>")
-                                .attr("class", "nb-listing")
-                                .attr("name", model.name)
-                                .module({
-                                    data: model,
-                                    click: function (event) {
-                                        var filter = $(event.currentTarget).find(".module-name").text();
-                                        var notebook_search = $("#notebook-search");
-                                        notebook_search.searchslider("show");
+                            .attr("class", "nb-listing")
+                            .attr("name", model.name)
+                            .module({
+                                data: model,
+                                click: function (event) {
+                                    var filter = $(event.currentTarget).find(".module-name").text();
+                                    var notebook_search = $("#notebook-search");
+                                    notebook_search.searchslider("show");
 
-                                        if (filter === "all notebooks") {
-                                            notebook_search.searchslider("tagfilter", "");
-                                        }
-                                        else {
-                                            notebook_search.searchslider("tagfilter", filter);
-                                            notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
-                                        }
-                                    },
-                                    draggable: false
-                                }).appendTo($("#nb-public"));
+                                    if (filter === "all notebooks") {
+                                        notebook_search.searchslider("tagfilter", "");
+                                    }
+                                    else {
+                                        notebook_search.searchslider("tagfilter", filter);
+                                        notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                                    }
+                                },
+                                draggable: false
+                            }).appendTo($("#nb-public"));
                     });
                 });
 
@@ -99,8 +99,7 @@
                 // If already cached, return the list
                 if (window.all_pinned) return window.all_pinned;
 
-                const pinned_tags = get_pinned_tags();
-                const pinned_with_extras = ["all notebooks"].concat(pinned_tags).concat(["community"]);
+                const pinned_with_extras = ["all notebooks"].concat(window.pinned_tags);
                 const all_pinned = [];
 
                 pinned_with_extras.forEach(function(tag) {
@@ -121,43 +120,12 @@
                 return all_pinned;
             }
 
-            function get_pinned_tags() {
-                // If already cached, return the list
-                if (window.pinned_tags) return window.pinned_tags;
-
-                // Otherwise, generate the list
-                const pinned_tags = [];
-                window.notebook_models.forEach(function(nb) {
-                    if (nb.tags) {
-                        nb.tags.forEach(function(tag) {
-                            // If the tag is pinned and not already in the list
-                            if (tag.pinned && !pinned_tags.includes(tag.label)) {
-                                pinned_tags.push(tag.label);
-                            }
-                        });
-                    }
-                });
-                pinned_tags.sort();
-
-                // Set the cache and return
-                window.pinned_tags = pinned_tags;
-                return pinned_tags;
-            }
-
             function build_tag_list(nb) {
                 // If cached, return
                 if (nb.str_tags) return nb.str_tags;
 
                 // Otherwise generate
-                let to_return = [];
-
-                nb.tags.forEach(function(tag) {
-                    to_return.push(tag.label);
-                });
-
-                // Special case for "community"
-                if (to_return.length === 0) to_return.push("community");
-
+                let to_return = nb.tags.split(',');
                 nb.str_tags = to_return;
                 return to_return;
             }
@@ -174,10 +142,10 @@
 
                     // Create the login form and submit it in the new tab
                     $('<form action="' + login_url + '" method="POST" target="_blank"></form>')
-                            .append($('<input type="hidden" name="username" value="' + username + '">'))
-                            .append($('<input type="hidden" name="password" value="' + password + '">'))
-                            .appendTo($("body"))
-                            .submit();
+                        .append($('<input type="hidden" name="username" value="' + username + '">'))
+                        .append($('<input type="hidden" name="password" value="' + password + '">'))
+                        .appendTo($("body"))
+                        .submit();
                 }
 
                 // Otherwise, open the login page
@@ -189,11 +157,11 @@
             function get_public_notebooks(callback) {
                 $.ajax({
                     type : "GET",
-                    url : notebook_repo + "/services/sharing/notebooks/",
+                    url : notebook_repo + "/services/projects/library/",
                     dataType: "json",
                     crossDomain: true,
                     success : function(data, textStatus, jqXHR) {
-                        if (!!callback) callback(data['results']);
+                        if (!!callback) callback(data['projects'], data['pinned'], data['protected']);
                     },
                     error : function(data, textStatus, jqXHR) {
                         console.log("Error getting public notebook list");
@@ -247,7 +215,7 @@
                     click: function(event) {
                         const data = $(event.target).closest(".module-listing").module("get_data");
                         const id = data.version;
-                        nb_login("/services/sharing/notebooks/" + id + "/copy/?open=true");
+                        nb_login("/services/projects/library/" + id + "/copy/");
                     },
                     tagclick: function(event) {
                         var filter = $(event.currentTarget).text();
@@ -256,8 +224,8 @@
                         notebook_search.searchslider("tagfilter", filter);
                         notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
                         $(event.currentTarget)
-                                .closest('.module-listing')
-                                .module('stopProp', event);
+                            .closest('.module-listing')
+                            .module('stopProp', event);
                     }
                 });
 
@@ -269,7 +237,7 @@
             function init_browse_notebooks() {
                 const browse = $('<div id="notebook-list-browse"></div>').modulelist({
                     title: 'Browse Notebooks by Category',
-                    data: all_pinned,
+                    data: get_all_pinned(),
                     droppable: false,
                     draggable: false,
                     click: function(event) {
@@ -377,8 +345,8 @@
     </div>
 
     <div class="info-box sidebarhead-bkg">
-        Opening a notebook will take you to the <a href="https://notebook.genepattern.org" target="_blank">GenePattern Notebook Workspace</a>. To learn more about
-        <a href="http://genepattern-notebook.org/" target="_blank">GenePattern Notebook, click here</a>.
+        Opening a notebook will take you to the <a href="https://notebook.genepattern.org/hub/" target="_blank">GenePattern Notebook Workspace</a>. To learn more about
+        <a href="https://notebook.genepattern.org/" target="_blank">GenePattern Notebook, click here</a>.
     </div>
 
     <div id="nb-public" class="nb-catalog">
