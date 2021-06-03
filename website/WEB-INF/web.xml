@@ -539,16 +539,31 @@
   <load-on-startup>1</load-on-startup>
  </servlet>
  
-<!-- just for debugging
+
+<servlet>
+  <display-name>JOpenIdServlet</display-name>
+  <servlet-name>JOpenIdServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.openidconnect.jopenid.JOpenIdAuthenticationServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>JOpenIdServlet</servlet-name>
+  <url-pattern>/openidc/*</url-pattern>
+ </servlet-mapping>
+
  <servlet>
   <servlet-name>DebugServlet</servlet-name>
-  <servlet-class>org.genepattern.server.webapp.DebugServlet</servlet-class>
+  <!--  <servlet-class>org.genepattern.server.webapp.DebugServlet</servlet-class> --> 
+  <servlet-class>org.genepattern.server.webapp.openidconnect.jopenid.JOpenIdAuthenticationServlet</servlet-class>
  </servlet>
  <servlet-mapping>
   <servlet-name>DebugServlet</servlet-name>
   <url-pattern>/debug/*</url-pattern>
  </servlet-mapping>
--->
+ <servlet-mapping>
+  <servlet-name>DebugServlet</servlet-name>
+  <url-pattern>/test/debug/*</url-pattern>
+ </servlet-mapping>
+ 
 
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
@@ -763,6 +778,12 @@
    <servlet-name>AdminServlet</servlet-name>
    <url-pattern>/api/admin/*</url-pattern>
  </servlet-mapping>
+
+
+
+ 
+
+
 
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>

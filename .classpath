@@ -169,5 +169,11 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/gson-2.3.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/jopenid.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/google-oauth-client-java6-1.23.0.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/google-oauth-client-servlet-1.23.0.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/google-http-client-jackson2-1.23.0.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/google-http-client-1.23.0.jar"/>
+	<classpathentry kind="lib" path="/Users/liefeld/GenePattern/gp_dev/genepattern-server/website/WEB-INF/lib/google-oauth-client-1.23.0.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>

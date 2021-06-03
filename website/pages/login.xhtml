@@ -88,7 +88,11 @@
                         </h:outputLink>
 						<br/><br/> 
 	                    <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
-                              
+                               <br />
+            OpenID: <h:outputLink
+                value="#{facesContext.externalContext.requestContextPath}/openidc?op=Google">Sign on using your Google account</h:outputLink> 
+            <br />Note, the first time you sign on a new GenePattern user account will be registered for you using your Google account email address as your username.           
+  
                              
                     </h:form>
                 </td>

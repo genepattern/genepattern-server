@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * Servlet for debugging HttpServletRequest contextPath, servletPath, and pathInfo.
@@ -39,6 +41,19 @@ import javax.servlet.http.HttpServletResponse;
  */
 @SuppressWarnings("serial")
 public class DebugServlet extends HttpServlet {
+    
+    {
+        // class initialization
+        System.out.println("=========   DEBUG servlet class init");
+    }
+    
+    
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        System.out.println("HERE");
+    }
+    
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         final String rClass=request.getClass().getName();
