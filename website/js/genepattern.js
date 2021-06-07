@@ -512,8 +512,11 @@ function notifyDesktopOfJobCompletion(){
 	        		if (jobStatus.isFinished){
 	        			
 	        			var moduleName = jobMap[jobStatus["gpJobNo"]]["moduleName"];
-	        			notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
-	        			
+	        			if (jobStatus.hasError){
+	        				notifyDesktop("Error: GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag);
+	        			} else {
+	        			    notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
+	        			}
 	        			
 	        		} else {
 	        			remainingJobs.push(jobMap[jobStatus.gpJobNo]);
