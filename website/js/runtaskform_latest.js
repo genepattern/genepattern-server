@@ -3816,6 +3816,7 @@ function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, 
          			var idx = uploadedUrl.lastIndexOf(doubleEncodedFilename);
          			if (idx > 0){
          				uploadedUrl = uploadedUrl.substring(0, idx) + singleEncodedFilename;
+         				console.log("Double encoded");
          			}
          			
          			var groupFileInfo = getFilesForGroup(groupId, paramName);

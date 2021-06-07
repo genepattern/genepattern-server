@@ -850,9 +850,10 @@ public class UploadResource {
         try {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);            
-            String path  = s3AdjustPath(rawPath, userContext, true);
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             GpFilePath gpFile = null;  
+            String path  = s3AdjustPath(rawPath, userContext, false);
+            
             //
             // handle files on the job page.  For these the path is just the filename
             // unlike uploads where it is a real path
@@ -865,8 +866,8 @@ public class UploadResource {
                 
             } else {
             
-                //path = URIUtil.encodePath(rawPath);
-                //path = s3AdjustPath(path, userContext, true);
+                 path  = s3AdjustPath(rawPath, userContext, true);
+                
                 gpFile = getUploadFile(gpConfig, userContext, path);  
             }
             
