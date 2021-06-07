@@ -1730,23 +1730,37 @@ function initUploadToaster(filelist) {
             "minimize" : function() {
             	 var head = document.getElementsByTagName('head')[0];
 
-            	 var style = document.createElement('link');
-            	 style.href = "../css/frozen/pulsing.css";
-            	 style.type = 'text/css';
-            	 style.rel = 'stylesheet';
-            	 head.append(style);
+            	 toaster.dialog('option', 'title', 'Uploads In Progress');
+            	 
+            	 var oldElement = document.getElementById("PulsingToasterIcon");
+            	 if (oldElement == null){
+	            	 var style = document.createElement('link');
+	            	 style.setAttribute("id", "PulsingToasterIcon");
+	            	 style.href = "../css/frozen/pulsing.css";
+	            	 style.type = 'text/css';
+	            	 style.rel = 'stylesheet';
+	            	 head.append(style);
+	            	 
+	            	 $("#dialog-extend-fixed-container")
+	                    .find(".upload-dialog")
+	                    .removeAttr("style");
+	                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
+	                 //alert("X");
+	                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
+	     
+            	 } else {
+            		 var oldImage = document.getElementById("myNewPulsingImage");
+            		 $(oldImage).remove();
+            		 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
+            		 //$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
+            	     
+            	 }
             	
             	
-            	
-                $("#dialog-extend-fixed-container")
-                    .find(".upload-dialog")
-                    .removeAttr("style");
+               
                 
-                toaster.dialog('option', 'title', 'Uploads In Progress');
-                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewImage' />");
-                //alert("X");
-                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
-            },
+               
+             },
             "beforeRestore" : function(evt) {  
             	
             	toaster.dialog('option', 'title', 'GenePattern Uploads');
