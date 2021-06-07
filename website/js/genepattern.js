@@ -1741,30 +1741,19 @@ function initUploadToaster(filelist) {
 	            	 style.rel = 'stylesheet';
 	            	 head.append(style);
 	            	 
-	            	 $("#dialog-extend-fixed-container")
-	                    .find(".upload-dialog")
-	                    .removeAttr("style");
-	                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
-	                 //alert("X");
-	                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
-	     
-            	 } else {
-            		 var oldImage = document.getElementById("myNewPulsingImage");
-            		 $(oldImage).remove();
-            		 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
-            		 //$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
-            	     
-            	 }
-            	
-            	
-               
-                
+	         	 } 
+               	 $("#dialog-extend-fixed-container") .find(".upload-dialog")  .removeAttr("style");
+      
+            	 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
+                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
                
              },
             "beforeRestore" : function(evt) {  
             	
             	toaster.dialog('option', 'title', 'GenePattern Uploads');
             	$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").removeClass("pulsingUpload");
+            	var oldImage = document.getElementById("myNewPulsingImage");
+        		$(oldImage).remove();
             },
             
             "icons" : {
