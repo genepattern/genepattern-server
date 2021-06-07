@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -800,14 +801,22 @@ public class UploadResource {
             String altId = userId.replace( "@", "%40");
             path = path.replace(altId, userId);
         }
+        // here we want to encode the filename (if necessary) but not the directory path
+        // since that will have been done when the directory was created and should match what was sent, so we pull off the
+        // filename and encode just that part
         String p2 = path;
         if (encodePath){
             try {
-                p2 = URIUtil.encodePath(path);
+                int idx = path.lastIndexOf("/");
+                String startPath = path.substring(0,idx+1);
+                String encodedFilename = URIUtil.encodePath(path.substring(idx+1));
+                p2 = startPath + encodedFilename;
+            
             } catch(Exception e){}
             log.debug("path="+path+"\t\tp2="+p2);
         }
         return p2;
+        //return path; // skip encodeURL test
     }
 
     private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
@@ -856,8 +865,8 @@ public class UploadResource {
                 
             } else {
             
-                path = URIUtil.encodePath(rawPath);
-                path = s3AdjustPath(path, userContext, true);
+                //path = URIUtil.encodePath(rawPath);
+                //path = s3AdjustPath(path, userContext, true);
                 gpFile = getUploadFile(gpConfig, userContext, path);  
             }
             
@@ -882,6 +891,8 @@ public class UploadResource {
 
             tmpInput = File.createTempFile("beginUpload", ".json");
 
+            System.out.println(tmpInput.getAbsolutePath());
+            
             BufferedWriter writer = new BufferedWriter(new FileWriter (tmpInput));
             writer.append(json.toString());
             writer.close();
@@ -914,6 +925,12 @@ public class UploadResource {
             String resp = readOutputFileToString(outfilename);
             JSONObject respJson  =new JSONObject(resp);
             respJson.put("gpUrl", gpFile.getUrl());
+            respJson.put("gpRelUrl", gpFile.getRelativePath());
+            String uploadId = respJson.getString("UploadId");
+            // save it for later to make sure we get the special character escaping correct
+            request.getSession().setAttribute(uploadId+".fullPath", fullPath);
+            request.getSession().setAttribute(uploadId+".url", gpFile.getUrl().toString());
+            request.getSession().setAttribute(uploadId+".path", path);
             
             
             log.debug(resp);
@@ -952,6 +969,7 @@ public class UploadResource {
         File tmp = null;
         File tmpInput = null;
         Process proc = null;
+        String outfilename = null;
         try {
             String path = rawPath; //URIUtil.encodePath(rawPath);
          // Get the user context
@@ -960,7 +978,7 @@ public class UploadResource {
             
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
-            String outfilename = tmp.getName();
+            outfilename = tmp.getName();
             tmp.delete();
 
             // need to get the bucket from the config file entries
@@ -976,9 +994,21 @@ public class UploadResource {
             String signingScript = "getS3MultipartPresingedUploadURL.sh" ;  // gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
 
             GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
+            String origPath = (String)request.getSession().getAttribute(uploadId+".path");
+            String origFullPath = (String)request.getSession().getAttribute(uploadId+".fullPath");
+            String origUrl = (String)request.getSession().getAttribute(uploadId+".url");
+            
+            
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
             // undo escaping of '@' in usernames that is baked in here
-            fullPath = s3AdjustPath(fullPath, userContext,false);
+            fullPath = s3AdjustPath(fullPath, userContext,true);
+            if (origFullPath != null){
+                if (!fullPath.equals(origFullPath)){
+                    fullPath = origFullPath;
+                }
+            }
+            
+            
             // need to pass this into the python behind the shell script.  Shell script just sets the env for the python
             JSONObject json = new JSONObject();
             json.put("bucket", bucket);
@@ -1033,8 +1063,13 @@ public class UploadResource {
             } catch (Exception e){
                 log.error("GSM: Failed to delete:" + tmp.getAbsolutePath(), e );
                 tmp.deleteOnExit();
-                
             }
+             try {
+                 if (outfilename != null){
+                     File of = new File(outfilename);
+                     if (of.exists()) of.delete();
+                 }
+             } catch (Exception e) {}
             try {
                 if (!log.isDebugEnabled()) if (tmpInput != null) tmpInput.delete();
             } catch (Exception e){}
@@ -1075,13 +1110,33 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);         
             path = s3AdjustPath(path, userContext, true);
             
+            
+            String origFullPath = (String)request.getSession().getAttribute(uploadId+".fullPath");
+            String origPath = (String)request.getSession().getAttribute(uploadId+".path");
+            String origUrl = (String)request.getSession().getAttribute(uploadId+".url");
+            request.getSession().removeAttribute(uploadId+".fullPath");
+            request.getSession().removeAttribute(uploadId+".url");
+            request.getSession().removeAttribute(uploadId+".path");
+            
+            // to deal with many layers of encodings
+            if (path.startsWith("http")){
+                if (!path.equals(origUrl)){
+                    path = origUrl;
+                }
+            } else {
+                if (!path.equals(origPath)){
+                    path = origPath;
+                }
+            }
+            
+            
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             
             // Get the file we will be uploading to
             if (log.isDebugEnabled()) {
                 log.debug("path="+path);
             }
-
+            //GpFilePath origInput=GpFileObjFactory.getUserUploadFile(gpConfig, userContext, new File(origPath));
             GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setFileLength(new Long(fileLength));
             file.setLastModified(new Date());
@@ -1143,6 +1198,8 @@ public class UploadResource {
 
             JSONObject toReturn = new JSONObject();
             toReturn.append("success", true);
+            toReturn.append("url", origUrl);
+            
             // Return the status object
             return Response.ok().entity(toReturn.toString()).build();
         }

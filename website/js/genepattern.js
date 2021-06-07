@@ -1250,6 +1250,7 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
          		 contentType: "text/plain",
          		 url: registerUrl,
          		 success: function(data) {
+         			 fileUploadProgress(r, file, 1);
          			 fileUploadSuccess(r, file);
          			 cleanUploadToaster();
                       r.currentFile = null;
@@ -1280,13 +1281,17 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
     xhr.upload.addEventListener("progress", function (evt) {
         if (evt.lengthComputable) {
         	// we get the % of this upload, not the total multipart so we have to keep
-        	// track of what this part's % was last time and remove it so we don't docule-add
+        	// track of what this part's % was last time and remove it so we don't double-add
         	// the completed bytes
         	if (evt.lengthComputable) {
             	var whichPart = partNum; 
             	runningProgress[partNum] =  ((evt.loaded / evt.total)/numParts);
             	
             	var percentComplete = sumIgnoreNull(runningProgress);
+            	// we don't want to show 100%/complete if its done because there is still the final registration step
+            	// which can takle a few seconds, so instead if its 1, show 0.99 (99%) and then complete it after the
+            	// registration completes instead
+            	if (percentComplete == 1) percentComplete = 0.99;
                 fileUploadProgress(r, file, percentComplete);
             }
         }

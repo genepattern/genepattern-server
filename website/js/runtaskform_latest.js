@@ -3806,8 +3806,19 @@ function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, 
          		 contentType: "text/plain",
          		 url: registerUrl,
          		 success: function(data) {
-                    var uploadedUrl = multipartPostData.gpUrl;
-                    var groupFileInfo = getFilesForGroup(groupId, paramName);
+                    
+         			var uploadedUrl = multipartPostData.gpUrl;
+         			// GenePattern can't help but double encode so we might need to undeo some of it
+         			// if there are no special chars this should be OK
+         			var singleEncodedFilename = encodeURI(file.name);
+         			var doubleEncodedFilename = encodeURI(encodeURI(file.name));
+         			
+         			var idx = uploadedUrl.lastIndexOf(doubleEncodedFilename);
+         			if (idx > 0){
+         				uploadedUrl = uploadedUrl.substring(0, idx) + singleEncodedFilename;
+         			}
+         			
+         			var groupFileInfo = getFilesForGroup(groupId, paramName);
                     groupFileInfo[fileOrder].name = uploadedUrl;
                     delete groupFileInfo[fileOrder].object;
                     updateFilesForGroup(groupId, paramName, groupFileInfo);

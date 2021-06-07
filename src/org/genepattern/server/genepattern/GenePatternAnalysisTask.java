@@ -1431,12 +1431,19 @@ public class GenePatternAnalysisTask {
         }
         
         BufferedWriter writer = null;
+        
         try {
             Map<String, URL>  fileUrlMap = new HashMap< String,URL>(); 
             try {
-                final File path = JobManager.createJobDirectory(jobContext.getJobInfo());
+                final File path = JobManager.getWorkingDirectory(jobContext.getJobInfo());
+                if (!path.exists()){
+                    // create it if not already there, but leave the contents alone if it is
+                    path.mkdirs();
+                }
                 File outDir = path.getAbsoluteFile();
                 File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
+                // existing file contents, we don't want to download the same filw twice needlessly
+               
                 writer = new BufferedWriter(new FileWriter(downloadListingFile, true));  
             } catch (Exception e){
                 // swallow it, we want to do the rest anyway
@@ -1471,28 +1478,26 @@ public class GenePatternAnalysisTask {
                     //check for file list files
                     final Param actualValues=jobContext.getJobInput().getParam(formal.getName());
                     final boolean hasFilelist=ParamListHelper.isCreateFilelist(formal, actualValues);
-                    if (hasFilelist) {
-                        int i=0;
-                        // create a map of gp files to urls so we can tell the external file manager to have them downloaded.
-                        // necessary here because batch jobs and file lists do their downloads at a different point where
-                        // the job is not yet created so we cannot add the URL as we do for other files
+                    
+                    int i=0;
+                    // create a map of gp files to urls so we can tell the external file manager to have them downloaded.
+                    // necessary here because batch jobs and file lists do their downloads at a different point where
+                    // the job is not yet created so we cannot add the URL as we do for other files
 
-                        for(final ParamValue actualValue : actualValues.getValues()) {
-                            log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
-                            if (DataManager.getExternalFileManager(jobContext) != null){
-                                // we need to add the contents to the downloadFileListing
-                                try {
-                                    final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
-                                            jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
-                                    fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
-                                } catch(Exception e){
+                    for(final ParamValue actualValue : actualValues.getValues()) {
+                        log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                        if (DataManager.getExternalFileManager(jobContext) != null){
+                            // we need to add the contents to the downloadFileListing
+                            try {
+                                final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                        jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
+                                fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
+                            } catch(Exception e){
 
-                                }
                             }
                         }
-
-
                     }
+
                     try {
                         final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
                         if (gpFilePaths != null) {
@@ -1504,7 +1509,8 @@ public class GenePatternAnalysisTask {
                                     inputFilePaths.add(localPath.getPath());
                                     if (!localPath.exists()){
                                         URL url = fileUrlMap.get(localPath.getAbsolutePath());
-                                        if ((url != null) && (writer != null)){
+                                        
+                                        if ((url != null) && (writer != null) ){
                                             writer.newLine();
                                             writer.write(url + "\t" + localPath.getAbsolutePath());
                                             

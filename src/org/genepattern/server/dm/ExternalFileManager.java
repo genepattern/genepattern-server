@@ -1,8 +1,11 @@
 package org.genepattern.server.dm;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,5 +57,31 @@ public abstract class ExternalFileManager {
     
     public abstract boolean syncLocalFileToRemote(GpContext userContext,  File file, boolean deleteLocalAfterSync) throws IOException;
     
-    
+    public static HashMap<String,String> getDownloadListingContents(File jobDir){
+        HashMap<String,String> contents = new HashMap<String,String>();
+        File downloadListingFile = new File(jobDir,ExternalFileManager.downloadListingFileName);
+        if (downloadListingFile.exists()){
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(downloadListingFile));
+                String line = null;
+                while (( line = reader.readLine())!= null){
+                    // expect uri \t filenameandpath
+                    String[] lineParts = line.split("\t");
+                    if (lineParts.length==2)
+                        contents.put(lineParts[0], lineParts[1]);
+                }
+                
+                
+            } catch (Exception ioe){
+                return contents;
+            } finally {
+                try {
+                    if (reader != null) reader.close(); 
+                } catch (Exception ee){}
+            }
+        }
+        return contents;
+        
+    }
 }
