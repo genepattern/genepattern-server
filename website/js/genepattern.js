@@ -1201,6 +1201,8 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
         type: "GET", 
         url: url,
         success: function(data) {
+        	
+        	
         	// next go and PUT that part to S3
         	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, data.presignedUrl);
         	
@@ -1295,9 +1297,21 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
             	// which can takle a few seconds, so instead if its 1, show 0.99 (99%) and then complete it after the
             	// registration completes instead
             	if (percentComplete == 1) percentComplete = 0.99;
-                fileUploadProgress(r, file, percentComplete);
+            	
+            	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+               	//progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+                var isCancelled = uploadToasterFile.find(".upload-toaster-file-cancel").attr('disabled');
+                if (isCancelled == "disabled") {
+                	xhr.abort();
+                } else {
+                	  fileUploadProgress(r, file, percentComplete);
+                }
+                 
             }
         }
+        
+        
+        
     }, false);
     xhr.onerror = function(e) {
     	r.s3currentFile = null;
@@ -1652,7 +1666,9 @@ function appendToUploadToaster(file){
             .button()
     )
         .appendTo(toaster);
-	
+    var uploadDialog = $(".upload-dialog");
+    uploadDialog.find(".ui-dialog-titlebar-close").hide();
+    uploadDialog.find(".ui-dialog-titlebar-minimize").show();
 }
 
 
@@ -1770,9 +1786,17 @@ function cleanUploadToaster() {
 
     // Disable minimize button and enable close if not minimized
     var uploadDialog = $(".upload-dialog");
-    uploadDialog.find(".ui-dialog-titlebar-minimize").remove();
-    uploadDialog.find(".ui-dialog-titlebar-close").show();
+   
+    if (resumableloadsInProgress == 0){
 
+    	uploadDialog.find(".ui-dialog-titlebar-close").show();
+    	uploadDialog.find(".ui-dialog-titlebar-minimize").hide();
+    } else {
+    	uploadDialog.find(".ui-dialog-titlebar-close").hide();
+    	uploadDialog.find(".ui-dialog-titlebar-minimize").show();
+    }
+    
+    
     // Show the dropzone
     $("#upload-dropzone-wrapper").show("slide", { direction: "up" }, 200);
 
