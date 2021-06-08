@@ -140,6 +140,13 @@ public class CatalogGenerator {
                 moduleDocMap.put(lsid, url);
             }
         }
+        // url trumps the presence of a file since its the newer way
+        String docUrl = taskInfo.getTaskInfoAttributes().get("documentationUrl");
+                
+        if (!org.apache.commons.lang.StringUtils.isEmpty(docUrl )){
+            moduleDocMap.put(lsid, tia.get("documentationUrl"));
+        }
+        
 
     }
 

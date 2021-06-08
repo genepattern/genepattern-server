@@ -16,6 +16,7 @@ var module_editor = {
     currentUploadedFiles: [],
     licensefile: "",
     documentationfile: "",
+    documentationUrl: "",
     moduleCategories: [],
     otherModAttrs: {},
     promptForTaskDoc: false
@@ -257,6 +258,7 @@ function saveModule()
     {
         documentationFile = "";
     }
+    
 
     var author = $('input[name="author"]').val();
     var organization = $('input[name="organization"]').val();
@@ -266,7 +268,9 @@ function saveModule()
         author = author + ";" + organization;
     }
     var src_repo = $('input[name="src.repo"]').val();
-
+    var documentationUrl = $('input[name="documentationUrl"]').val();
+    
+    
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
@@ -349,7 +353,7 @@ function saveModule()
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
         "job.docker.image": dockerImage,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile, "src.repo":src_repo};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile,"documentationUrl":documentationUrl ,"src.repo":src_repo};
 
     var useEditor = $("input[name='param_groups_editor_ok']:checked").val();
     if (useEditor && ($("#param_groups_editor").val().length > 0)){
@@ -2397,7 +2401,11 @@ function loadModuleInfo(module)
     {
         $('textarea[name="description"]').val(module["description"]);
     }
-
+    if(module["documentationUrl"] !== undefined)
+    {
+        $('documentationUrl').val(module["documentationUrl"]);
+    }
+    
     if(module["taskDoc"] !== undefined)
     {
         if(module["taskDoc"] !== "")
@@ -2488,6 +2496,11 @@ function loadModuleInfo(module)
     {
         $('input[name="src.repo"]').val(module["src.repo"]);
     }
+    if(module["documentationUrl"] !== undefined)
+    {
+        $('input[name="documentationUrl"]').val(module["documentationUrl"]);
+    }
+    
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
@@ -2622,7 +2635,7 @@ function loadModuleInfo(module)
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
             && keyName != "job.docker.image"
-            && keyName != "src.repo"
+            && keyName != "src.repo" && keyName != "documentationUrl"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
@@ -3271,6 +3284,14 @@ function validateDefaultChoiceValues()
             "in their drop-down list. The default values must be changed before saving.");
     }
 }
+
+
+	function isURL(str){
+		   var a  = document.createElement('a');
+		   a.href = str;
+		   return (a.host && a.host != window.location.host);
+		}
+
 
 jQuery(document).ready(function() {
 
@@ -3938,6 +3959,22 @@ jQuery(document).ready(function() {
         //hide the button to upload a new file
         $("#documentationSpan").hide();
     });
+    $('input[name="documentationUrl"]').change(function() {
+    	var url = $('input[name="documentationUrl"]').first().val();
+    	if (!isURL(url)){
+    		if (!url.startsWith("http")){
+    			url = "https://"+url;
+    			if (isURL(url)){
+    				$('input[name="documentationUrl"]').first().val(url);
+    			} else {
+    				alert("Documentation URL does not appear to be a valid url." );
+    			}
+    		}
+    		
+    	}
+    	
+    });
+    
 
     $(".supportfile").live("change", function()
     {

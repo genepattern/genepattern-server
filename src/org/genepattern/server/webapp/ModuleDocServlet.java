@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -151,6 +152,12 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
         if (filename != null && filename.length() == 0) filename = null;
         if (filename == null) {
             try {
+                String docUrl = tia.get("documentationUrl");
+                if (!StringUtils.isEmpty(docUrl)){
+                    response.sendRedirect(docUrl);
+                    return;
+                }
+                
                 File[] docFiles = taskIntegratorClient.getDocFiles(ti);
                 if (docFiles.length > 0) {
                     filename = docFiles[0].getName();

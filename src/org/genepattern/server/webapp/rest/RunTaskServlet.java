@@ -35,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
@@ -198,6 +199,11 @@ public class RunTaskServlet extends HttpServlet
             if (srcRepo != null){
                 moduleObject.put("src.repo", srcRepo);
             }
+            
+            String docUrl = taskInfo.getTaskInfoAttributes().get("documentationUrl");
+            if (srcRepo != null){
+                moduleObject.put("documentationUrl", srcRepo);
+            }
 
             //check if there is a hidden beta version of the module available
             LSID selectedTaskVersionLSID = new LSID(taskInfo.getLsid());
@@ -221,13 +227,19 @@ public class RunTaskServlet extends HttpServlet
             File[] docFiles = null;
             File[] allFiles = null;
             try {
-                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
-                docFiles = taskIntegratorClient.getDocFiles(taskInfo);
-                allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-
-                if(docFiles == null || docFiles.length == 0)
-                {
-                    hasDoc = false;
+                String docUrlx = taskInfo.getTaskInfoAttributes().get("documentationUrl");
+                if (!StringUtils.isEmpty(docUrlx )){
+                    hasDoc = true;
+                } else {
+                
+                    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
+                    docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+                    allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+    
+                    if(docFiles == null || docFiles.length == 0)
+                    {
+                        hasDoc = false;
+                    }
                 }
             }
             catch (WebServiceException e) {

@@ -33,6 +33,7 @@ public class ModuleJSON extends JSONObject {
     public static final String TASK_TYPE = "taskType";
     public static final String CATEGORIES = "categories";
     public static final String SRC_REPO = GPConstants.SRC_REPO;
+    public static final String DOCUMENTATION_URL = "documentationUrl";
     
     //public static final String LANGUAGE = "language";
     //public static final String JVM_LEVEL = "JVMLevel";        
@@ -64,6 +65,7 @@ public class ModuleJSON extends JSONObject {
             this.put(PRIVACY, object.get(PRIVACY));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(TASK_TYPE, object.get(TASK_TYPE));
+            this.put(DOCUMENTATION_URL, object.get(DOCUMENTATION_URL));
             this.put(QUALITY, object.get(QUALITY));
             //this.put(LANGUAGE, object.get(LANGUAGE));
             //this.put(JVM_LEVEL, object.get(JVM_LEVEL));
@@ -103,6 +105,9 @@ public class ModuleJSON extends JSONObject {
             this.put(PRIVACY, tia.get(GPConstants.PRIVACY));
             this.put(VERSION_COMMENT, tia.get(GPConstants.VERSION));
             this.put(TASK_TYPE, tia.get(GPConstants.TASK_TYPE));
+            this.put(DOCUMENTATION_URL, tia.get(GPConstants.DOCUMENTATION_URL));
+            
+            
             this.put(CATEGORIES, tia.get(GPConstants.CATEGORIES));
             this.put(QUALITY, tia.get(GPConstants.QUALITY));
             //this.put(LANGUAGE, tia.get(GPConstants.LANGUAGE));
