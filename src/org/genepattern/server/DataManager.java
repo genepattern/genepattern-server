@@ -482,27 +482,27 @@ public class DataManager {
         if (!canDelete) {
             return false;
         }
-        if (!file.exists()) {
-            try {
-                if (nonLocalFiles){
-                    if (directory){
-                        externalFileManager.deleteDirectory(gpContext, file);
-                    } else {
-                        externalFileManager.deleteFile(gpContext, file);
-                    }
+ 
+        try {
+            if (nonLocalFiles){
+                if (directory){
+                    externalFileManager.deleteDirectory(gpContext, file);
+                } else {
+                    externalFileManager.deleteFile(gpContext, file);
                 }
-            } catch(IOException e){
-                // swallow it because we don't care
-                log.debug("Failed to delete remote file " + file.getAbsolutePath());
             }
-            //indicate success even if the file doesn't exist
-            deleted = true;
+        } catch(IOException e){
+            // swallow it because we don't care
+            log.debug("Failed to delete remote file " + file.getAbsolutePath());
         }
+        
+        
             
         if (file.exists()) {
             if (directory) {
                 try {
                     FileUtils.deleteDirectory(file);
+                    
                     deleted = true;
                 }
                 catch (IOException e) {
@@ -511,10 +511,13 @@ public class DataManager {
             }
             else {
                 deleted = file.delete();
+               
             }
             if (!deleted) {
                 log.error("Error deleting file: "+file.getPath());
             }
+        } else {
+            deleted = true;  // its gone so it must be deleted
         }
         //2) remove the record from the DB, even if it doesn't exist in the file system
         if (!file.exists() ) {
