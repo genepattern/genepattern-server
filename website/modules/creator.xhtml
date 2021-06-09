@@ -288,14 +288,14 @@
                 </tr>
                 <tr>
                     <td>
-                        Documentation Url:
+                        Documentation URL:
                     </td>
                     <td colspan="3">
                          <input type="text" name="documentationUrl" size="70"/>
                          <a href='createhelp.jsp#Documentation' target='help'>
                                 <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                          </a>
-                         <a id="showDeprecatedDocFileRow">add documentation file (deprecated)</a>
+                         <a id="showDeprecatedDocFileRow">add documentation file</a>
                     </td>
                 </tr>
                   <tr id="deprecatedDocFileRow" style="display:none">
@@ -306,13 +306,14 @@
                         <div id="mainDocumentationDiv">
                             <span id="documentationSpan">
                                 <span class="btn btn-success fileinput-button">
-                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add Documentation File (deprecated)</span>
+                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add Documentation File</span>
                                     <input  name="documentationfile" type="file" class="documentationfile"/>
                                 </span>
                             </span>
                             <a href='createhelp.jsp#Documentation' target='help'>
                                 <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                             </a>
+                            If both a documentation file and URL are provided, only the URL will be presented to users.
                         </div>
                     </td>
                 </tr>

@@ -4067,7 +4067,7 @@ jQuery(document).ready(function() {
     
     $('#showDeprecatedDocFileRow').click(function(e){
     	$('#deprecatedDocFileRow').toggle(); 
-    	$('#showDeprecatedDocFileRow').html(($('#showDeprecatedDocFileRow').text() == 'add documentation file (deprecated)') ? 'hide documentation file' : 'add documentation file (deprecated)');
+    	$('#showDeprecatedDocFileRow').html(($('#showDeprecatedDocFileRow').text() == 'add documentation file') ? 'hide documentation file' : 'add documentation file');
    
     })
     

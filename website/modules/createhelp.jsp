@@ -229,7 +229,7 @@ when users run the module.
 instead of the link. A link to these files on the GenePattern server will be generated if no documentation URL is provided
 but one of these file types is provided. You can modify this list of extensions by editing the files.doc property in the
 GenePattern /resources/genepattern.properties file.  In cases where both a documentation file and a documentation URL are
-provided, only the documentation url will be displayed to users.<br><br/>
+provided, only the documentation URL will be displayed to users.<br><br/>
 
 <strong>Module documentation</strong>: Public modules should always include a link that provides instructions
 for using the module, a detailed description of each input parameter, a detailed description of each output
