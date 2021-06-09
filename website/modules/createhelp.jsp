@@ -1,8 +1,8 @@
 <%--
   The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2012) by the
- Broad Institute. All rights are reserved.
+ This software and its documentation are copyright (2003-2021) by the
+ Broad Institute and the Regents of the University of California. All rights are reserved.
 
  This software is supplied without any warranty or guaranteed support
  whatsoever. The Broad Institute cannot be responsible for its
@@ -63,7 +63,7 @@ module property:
 One of three terms that indicates the author&rsquo;s confidence in the robustness of the module: development, preproduction, and production.</p>
     <p>
         <a name="Documentation_brief"></a><strong>Documentation</strong><br>
-Help file that describes the module and provides instructions
+Help URL (or file) that describes the module and provides instructions
 for its use.</p>
     <p>
         <a name="DockerImage_brief"></a><strong>Docker Image</strong><br/>
@@ -221,16 +221,24 @@ It's a very good way for you to document succinctly why your module exists.<br><
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
 
 <a name="Documentation"></a><h4>Documentation</h4>
-Upload a pdf, txt, html, htm, xhtml, or rtf file describing the module and how to use it.
-A link to this file will be available when users go to run the module. <br>
 
-<strong>Help Files</strong>: Public modules should always include a help file that provides instructions
+Provide a URL (link) to a web page describing the module and how to use it.  This link will be available
+when users run the module.
+<br/><br/>
+<strong>Deprecated:</strong>strong> Older modules may have included an upload  pdf, txt, html, htm, xhtml, or rtf file 
+instead of the link. A link to these files on the GenePattern server will be generated if no documentation URL is provided
+but one of these file types is provided. You can modify this list of extensions by editing the files.doc property in the
+GenePattern /resources/genepattern.properties file.  In cases where both a documentation file and a documentation URL are
+provided, only the documentation url will be displayed to users.<br><br/>
+
+<strong>Module documentation</strong>: Public modules should always include a link that provides instructions
 for using the module, a detailed description of each input parameter, a detailed description of each output
 file (both its format and content), and either an explanation of the algorithm or a reference to the paper, journal or book that
 explains it.
 
 When a user selects your module, GenePattern displays a form that includes the
-module parameters and a documentation link. If no documentation file was provided, GenePattern displays a message indicating that no information is
+module parameters and the documentation link. If no documentation file was provided, GenePattern displays 
+a message indicating that no information is
 available. (By default, the supported documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
 You can modify this list of extensions by editing the files.doc property in the
 GenePattern /resources/genepattern.properties file.)<br><br>

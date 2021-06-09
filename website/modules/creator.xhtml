@@ -292,9 +292,13 @@
                     </td>
                     <td colspan="3">
                          <input type="text" name="documentationUrl" size="70"/>
+                         <a href='createhelp.jsp#Documentation' target='help'>
+                                <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                         </a>
+                         <a id="showDeprecatedDocFileRow">add documentation file (deprecated)</a>
                     </td>
                 </tr>
-                  <tr>
+                  <tr id="deprecatedDocFileRow" style="display:none">
                     <td>
                         Documentation File:
                     </td>

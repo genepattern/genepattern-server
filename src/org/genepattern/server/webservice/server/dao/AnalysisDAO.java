@@ -739,28 +739,39 @@ public class AnalysisDAO extends BaseDAO {
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));	
         AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
         
-        final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String postJobDeleteScript = null;
-        try {
-            GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
-            postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
-                                   
-        } catch (Throwable e){
-            e.printStackTrace();
-            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
-        }
-        deleteJobDir(jobDir);
-        getSession().delete(aJob);
-        postDeleteScript( jobID,  jobDir, postJobDeleteScript);
+        deleteJob(aJob);
+//        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+//        String postJobDeleteScript = null;
+//        try {
+//            GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
+//            postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
+//                                   
+//        } catch (Throwable e){
+//            e.printStackTrace();
+//            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+//        }
+//        deleteJobDir(jobDir);
+//        getSession().delete(aJob);
+//        postDeleteScript( jobID,  jobDir, postJobDeleteScript);
     }
     
     public void deleteJob(AnalysisJob aJob) {
+        
         // recursively delete the job directory
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
         String postJobDeleteScript = null;
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         try {
             GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
+            
+            List<String> inputFiles = context.getLocalFilePaths();
+            for (int i=0; i<inputFiles.size(); i++ ){
+                
+                System.out.println("----- Deleting job: " + aJob.getJobNo() + " -- has input file -- " + inputFiles.get(i) );
+                
+            }
+            System.out.println("------------------ done listing files for job " + aJob.getJobNo());
+            
             postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
         } catch (Throwable e){
             e.printStackTrace();

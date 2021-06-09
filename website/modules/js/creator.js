@@ -2401,56 +2401,58 @@ function loadModuleInfo(module)
     {
         $('textarea[name="description"]').val(module["description"]);
     }
-    if(module["documentationUrl"] !== undefined)
+    var hasDocUrl = ((module["documentationUrl"] !== undefined) && (module["documentationUrl"] !== ""));
+    if(hasDocUrl)
     {
         $('documentationUrl').val(module["documentationUrl"]);
     }
     
-    if(module["taskDoc"] !== undefined)
+    var hasDocFile = ((module["taskDoc"] !== undefined) && (module["taskDoc"] !== ""));
+    if(hasDocFile)
     {
-        if(module["taskDoc"] !== "")
+        var documentation = module["taskDoc"];
+        module_editor.documentationfile = documentation;
+
+        //keep track of files that are already part of this module
+        module_editor.currentUploadedFiles.push(documentation);
+
+        var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
+
+        var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
+        delbutton.button().click(function()
         {
-            var documentation = module["taskDoc"];
-            module_editor.documentationfile = documentation;
+            //set this so that module will update version when save button is clicked
+            setDirty(true);
 
-            //keep track of files that are already part of this module
-            module_editor.currentUploadedFiles.push(documentation);
+            var fileName = $(this).val();
 
-            var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
-
-            var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
-            delbutton.button().click(function()
+            var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
+            if(confirmed)
             {
-                //set this so that module will update version when save button is clicked
-                setDirty(true);
+                module_editor.documentationfile = "";
 
-                var fileName = $(this).val();
+                module_editor.filesToDelete.push(fileName);
 
-                var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
-                if(confirmed)
-                {
-                    module_editor.documentationfile = "";
+                //remove display of uploaded license file
+                $("#currentDocumentationSpan").remove();
 
-                    module_editor.filesToDelete.push(fileName);
+                $("#documentationSpan").show();
+            }
+        });
 
-                    //remove display of uploaded license file
-                    $("#currentDocumentationSpan").remove();
+        currentDocumentationSpan.append(delbutton);
+        var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
+        currentDocumentationSpan.append(documentationFileURL);
 
-                    $("#documentationSpan").show();
-                }
-            });
-
-            currentDocumentationSpan.append(delbutton);
-            var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
-            currentDocumentationSpan.append(documentationFileURL);
-
-            $("#documentationSpan").hide();
-            $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
-        }
+        $("#documentationSpan").hide();
+        $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
+        $("#deprecatedDocFileRow").show();
+        $("#showDeprecatedDocFileRow").html("hide documentation file")
     }
     else
     {
-        module_editor.promptForTaskDoc = true;
+        if (!hasDocUrl) module_editor.promptForTaskDoc = true;
+        $("#deprecatedDocFileRow").hide();
     }
 
     if(module["author"] !== undefined)
@@ -4062,6 +4064,14 @@ jQuery(document).ready(function() {
             dt.effectAllowed = dt.dropEffect = 'none';
         }
     });
+    
+    $('#showDeprecatedDocFileRow').click(function(e){
+    	$('#deprecatedDocFileRow').toggle(); 
+    	$('#showDeprecatedDocFileRow').html(($('#showDeprecatedDocFileRow').text() == 'add documentation file (deprecated)') ? 'hide documentation file' : 'add documentation file (deprecated)');
+   
+    })
+    
+    
 });
 
 function dragEnter(evt)
