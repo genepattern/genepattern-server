@@ -536,22 +536,26 @@ function notifyDesktop(title, message) {
     if (!window.Notification) {
         console.log('Browser does not support notifications.');
     } else {
-        // check if permission is already granted
+    	var icon = '/gp/images/GenePatternHeatmap.png';
+    	// check if permission is already granted
         if (Notification.permission === 'granted') {
             // show notification here
             var notify = new Notification(title, {
                 body: message,
-               
+                icon: icon
             });
         } else {
             // request permission from user
             Notification.requestPermission().then(function (p) {
                 if (p === 'granted') {
                     // show notification here
+                	
                     var notify = new Notification(title, {
                         body: message,
+                        icon: icon
                         
                     });
+                    
                 } else {
                     console.log('User blocked notifications.');
                 }
