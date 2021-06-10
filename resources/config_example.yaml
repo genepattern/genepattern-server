@@ -339,7 +339,7 @@ default.properties:
     #
     # corresponds to repositoryURL in NotebookBean.java
     # default is https://notebook.genepattern.org
-    # notebook.url: http://gp-dev-ami.genepattern.org
+    # notebook.url: http://nbdev.genepattern.org
 
     # Turn off the auto-creation of accounts with GenomeSpace
     # genomeSpaceAutoCreate: false
