@@ -116,7 +116,11 @@ $(function()
 
            {
                 element: '#left-nav-notebook-tab',
-                intro: '<div class="tour-header"> Notebook Tab</div> The Notebook tab lists public GenePattern notebooks available in the GenePattern Notebook Workspace.</br> Selecting a notebook from this list will open a new browser tab in the GenePattern Notebook Workspace. </br>If this is your first time in the GP Notebook Workspace, you will be presented with an intro tour in that space.</br> <a href="https//notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a>',
+                intro:  '<div class="tour-header"> Notebook Tab</div>'
+                   + ' <p>The Notebook tab lists public GenePattern notebooks available in the GenePattern Notebook Workspace.</p>'
+                   + ' <p>Selecting a notebook from this list will open a new browser tab in the GenePattern Notebook Workspace.</p>'
+                   + ' <p>If this is your first time in the GP Notebook Workspace, you will be presented with an intro tour in that space.</p>'
+                   + ' <p><a href="https//notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a></p>',
                 position: 'right'
             },
             {
