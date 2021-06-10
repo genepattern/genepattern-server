@@ -84,6 +84,7 @@ $(function()
             {
                 $( "#left-nav" ).tabs( "option", "active", 3 );
             }
+
             else if(targetElement.id == "submitJob")
             {
                 //hack to not show the hidden native file upload button
@@ -115,8 +116,12 @@ $(function()
             {
                 intro: '<div class="tour-header"> Release Notes </div> This is a developer and bug fix release. For details '
                     + ' please see the <a href="https://github.com/genepattern/genepattern-server/releases/latest" target="_blank">release notes</a>.'
-            }
-        ];
+            },
+            {
+                element: '#left-nav-notebook',
+                intro: '<div class="tour-header"> Notebook Tab</div> The Notebook tab lists public GenePattern notebooks available in the GenePattern Notebook Workspace. Selecting a notebook from this list will open a new browser tab in the GenePattern Notebook Workspace. If this is your first time in the GP Notebook Workspace, you will be presented with an intro tour in that space. <a href="https//notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a>',
+                position: 'right'
+            }];
 
         intro.setOptions({
             steps: steps,
@@ -126,6 +131,17 @@ $(function()
             scrollToElement: false,
             prevLabel: "",
             showBullets: false
+        });
+
+        intro.onbeforechange(function(targetElement)
+        {
+            //switch the active left navigation tab to the appropriate one for the step
+            if(intro._currentStep == 0)
+            {
+                $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
+
+                $( "#left-nav" ).tabs( "option", "active", 4 );
+            }
         });
 
         intro.onexit(function()
