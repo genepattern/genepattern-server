@@ -334,6 +334,13 @@ default.properties:
     #   # previous default (<=3.9.10) open the page included in the app
     #   contact.link: "/gp/pages/contactUs.jsf"
 
+    #
+    # Notebook integration
+    #
+    # corresponds to repositoryURL in NotebookBean.java
+    # default is https://notebook.genepattern.org
+    # notebook.url: http://gp-dev-ami.genepattern.org
+
     # Turn off the auto-creation of accounts with GenomeSpace
     # genomeSpaceAutoCreate: false
     
