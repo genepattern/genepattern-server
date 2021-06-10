@@ -1,10 +1,10 @@
 .introjs-overlay {
   position: absolute;
   z-index: 999999;
-  /*Marc-Danie commented out dimming code
-  background-color: #000;*/
+  /*Marc-Danie commented out dimming code*/
+  background-color: #000;
   opacity: 0;
-  /*Marc-Danie commented out dimming code
+  /*Marc-Danie commented out dimming code*/
   background: -moz-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
   background: -webkit-gradient(radial,center center,0px,center center,100%,color-stop(0%,rgba(0,0,0,0.4)),color-stop(100%,rgba(0,0,0,0.9)));
   background: -webkit-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
@@ -18,7 +18,7 @@
      -moz-transition: all 0.3s ease-out;
       -ms-transition: all 0.3s ease-out;
        -o-transition: all 0.3s ease-out;
-          transition: all 0.3s ease-out;*/
+          transition: all 0.3s ease-out;
 }
 
 .introjs-fixParent {
