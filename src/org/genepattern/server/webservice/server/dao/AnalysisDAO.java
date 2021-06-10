@@ -19,12 +19,17 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UserUploadFile;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -761,17 +766,9 @@ public class AnalysisDAO extends BaseDAO {
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
         String postJobDeleteScript = null;
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        GpContext context = null;
         try {
-            GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
-            
-            List<String> inputFiles = context.getLocalFilePaths();
-            for (int i=0; i<inputFiles.size(); i++ ){
-                
-                System.out.println("----- Deleting job: " + aJob.getJobNo() + " -- has input file -- " + inputFiles.get(i) );
-                
-            }
-            System.out.println("------------------ done listing files for job " + aJob.getJobNo());
-            
+            context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
             postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
         } catch (Throwable e){
             e.printStackTrace();
@@ -781,7 +778,11 @@ public class AnalysisDAO extends BaseDAO {
         deleteJobDir(jobDir);
         getSession().delete(aJob);
         postDeleteScript(aJob.getJobNo() ,  jobDir, postJobDeleteScript);
+        // GP-8672 delete files uploaded with this job
+        UserUploadManager.deleteUploadedFiles( mgr,  context,  aJob, false);
     }
+    
+    
     
     protected void postDeleteScript(int jobId, File jobDir, String postJobDeleteScript){
         try {
@@ -796,7 +797,6 @@ public class AnalysisDAO extends BaseDAO {
                 Process p = pb.start();
                 p.wait(10000);
             }
-            
             
         } catch (Throwable e){
             e.printStackTrace();
@@ -815,9 +815,6 @@ public class AnalysisDAO extends BaseDAO {
             del.setIncludeEmptyDirs(true);
             del.setProject(new Project());
             del.execute();
-            
-            
-            
         }
         catch (Throwable t) {
             log.error("Error deleting job directory, name="+jobDir.getName()+", path="+jobDir.getPath(), t);

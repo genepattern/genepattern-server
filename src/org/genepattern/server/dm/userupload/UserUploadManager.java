@@ -9,9 +9,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -19,6 +21,10 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
 
 public class UserUploadManager {
     private static final Logger log = Logger.getLogger(UserUploadManager.class);
@@ -421,6 +427,44 @@ public class UserUploadManager {
         UserUploadDao dao = new UserUploadDao(mgr);
         return dao.selectAllUserUpload(userId, includeTempFiles);
     }
+    
+    
+    
+    public static final void deleteUploadedFiles(final HibernateSessionManager mgr, GpContext gpContext, AnalysisJob aJob, boolean dontCheckForOtherJobsUsing){
+        ParameterInfo[] params = ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo());
+        GpConfig config = ServerConfigurationFactory.instance();
+        JobInputValueRecorder jobInputRecorder = new JobInputValueRecorder(mgr);
+        
+        for (int i=0; i< params.length; i++){
+            try {
+            ParameterInfo aParam = params[i];
+            if ("java.io.File".equals(aParam.getAttributes().get("type"))){
+                String filePath = aParam.getValue();
+                
+                GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, filePath);
+                
+                // this list will include us so pull it
+                List<Integer> jobsUsingInput = jobInputRecorder.fetchMatchingJobs(gpfp.getUrl().toString());
+                
+                jobsUsingInput.remove(aJob.getJobNo());
+                
+                boolean deleteOK = ((jobsUsingInput.size() == 0) || dontCheckForOtherJobsUsing);
+                if (deleteOK){ 
+                    UserUploadManager.deleteUploadFile(mgr, gpfp);
+                    gpfp.getServerFile().delete();
+                    if (DataManager.isUseS3NonLocalFiles(gpContext)) {
+                        DataManager.getExternalFileManager(gpContext).deleteFile(gpContext, gpfp.getServerFile());
+                    }
+                }
+            }
+            } catch (Exception e){
+                // ignore it and hope the purger gets the file later
+                log.error("Could not delete uploaded file with job deletion.", e);
+            }
+            
+        }      
+    }
+        
     
 }
 
