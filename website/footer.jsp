@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright 2013 The Broad Institute, Inc.
+  ~ Copyright 2021 The Broad Institute, Inc.
   ~ SOFTWARE COPYRIGHT NOTICE
   ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
   ~
@@ -20,7 +20,7 @@
                 </td>
 
                 <td>
-                    <div align="right">&copy;2003-2020&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Regents of the University of California, Broad Institute, MIT</a>
+                    <div align="right">&copy;2003-2021&nbsp;<a href="https://ucsd.edu/" target="_blank">Regents of the University of California>/a>, <a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
                     </div>
                 <td width="10">&nbsp;</td>
                 <td width="27">
