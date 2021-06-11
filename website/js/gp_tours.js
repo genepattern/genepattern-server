@@ -117,7 +117,7 @@ $(function()
            {
                intro:'<p>A browser notification is now be displayed when jobs complete.</p>'
                    + ' <p><em>Note, that you may need to enable notifications in order to see these</em></p>'
-                   + ' <img src="images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" />',
+                   + ' <img src="../js/images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" />',
                position: 'fixed',
                bottom: 0,
                right: 0
