@@ -19,8 +19,12 @@
     border: 3px solid red !important;
 }
 
+.browserNotification_2106
+{
+    width: 500px;
+}
 
-/*Added for the GP 3.9.5 What's New tour */
+/*Added for the GP 3.9.5 What's New tour
 #batchInfoDialogHeader h4
 {
     margin: 0;
@@ -55,4 +59,4 @@
 {
     background-color: #d3d3d3;
 }
-/* End of css for GP 3.9.5 What's New tour*/
+End of css for GP 3.9.5 What's New tour*/
