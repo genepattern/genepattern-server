@@ -38,24 +38,6 @@ $(function()
                 position: 'right'
             }];
 
-        if($("#protocols").is(":visible"))
-        {
-            steps.push({
-                element: '#protocols',
-                intro: '<div class="tour-header"> Main Display Pane</div> The main display pane displays interactive information including protocols for common GenePattern analyses.',
-                position: 'left'
-            });
-        }
-
-        if($("#submitJob").is(":visible"))
-        {
-            steps.push({
-                element: '#submitJob',
-                intro: '<div class="tour-header"> Main Display Pane</div>The main display pane displays interactive information including protocols for common GenePattern analyses.',
-                position: 'left'
-            });
-        }
-
         intro.setOptions({
             steps: steps,
             showStepNumbers: false,
@@ -117,7 +99,7 @@ $(function()
            {
                intro:' <div class="tour-header"> Browser Notifications</div>'
                    + ' <p>A browser notification is now be displayed when jobs complete.</p>'
-                   + ' <p><em>Note, that you may need to enable notifications in order to see these.</em></p>'
+                   + ' <p><em>Note, that you may need to enable browser notifications in order to see these.</em></p>'
                    + ' <img src="../js/images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" width="420" />'
            },
            {
@@ -132,7 +114,7 @@ $(function()
             {
                 intro: ' <div class="tour-header"> Congestion Estimate</div>'
                     + ' <p>The congestion estimate for a job in the pending state now lists the number of jobs ahead of yours</p>'
-                    + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="1000" />'
+                    + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="1200" />'
             },
             {
                 intro: '<div class="tour-header"> Release Notes </div> For more details about the June 2021 release '
