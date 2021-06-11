@@ -115,7 +115,8 @@ $(function()
         var steps = [
 
            {
-               intro:'<p>A browser notification is now be displayed when jobs complete.</p>'
+               intro:' <div class="tour-header"> Browser Notifications</div>'
+                   + ' <p>A browser notification is now be displayed when jobs complete.</p>'
                    + ' <p><em>Note, that you may need to enable notifications in order to see these</em></p>'
                    + ' <img src="../js/images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" width="420" />'
            },
@@ -127,6 +128,11 @@ $(function()
                    + ' <p>If this is your first time in the <a href="https//notebook.genepattern.org" target="_blank">GP Notebook Workspace</a>, you will be presented with an intro tour in that space.</p>'
                    + ' <p><a href="https//notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a></p>',
                 position: 'right'
+            },
+            {
+                intro: ' <div class="tour-header"> Congestion Estimate</div>'
+                    + ' <p>The congestion estimate for a job in the pending state now lists the number of jobs ahead of yours</p>'
+                    + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="800" />'
             },
             {
                 intro: '<div class="tour-header"> Release Notes </div> For more details about the June 2021 release '
