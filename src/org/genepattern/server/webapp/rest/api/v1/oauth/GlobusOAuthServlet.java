@@ -40,7 +40,7 @@ public class GlobusOAuthServlet extends HttpServlet {
 	        String oAuthClientId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_CLIENT_ID_KEY, "f4951e9d-03a2-4ffd-a65f-61a7f9f73bde");
 	        String oAutScopes = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_AUTHORIZE_SCOPES_KEY, "urn:globus:auth:scope:auth.globus.org:view_identities openid profile email");
             
-	        String callbackUrl = gpConfig.getGenePatternURL() + "/oauthcallback";
+	        String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
 	        
     	    OAuthClientRequest authRequest = OAuthClientRequest
                     .authorizationLocation(oAuthAuthorizeURL)
