@@ -2,7 +2,7 @@
   The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
  This software and its documentation are copyright (2003-2021) by the
- Broad Institute and the Regents of the University of California. All rights are reserved.
+ Broad Institute. All rights are reserved.
 
  This software is supplied without any warranty or guaranteed support
  whatsoever. The Broad Institute cannot be responsible for its

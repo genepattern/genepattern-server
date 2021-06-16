@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.  
+  ~ Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
   -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -16,51 +16,42 @@
         </ui:define>
         <ui:define name="body">
             <table width="100%" border="0" cellpadding="0" cellspacing="0"
-                   class="barhead-other">
+                   class="barhead-other" >
                 <tr>
                     <td>Programming Libraries</td>
                 </tr>
             </table>
 
             <h4>Java</h4>
-            <ul>
+            <ul style="font-size: 12px">
                 <li>Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePattern.zip">zip</a></li>
                 <li><a href="https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_Java" target="_doc">Documentation</a></li>
             </ul>
             <hr/>
 
-            <h4>MATLAB</h4>
-            <ul>
-                <li>Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePatternMatlab.zip">zip</a></li>
-                <li><a href="https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_MATLAB" target="_doc">Documentation</a></li>
-            </ul>
-            <hr/>
-
-            <h4>R</h4>
-            <ul>
-                <li>Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePattern_1.0.2.tar.gz">zip</a></li>
-                <li><a href="https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_R" target="_doc">Documentation</a></li>
-            </ul>
-            <hr/>
-
-            <div class="protocols" style="float: right; width: 60%">
-                <h5>Or Install Python Library From PIP</h5>
+            <div class="protocols" style="float: right; width: 60%;font-size: 12px">
+                <h5>Or Install Python Library From PIP or Conda</h5>
                 <p>PIP is the official Python package manager. It comes with many distributions of Python. To learn more about PIP
                     <a href="https://pip.pypa.io/en/stable/" target="_pip">click here</a>.</p>
                 <p>To install the GenePattern Python library from PIP, simply enter the line shown below into your command line.
                     Installing packages from PIP in this way may require administrator privilages (ex: sudo).</p>
                 <blockquote><code>pip install genepattern-python</code></blockquote>
+                <br/>
+            <p>Conda is an open source package management system and environment management system that runs on Windows, macOS and Linux.
+                To learn more about Conda <a href="https://docs.conda.io/en/latest/" target="_blank">click here</a></p>
+            <p>To install the GenePattern Python library from Conda, simply enter the line shown below into your command line.</p>
+            <blockquote><code>conda install -c genepattern genepattern-python</code></blockquote>
             </div>
             <h4>Python</h4>
-            <ul>
+            <ul style="font-size: 12px">
                 <li>Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/gp-python.zip">zip</a></li>
                 <li><a href="https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_Python" target="_doc">Documentation</a></li>
             </ul>
-            <br/><br/><br/><br/><br/><br/>
+            <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
              <hr/>
 
             <h4>REST API</h4>
-            <ul>
+            <ul style="font-size: 12px">
                  <li><a href="./rest_api_doc/index.html" target="_doc">Documentation</a>.  The REST documentation is a work in progress and is not complete.  To see examples of its use you can also look at the genepattern-python library which uses it.</li>
             </ul>
         </ui:define>

@@ -129,12 +129,15 @@
 <xsl:if test="count(choices) > 0">
 <h4>Options</h4>
 <ul>
-  <xsl:for-each select="choices/choice">      <li><xsl:value-of select="./value" />
+  <xsl:for-each select="choices/choice">
+      <li><xsl:value-of select="./value" />
       <xsl:if test="count(./description) > 0">
       	: <xsl:apply-templates select="./description" />
       </xsl:if>
       </li>
-  </xsl:for-each></ul></xsl:if>
+  </xsl:for-each>
+</ul>
+</xsl:if>
 
 </xsl:template> <!-- end parameter template -->
 
@@ -149,7 +152,8 @@
   
   <xsl:if test="count(./example_file) > 0">
   <p>Example file: 
-      <xsl:for-each select="./example_file">			<a href="linked_files/{.}"><xsl:value-of select="." /></a> 
+      <xsl:for-each select="./example_file">
+			<a href="linked_files/{.}"><xsl:value-of select="." /></a> 
     </xsl:for-each>
   </p>
   </xsl:if>
@@ -182,9 +186,16 @@
 
 <!-- we would need to auto-generate the thumbnails -->
 <xsl:if test="count(./image_file) > 0">
-  <table>    <xsl:for-each select="./image_file">      <tr>          <td>
+  <table>
+    <xsl:for-each select="./image_file">
+      <tr>
+          <td>
 			<a href="images/{.}"><img src="images/small_{.}.png" alt="{.}" /></a>
-           </td>      </tr>    </xsl:for-each>  </table></xsl:if>
+           </td>
+      </tr>
+    </xsl:for-each>
+  </table>
+</xsl:if>
 
 </xsl:template>    <!-- end description template -->
 

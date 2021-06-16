@@ -84,6 +84,7 @@ img {
     text-decoration: none;
     background-image: url(images/header.png);
     background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .topband a {

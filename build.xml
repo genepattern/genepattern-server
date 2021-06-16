@@ -289,7 +289,7 @@
             classpathref="library.classpath"
         >
             <doctitle><![CDATA[<h1>GenePattern API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright (c) 2003-2018 Regents of the University of California and Broad Institute</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright (c) 2003-2021 Regents of the University of California and Broad Institute</i>]]></bottom>
           </javadoc>
     </target>
 
@@ -318,7 +318,7 @@
                 <exclude name="com/dummy/test/doc-files/**"/>
             </packageset>
             <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright (c) 2003-2018 Regents of the University of California and Broad Institute</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright (c) 2003-2021 Regents of the University of California and Broad Institute</i>]]></bottom>
           </javadoc>
     </target>
 
