@@ -107,8 +107,8 @@ $(function()
                 intro:  '<div class="tour-header"> Notebook Tab</div>'
                    + ' <p>The Notebook tab lists GenePattern notebooks available in the GenePattern Notebook Workspace.</p>'
                    + ' <p>Selecting a notebook from this list will open a new browser tab in the GenePattern Notebook Workspace.</p>'
-                   + ' <p>If this is your first time in the <a href="https//notebook.genepattern.org" target="_blank">GP Notebook Workspace</a>, you will be presented with an intro tour in that space.</p>'
-                   + ' <p><a href="https//notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a></p>',
+                   + ' <p>If this is your first time in the <a href="https://notebook.genepattern.org" target="_blank">GP Notebook Workspace</a>, you will be presented with an intro tour in that space.</p>'
+                   + ' <p><a href="https://notebook.genepattern.org" target="_blank">More information about GenePattern Notebook can be found here.</a></p>',
                 position: 'right'
             },
             {
