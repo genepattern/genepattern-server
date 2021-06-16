@@ -117,7 +117,7 @@ $(function()
                     + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="1200" />'
             },
             {
-                intro: '<div class="tour-header"> Release Notes </div> For more details about the June 2021 release '
+                intro: '<div class="tour-header"> Release Notes </div> For more details about the latest release '
                     + ' please see the <a href="https://github.com/genepattern/genepattern-server/releases/latest" target="_blank">release notes</a>.'
             }];
 
