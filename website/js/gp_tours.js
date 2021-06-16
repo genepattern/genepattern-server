@@ -98,7 +98,7 @@ $(function()
 
            {
                intro:' <div class="tour-header"> Browser Notifications</div>'
-                   + ' <p>A browser notification is now be displayed when jobs complete.</p>'
+                   + ' <p>A browser notification is now displayed when jobs complete.</p>'
                    + ' <p><em>Note, that you may need to enable browser notifications in order to see these.</em></p>'
                    + ' <img src="../js/images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" width="420" />'
            },
