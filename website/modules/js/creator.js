@@ -16,6 +16,7 @@ var module_editor = {
     currentUploadedFiles: [],
     licensefile: "",
     documentationfile: "",
+    documentationUrl: "",
     moduleCategories: [],
     otherModAttrs: {},
     promptForTaskDoc: false
@@ -257,6 +258,7 @@ function saveModule()
     {
         documentationFile = "";
     }
+    
 
     var author = $('input[name="author"]').val();
     var organization = $('input[name="organization"]').val();
@@ -266,7 +268,9 @@ function saveModule()
         author = author + ";" + organization;
     }
     var src_repo = $('input[name="src.repo"]').val();
-
+    var documentationUrl = $('input[name="documentationUrl"]').val();
+    
+    
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
@@ -349,7 +353,7 @@ function saveModule()
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
         "job.docker.image": dockerImage,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile, "src.repo":src_repo};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile,"documentationUrl":documentationUrl ,"src.repo":src_repo};
 
     var useEditor = $("input[name='param_groups_editor_ok']:checked").val();
     if (useEditor && ($("#param_groups_editor").val().length > 0)){
@@ -2397,52 +2401,58 @@ function loadModuleInfo(module)
     {
         $('textarea[name="description"]').val(module["description"]);
     }
-
-    if(module["taskDoc"] !== undefined)
+    var hasDocUrl = ((module["documentationUrl"] !== undefined) && (module["documentationUrl"] !== ""));
+    if(hasDocUrl)
     {
-        if(module["taskDoc"] !== "")
+        $('documentationUrl').val(module["documentationUrl"]);
+    }
+    
+    var hasDocFile = ((module["taskDoc"] !== undefined) && (module["taskDoc"] !== ""));
+    if(hasDocFile)
+    {
+        var documentation = module["taskDoc"];
+        module_editor.documentationfile = documentation;
+
+        //keep track of files that are already part of this module
+        module_editor.currentUploadedFiles.push(documentation);
+
+        var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
+
+        var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
+        delbutton.button().click(function()
         {
-            var documentation = module["taskDoc"];
-            module_editor.documentationfile = documentation;
+            //set this so that module will update version when save button is clicked
+            setDirty(true);
 
-            //keep track of files that are already part of this module
-            module_editor.currentUploadedFiles.push(documentation);
+            var fileName = $(this).val();
 
-            var currentDocumentationSpan = $("<span class='clear' id='currentDocumentationSpan'></span>");
-
-            var delbutton = $('<button value="' + documentation + '">x</button>&nbsp;');
-            delbutton.button().click(function()
+            var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
+            if(confirmed)
             {
-                //set this so that module will update version when save button is clicked
-                setDirty(true);
+                module_editor.documentationfile = "";
 
-                var fileName = $(this).val();
+                module_editor.filesToDelete.push(fileName);
 
-                var confirmed = confirm("Are you sure you want to delete the documentation file: " + fileName);
-                if(confirmed)
-                {
-                    module_editor.documentationfile = "";
+                //remove display of uploaded license file
+                $("#currentDocumentationSpan").remove();
 
-                    module_editor.filesToDelete.push(fileName);
+                $("#documentationSpan").show();
+            }
+        });
 
-                    //remove display of uploaded license file
-                    $("#currentDocumentationSpan").remove();
+        currentDocumentationSpan.append(delbutton);
+        var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
+        currentDocumentationSpan.append(documentationFileURL);
 
-                    $("#documentationSpan").show();
-                }
-            });
-
-            currentDocumentationSpan.append(delbutton);
-            var documentationFileURL = "<a href=\"/gp/getTaskDoc.jsp?name=" + module_editor.lsid + "\" target=\"new\">" + htmlEncode(documentation) + "</a> ";
-            currentDocumentationSpan.append(documentationFileURL);
-
-            $("#documentationSpan").hide();
-            $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
-        }
+        $("#documentationSpan").hide();
+        $("#mainDocumentationDiv").prepend(currentDocumentationSpan);
+        $("#deprecatedDocFileRow").show();
+        $("#showDeprecatedDocFileRow").html("hide documentation file")
     }
     else
     {
-        module_editor.promptForTaskDoc = true;
+        if (!hasDocUrl) module_editor.promptForTaskDoc = true;
+        $("#deprecatedDocFileRow").hide();
     }
 
     if(module["author"] !== undefined)
@@ -2488,6 +2498,11 @@ function loadModuleInfo(module)
     {
         $('input[name="src.repo"]').val(module["src.repo"]);
     }
+    if(module["documentationUrl"] !== undefined)
+    {
+        $('input[name="documentationUrl"]').val(module["documentationUrl"]);
+    }
+    
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
@@ -2622,7 +2637,7 @@ function loadModuleInfo(module)
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
             && keyName != "job.docker.image"
-            && keyName != "src.repo"
+            && keyName != "src.repo" && keyName != "documentationUrl"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
@@ -3271,6 +3286,14 @@ function validateDefaultChoiceValues()
             "in their drop-down list. The default values must be changed before saving.");
     }
 }
+
+
+	function isURL(str){
+		   var a  = document.createElement('a');
+		   a.href = str;
+		   return (a.host && a.host != window.location.host);
+		}
+
 
 jQuery(document).ready(function() {
 
@@ -3938,6 +3961,22 @@ jQuery(document).ready(function() {
         //hide the button to upload a new file
         $("#documentationSpan").hide();
     });
+    $('input[name="documentationUrl"]').change(function() {
+    	var url = $('input[name="documentationUrl"]').first().val();
+    	if (!isURL(url)){
+    		if (!url.startsWith("http")){
+    			url = "https://"+url;
+    			if (isURL(url)){
+    				$('input[name="documentationUrl"]').first().val(url);
+    			} else {
+    				alert("Documentation URL does not appear to be a valid url." );
+    			}
+    		}
+    		
+    	}
+    	
+    });
+    
 
     $(".supportfile").live("change", function()
     {
@@ -4025,6 +4064,14 @@ jQuery(document).ready(function() {
             dt.effectAllowed = dt.dropEffect = 'none';
         }
     });
+    
+    $('#showDeprecatedDocFileRow').click(function(e){
+    	$('#deprecatedDocFileRow').toggle(); 
+    	$('#showDeprecatedDocFileRow').html(($('#showDeprecatedDocFileRow').text() == 'add documentation file (deprecated)') ? 'hide documentation file' : 'add documentation file (deprecated)');
+   
+    })
+    
+    
 });
 
 function dragEnter(evt)

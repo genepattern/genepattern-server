@@ -387,8 +387,12 @@ public class HTMLPipelineView {
             TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, null);
             File[] docFiles = taskIntegratorClient.getDocFiles(task);
-
-            if (docFiles != null) {
+            
+            String docUrl =  task.getTaskInfoAttributes().get("documentationUrl");
+            
+            if (docUrl != null){ 
+                writer.write("<a href='"+docUrl+"' target='_new'>" + docUrl + "</a>");
+            } else if ((docFiles != null) && (docUrl == null)) {
                 if (docFiles.length > 0) {
                     for (int i = 0; i < docFiles.length; i++) {
                         if (i > 0)

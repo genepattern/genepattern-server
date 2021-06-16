@@ -65,6 +65,9 @@ public class GPConstants {
     /** TaskInfoAttributes task type key */
     public static final String TASK_TYPE = "taskType";
     
+    /** TaskInfoAttributes doc url key */
+    public static final String DOCUMENTATION_URL = "documentationUrl";
+    
     /** TaskInfoAttributes 'categories' key, added after the 3.7.0 release, to allow custom taskType for a pipeline or visualizer */
     public static final String CATEGORIES = "categories";
 

@@ -300,10 +300,12 @@ public class AwsBatchUtil {
         final Set<File> inputFileParents = new LinkedHashSet<File>();
         Set<File> inputFiles = getInputFiles(gpJob);
         for (File infile: inputFiles){
+            
             File parent = infile.getParentFile().getAbsoluteFile();
             if (parent.isDirectory() && parent.exists()){
                 inputFileParents.add(parent);
             }
+            
         }
         return Collections.unmodifiableSet(inputFileParents);
     }
@@ -322,7 +324,7 @@ public class AwsBatchUtil {
         // linked hash set preserves insertion order
         final Set<File> jobInputFiles = new LinkedHashSet<File>();
         for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
-            if (Strings.isNullOrEmpty(localFilePath)) {
+            if (Strings.isNullOrEmpty(localFilePath)  || localFilePath.startsWith("<GenePatternURL>getFile.jsp?task")) {
                 // skip empty path
             }
             else {

@@ -512,8 +512,11 @@ function notifyDesktopOfJobCompletion(){
 	        		if (jobStatus.isFinished){
 	        			
 	        			var moduleName = jobMap[jobStatus["gpJobNo"]]["moduleName"];
-	        			notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
-	        			
+	        			if (jobStatus.hasError){
+	        				notifyDesktop("Error: GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag);
+	        			} else {
+	        			    notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
+	        			}
 	        			
 	        		} else {
 	        			remainingJobs.push(jobMap[jobStatus.gpJobNo]);
@@ -1198,6 +1201,8 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
         type: "GET", 
         url: url,
         success: function(data) {
+        	
+        	
         	// next go and PUT that part to S3
         	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, data.presignedUrl);
         	
@@ -1292,9 +1297,21 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
             	// which can takle a few seconds, so instead if its 1, show 0.99 (99%) and then complete it after the
             	// registration completes instead
             	if (percentComplete == 1) percentComplete = 0.99;
-                fileUploadProgress(r, file, percentComplete);
+            	
+            	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+               	//progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+                var isCancelled = uploadToasterFile.find(".upload-toaster-file-cancel").attr('disabled');
+                if (isCancelled == "disabled") {
+                	xhr.abort();
+                } else {
+                	  fileUploadProgress(r, file, percentComplete);
+                }
+                 
             }
         }
+        
+        
+        
     }, false);
     xhr.onerror = function(e) {
     	r.s3currentFile = null;
@@ -1649,7 +1666,9 @@ function appendToUploadToaster(file){
             .button()
     )
         .appendTo(toaster);
-	
+    var uploadDialog = $(".upload-dialog");
+    uploadDialog.find(".ui-dialog-titlebar-close").hide();
+    uploadDialog.find(".ui-dialog-titlebar-minimize").show();
 }
 
 
@@ -1727,27 +1746,30 @@ function initUploadToaster(filelist) {
             "minimize" : function() {
             	 var head = document.getElementsByTagName('head')[0];
 
-            	 var style = document.createElement('link');
-            	 style.href = "../css/frozen/pulsing.css";
-            	 style.type = 'text/css';
-            	 style.rel = 'stylesheet';
-            	 head.append(style);
-            	
-            	
-            	
-                $("#dialog-extend-fixed-container")
-                    .find(".upload-dialog")
-                    .removeAttr("style");
-                
-                toaster.dialog('option', 'title', 'Uploads In Progress');
-                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewImage' />");
-                //alert("X");
-                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
-            },
+            	 toaster.dialog('option', 'title', 'Uploads In Progress');
+            	 
+            	 var oldElement = document.getElementById("PulsingToasterIcon");
+            	 if (oldElement == null){
+	            	 var style = document.createElement('link');
+	            	 style.setAttribute("id", "PulsingToasterIcon");
+	            	 style.href = "../css/frozen/pulsing.css";
+	            	 style.type = 'text/css';
+	            	 style.rel = 'stylesheet';
+	            	 head.append(style);
+	            	 
+	         	 } 
+               	 $("#dialog-extend-fixed-container") .find(".upload-dialog")  .removeAttr("style");
+      
+            	 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").find("span").first().prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewPulsingImage' />");
+                 $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
+               
+             },
             "beforeRestore" : function(evt) {  
             	
             	toaster.dialog('option', 'title', 'GenePattern Uploads');
             	$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").removeClass("pulsingUpload");
+            	var oldImage = document.getElementById("myNewPulsingImage");
+        		$(oldImage).remove();
             },
             
             "icons" : {
@@ -1764,9 +1786,17 @@ function cleanUploadToaster() {
 
     // Disable minimize button and enable close if not minimized
     var uploadDialog = $(".upload-dialog");
-    uploadDialog.find(".ui-dialog-titlebar-minimize").remove();
-    uploadDialog.find(".ui-dialog-titlebar-close").show();
+   
+    if (resumableloadsInProgress == 0){
 
+    	uploadDialog.find(".ui-dialog-titlebar-close").show();
+    	uploadDialog.find(".ui-dialog-titlebar-minimize").hide();
+    } else {
+    	uploadDialog.find(".ui-dialog-titlebar-close").hide();
+    	uploadDialog.find(".ui-dialog-titlebar-minimize").show();
+    }
+    
+    
     // Show the dropzone
     $("#upload-dropzone-wrapper").show("slide", { direction: "up" }, 200);
 
