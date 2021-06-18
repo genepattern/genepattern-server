@@ -82,16 +82,32 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             OAuthJSONAccessTokenResponse oAuthResponse = oAuthClient.accessToken(request, OAuthJSONAccessTokenResponse.class);
             accessToken = oAuthResponse.getAccessToken();
             Long expiresIn = oAuthResponse.getExpiresIn();
-            PrintWriter out = servletResponse.getWriter();
-            out.append("Served at: ").append(servletRequest.getContextPath());
-            out.append("\n access token response: " + oAuthResponse.getBody());
+            //PrintWriter out = servletResponse.getWriter();
+            //out.append("Served at: ").append(servletRequest.getContextPath());
+            //out.append("\n access token response: " + oAuthResponse.getBody());
             
             JsonElement userJson = getUserDetails(accessToken);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            out.append("\n\n"+ gson.toJson(userJson));
+            //out.append("\n\n"+ gson.toJson(userJson));
             JsonElement tokenJson = getTokenDetails(accessToken, oAuthClientId, oAuthClientSecret);
             
-            out.append("\n\n"+ gson.toJson(tokenJson));
+            //out.append("\n\n"+ gson.toJson(tokenJson));
+            
+            String email = userJson.getAsJsonObject().get("email").getAsString();
+            
+            // add these attributes to the session to ...
+            // 1) indicate successful login
+            servletRequest.getSession().setAttribute("globus.identity", email);
+            // 2) set the email address to be used when creating a new GenePattern account
+            servletRequest.getSession().setAttribute("globus.email", email);
+            // 3) set the access token
+            servletRequest.getSession().setAttribute("globus.access_token_json", accessToken);
+            
+            
+            
+            
+            // XXX TODO pass in the url that was originally requested and redirect to it
+            servletResponse.sendRedirect(gpConfig.getGenePatternURL().toString());
         }
         catch (Exception e) {
             // TODO Auto-generated catch block

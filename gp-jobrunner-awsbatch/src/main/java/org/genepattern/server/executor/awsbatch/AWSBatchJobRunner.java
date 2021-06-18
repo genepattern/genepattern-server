@@ -1129,7 +1129,7 @@ public class AWSBatchJobRunner implements JobRunner {
                 bw.write(urlfile[1]);
                 bw.write("  ");
                 bw.write(urlfile[0]);
-                bw.write(" >> "+dest_prefix+""+script_dir+"/http_downloads.log");
+                bw.write("  || echo 'download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
                 bw.newLine();
                 bw.newLine();
                 // better safe than sorry
