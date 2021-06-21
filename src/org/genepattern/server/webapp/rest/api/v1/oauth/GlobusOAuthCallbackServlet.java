@@ -28,6 +28,8 @@ import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.webapp.LoginManager;
+import org.genepattern.util.GPConstants;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -82,16 +84,10 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             OAuthJSONAccessTokenResponse oAuthResponse = oAuthClient.accessToken(request, OAuthJSONAccessTokenResponse.class);
             accessToken = oAuthResponse.getAccessToken();
             Long expiresIn = oAuthResponse.getExpiresIn();
-            //PrintWriter out = servletResponse.getWriter();
-            //out.append("Served at: ").append(servletRequest.getContextPath());
-            //out.append("\n access token response: " + oAuthResponse.getBody());
-            
+              
             JsonElement userJson = getUserDetails(accessToken);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            //out.append("\n\n"+ gson.toJson(userJson));
             JsonElement tokenJson = getTokenDetails(accessToken, oAuthClientId, oAuthClientSecret);
-            
-            //out.append("\n\n"+ gson.toJson(tokenJson));
             
             String email = userJson.getAsJsonObject().get("email").getAsString();
             
@@ -102,12 +98,21 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             servletRequest.getSession().setAttribute("globus.email", email);
             // 3) set the access token
             servletRequest.getSession().setAttribute("globus.access_token_json", accessToken);
+            // and do these to prevent an earlier session leaking through
+            servletRequest.setAttribute(GPConstants.USERID, email);
+            servletRequest.getSession().setAttribute(GPConstants.USERID, email);
             
+            LoginManager.instance().addUserIdToSession(servletRequest, email);
+            LoginManager.instance().attachAccessCookie(servletResponse, email);
             
+            String urlTargetPostLogin = (String)servletRequest.getSession().getAttribute("origin");
+            if (urlTargetPostLogin == null){
+                urlTargetPostLogin  = gpConfig.getGenePatternURL().toString();
+            }
             
             
             // XXX TODO pass in the url that was originally requested and redirect to it
-            servletResponse.sendRedirect(gpConfig.getGenePatternURL().toString());
+            servletResponse.sendRedirect(urlTargetPostLogin);
         }
         catch (Exception e) {
             // TODO Auto-generated catch block

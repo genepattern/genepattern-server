@@ -100,6 +100,7 @@ public class JobStatusBean {
         allSteps = null;
         
         final HttpServletRequest request = UIBeanHelper.getRequest();
+        
         final int jobNumber=initJobNumber(request);
         if (jobNumber < 0) {
             return;

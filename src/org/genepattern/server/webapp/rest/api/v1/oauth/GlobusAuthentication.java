@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
+import org.genepattern.server.webapp.LoginManager;
+import org.genepattern.util.GPConstants;
 
 public class GlobusAuthentication extends DefaultGenePatternAuthentication {
     /**
@@ -24,6 +26,12 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
             // when creating new user accounts
             request.setAttribute("email", globusEmail);
             request.setAttribute("password", globusIdentity);
+            request.setAttribute(GPConstants.USERID, globusEmail);
+            request.getSession().setAttribute(GPConstants.USERID, globusEmail);
+            
+            LoginManager.instance().addUserIdToSession(request, globusEmail);;
+            LoginManager.instance().attachAccessCookie(response, globusEmail);
+            
             return globusEmail;
         }
         
