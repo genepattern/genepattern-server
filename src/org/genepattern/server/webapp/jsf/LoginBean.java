@@ -16,6 +16,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.LoginManager;
+import org.genepattern.server.webapp.rest.api.v1.oauth.OAuthConstants;
 
 /**
  * Backing bean for pages/login.
@@ -33,6 +34,7 @@ public class LoginBean {
     private final boolean isShowRegistrationLink;
     private final boolean isPasswordRequired;
     private final boolean isCreateAccountAllowed;
+    private final boolean isGlobusEnabled;
 
     public LoginBean() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -40,6 +42,13 @@ public class LoginBean {
         this.isShowRegistrationLink=gpConfig.isShowRegistrationLink(serverContext);
         this.isPasswordRequired=gpConfig.isPasswordRequired(serverContext);
         this.isCreateAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
+        
+        String oauthClientId = gpConfig.getGPProperty(serverContext, OAuthConstants.OAUTH_CLIENT_ID_KEY);
+        if (oauthClientId == null) {
+            isGlobusEnabled = false;
+        } else {
+            isGlobusEnabled = !(oauthClientId.isEmpty());
+        }
     }
 
     public String getPassword() {
@@ -58,6 +67,10 @@ public class LoginBean {
         return isShowRegistrationLink;
     }
 
+    public boolean isGlobusEnabled(){
+        return isGlobusEnabled;
+    }
+    
     public boolean isInvalidPassword() {
         return invalidPassword;
     }

@@ -11,8 +11,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,15 +29,22 @@ import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
 import org.apache.oltu.oauth2.client.response.OAuthAuthzResponse;
 import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.util.GPConstants;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /**
@@ -62,14 +73,15 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             String oAuthAuthorizeURL = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_AUTHORIZE_URL_KEY, "https://auth.globus.org/v2/oauth2/authorize");
             String oAuthClientId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_CLIENT_ID_KEY);
             String oAutScopes = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_AUTHORIZE_SCOPES_KEY, "urn:globus:auth:scope:auth.globus.org:view_identities openid profile email");
-            String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
             String oAuthClientSecret = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_CLIENT_SECRET_KEY);
+            String oAuthTokenURL = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_TOKEN_URL_KEY, "https://auth.globus.org/v2/oauth2/token");
             
-	         
+            String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
+             
             OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(servletRequest);
             String code = oar.getCode();
             OAuthClientRequest request = OAuthClientRequest
-                    .tokenLocation("https://auth.globus.org/v2/oauth2/token")
+                    .tokenLocation(oAuthTokenURL)
                     .setGrantType(GrantType.AUTHORIZATION_CODE)
                     .setClientId(oAuthClientId)
                     .setClientSecret(oAuthClientSecret)
@@ -90,27 +102,22 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             JsonElement tokenJson = getTokenDetails(accessToken, oAuthClientId, oAuthClientSecret);
             
             String email = userJson.getAsJsonObject().get("email").getAsString();
-            
+          
             // add these attributes to the session to ...
             // 1) indicate successful login
-            servletRequest.getSession().setAttribute("globus.identity", email);
+            servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY, email);
             // 2) set the email address to be used when creating a new GenePattern account
-            servletRequest.getSession().setAttribute("globus.email", email);
+            servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY, email);
             // 3) set the access token
-            servletRequest.getSession().setAttribute("globus.access_token_json", accessToken);
+            servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, accessToken);
+            servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, userJson);
             // and do these to prevent an earlier session leaking through
-            servletRequest.setAttribute(GPConstants.USERID, email);
-            servletRequest.getSession().setAttribute(GPConstants.USERID, email);
-            
-            LoginManager.instance().addUserIdToSession(servletRequest, email);
-            LoginManager.instance().attachAccessCookie(servletResponse, email);
             
             String urlTargetPostLogin = (String)servletRequest.getSession().getAttribute("origin");
             if (urlTargetPostLogin == null){
                 urlTargetPostLogin  = gpConfig.getGenePatternURL().toString();
             }
-            
-            
+             
             // XXX TODO pass in the url that was originally requested and redirect to it
             servletResponse.sendRedirect(urlTargetPostLogin);
         }

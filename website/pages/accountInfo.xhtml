@@ -109,7 +109,9 @@
             <t:div rendered="#{mySettingsBean.currentMode == 'History'}">
                 <ui:include src="history.xhtml" />
             </t:div>
-
+             <t:div rendered="#{mySettingsBean.currentMode == 'Globus Identity'}">
+                <ui:include src="globus.xhtml" />
+            </t:div>
         </ui:define>
     </ui:composition>
 

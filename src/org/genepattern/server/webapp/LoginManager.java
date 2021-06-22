@@ -93,13 +93,16 @@ public class LoginManager {
         if (gp_username == null) {
             return;
         }
-        
+        try {
         if (!UserAccountManager.instance().userExists(gp_username)) {
             String gp_email = (String) request.getAttribute("email"); //can be null
             String gp_password = (String) request.getAttribute("password"); //can be null
             UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
         }
-
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
         addUserIdToSession(request, gp_username);
         attachAccessCookie(response, gp_username);
        

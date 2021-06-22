@@ -60,6 +60,16 @@ public class UserDAO extends BaseDAO {
         return null;
     }
 
+    
+    public List<User> getUsersByEmail(final String email) {
+        final String hql = "from org.genepattern.server.user.User where email = :email ";
+        final Query query = this.mgr.getSession().createQuery(hql);
+        query.setString("email", email);
+        @SuppressWarnings("unchecked")
+        final List<User> users = query.list();
+        return users;
+    }
+    
     public List<User> getNewUsers(final Date startDate, final Date endDate) {
         final String hql = "from org.genepattern.server.user.User where registrationDate >= :startDate and registrationDate <= :endDate order by registrationDate";
         final Query query = this.mgr.getSession().createQuery(hql);

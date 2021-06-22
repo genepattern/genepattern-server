@@ -23,7 +23,7 @@ public class MySettingsBean {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final boolean passwordRequired = 
             gpConfig.isPasswordRequired(GpContext.getServerContext());
-        modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory" }
+        modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory", "Globus Identity" }
                 : new String[] { "Change Email", "History", "Visualizer Memory" };
         currentMode = modes[0]; // Default
     }

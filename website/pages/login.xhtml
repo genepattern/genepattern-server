@@ -90,10 +90,11 @@
 	                    <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
                               
                                <br />
+                               <t:div rendered="#{loginBean.globusEnabled}">
             <h:outputLink
                 value="#{facesContext.externalContext.requestContextPath}/oauthglobus">Sign on using your Globus account</h:outputLink>
-            <br/>You may also sign in with google or institutional (University) credentials via Globus.
-                              
+            <br/>You may also use this link to sign in with your Google or institutional (University) credentials via Globus.
+                            </t:div>  
                              
                     </h:form>
                 </td>
