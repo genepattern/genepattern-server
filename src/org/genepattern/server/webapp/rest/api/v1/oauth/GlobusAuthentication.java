@@ -33,7 +33,8 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
     public String authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String globusEmail = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY);
         String accessToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
-      
+        String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        
         
         if (globusEmail != null) {
             // The GenePattern login manager uses the 'email' and 'password' request attributes 
@@ -54,7 +55,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
             LoginManager.instance().attachAccessCookie(response, globusEmail);
 
             
-            linkGlobusAccountToGenePattern(request, globusEmail, accessToken, generatedPassword);
+            linkGlobusAccountToGenePattern(request, globusEmail, accessToken, transferToken, generatedPassword);
             //if (!inTransaction) hmgr.commitTransaction();
             
 
@@ -76,7 +77,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
      * @throws AuthenticationException
      */
     
-    private void linkGlobusAccountToGenePattern(HttpServletRequest request, String globusEmail, String accessToken, String generatedPassword) throws AuthenticationException {
+    private void linkGlobusAccountToGenePattern(HttpServletRequest request, String globusEmail, String accessToken, String transferToken, String generatedPassword) throws AuthenticationException {
         JsonElement userJson = (JsonElement) request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY);
         String canonicalId = userJson.getAsJsonObject().get("preferred_username").getAsString();
         String idProviderId = userJson.getAsJsonObject().get("identity_provider").getAsString();
@@ -102,6 +103,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
                 dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, canonicalId);
                 dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_EMAIL_USERPROPS_KEY, globusEmail);
                 dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ACCESS_TOKEN_USERPROPS_KEY, accessToken);
+                dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, transferToken);
                 dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ID_PROVIDER_ID_USERPROPS_KEY, idProviderId);
                 dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ID_PROVIDER_DISPLAY_USERPROPS_KEY, idProviderName);
                 
@@ -116,6 +118,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
                     request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY, null);
                     request.getSession().setAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY, null);
                     request.getSession().setAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, null);
+                    request.getSession().setAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, null);
                     throw new AuthenticationException(null);
                 }
             }
@@ -129,6 +132,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
             dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, canonicalId);
             dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_EMAIL_USERPROPS_KEY, globusEmail);
             dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ACCESS_TOKEN_USERPROPS_KEY, accessToken);
+            dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, transferToken);
             dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ID_PROVIDER_ID_USERPROPS_KEY, idProviderId);
             dao.setProperty(user.getUserId(),  OAuthConstants.OAUTH_ID_PROVIDER_DISPLAY_USERPROPS_KEY, idProviderName);
         }

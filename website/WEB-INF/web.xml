@@ -781,6 +781,14 @@
   <servlet-name>GlobusOAuthCallbackServlet</servlet-name>
   <url-pattern>/oauthcallback</url-pattern>
  </servlet-mapping>
+ <servlet>
+ 	<description>
+ 	</description>
+ 	<display-name>GlobusTestServlet</display-name>
+ 	<servlet-name>GlobusTestServlet</servlet-name>
+ 	<servlet-class>org.genepattern.server.webapp.rest.api.v1.oauth.GlobusTestServlet</servlet-class>
+ </servlet>
+ 
  
  
  
@@ -795,6 +803,10 @@
  <servlet-mapping>
  	<servlet-name>GlobusOAuthCallbackServlet</servlet-name>
  	<url-pattern>/GlobusOAuthCallbackServlet</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+ 	<servlet-name>GlobusTestServlet</servlet-name>
+ 	<url-pattern>/GlobusTestServlet</url-pattern>
  </servlet-mapping>
 
  <welcome-file-list>

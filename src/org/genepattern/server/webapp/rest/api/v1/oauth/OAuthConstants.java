@@ -26,5 +26,6 @@ public class OAuthConstants {
     public static final String  OAUTH_USER_ID_ATTR_KEY = "globus.identity";
     public static final String  OAUTH_EMAIL_ATTR_KEY = "globus.email";
     public static final String  OAUTH_TOKEN_ATTR_KEY = "globus.access.token";
+    public static final String  OAUTH_TRANSFER_TOKEN_ATTR_KEY = "globus.transfer.token";
     
 }

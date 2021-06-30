@@ -43,6 +43,7 @@ import org.genepattern.util.GPConstants;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -95,6 +96,10 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
  
             OAuthJSONAccessTokenResponse oAuthResponse = oAuthClient.accessToken(request, OAuthJSONAccessTokenResponse.class);
             accessToken = oAuthResponse.getAccessToken();
+            
+            String transferToken = getTransferToken(oAuthResponse);
+            
+            
             Long expiresIn = oAuthResponse.getExpiresIn();
               
             JsonElement userJson = getUserDetails(accessToken);
@@ -110,6 +115,7 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY, email);
             // 3) set the access token
             servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, accessToken);
+            servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, transferToken);
             servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, userJson);
             // and do these to prevent an earlier session leaking through
             
@@ -129,6 +135,21 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
 	    
 	    
 	}
+
+    private String getTransferToken(OAuthJSONAccessTokenResponse oAuthResponse) {
+        String transferToken = null;
+        String allTokensJson = oAuthResponse.getBody();
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(allTokensJson);
+        JsonArray otherTokens = je.getAsJsonObject().get("other_tokens").getAsJsonArray();
+        for (int i=0; i< otherTokens.size();i++){
+            JsonObject aToken = otherTokens.get(i).getAsJsonObject();
+            if ("transfer.api.globus.org".equalsIgnoreCase(aToken.get("resource_server").getAsString())){
+                transferToken = aToken.get("access_token").getAsString();
+            }
+        }
+        return transferToken;
+    }
 
     private JsonElement getUserDetails(String accessToken) throws MalformedURLException, IOException, ProtocolException, UnsupportedEncodingException {
         URL anUrl = new URL("https://auth.globus.org/v2/oauth2/userinfo");     

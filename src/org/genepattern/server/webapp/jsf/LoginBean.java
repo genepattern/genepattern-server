@@ -43,11 +43,12 @@ public class LoginBean {
         this.isPasswordRequired=gpConfig.isPasswordRequired(serverContext);
         this.isCreateAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
         
-        String oauthClientId = gpConfig.getGPProperty(serverContext, OAuthConstants.OAUTH_CLIENT_ID_KEY);
-        if (oauthClientId == null) {
+        String authClass = gpConfig.getGPProperty(serverContext, "authentication.class");
+        if (authClass == null) {
             isGlobusEnabled = false;
         } else {
-            isGlobusEnabled = !(oauthClientId.isEmpty());
+            // use just the class name to protect against package rearrangement in the future
+            isGlobusEnabled = (authClass.endsWith("GlobusAuthentication"));
         }
     }
 
@@ -68,7 +69,7 @@ public class LoginBean {
     }
 
     public boolean isGlobusEnabled(){
-        return isGlobusEnabled;
+         return isGlobusEnabled;
     }
     
     public boolean isInvalidPassword() {
