@@ -816,7 +816,7 @@ public class ModuleQueryServlet extends HttpServlet {
     }
 
     private void moveSupportFiles(String[] files, File copyTo) throws Exception {
-        if (copyTo == null || !copyTo.isDirectory()) {
+       if (copyTo == null || !copyTo.isDirectory()) {
             throw new Exception("Attempting to copy files to a location that is not a directory");
         }
 
