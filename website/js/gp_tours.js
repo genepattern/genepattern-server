@@ -38,24 +38,6 @@ $(function()
                 position: 'right'
             }];
 
-        if($("#protocols").is(":visible"))
-        {
-            steps.push({
-                element: '#protocols',
-                intro: '<div class="tour-header"> Main Display Pane</div> The main display pane displays interactive information including protocols for common GenePattern analyses.',
-                position: 'left'
-            });
-        }
-
-        if($("#submitJob").is(":visible"))
-        {
-            steps.push({
-                element: '#submitJob',
-                intro: '<div class="tour-header"> Main Display Pane</div>The main display pane displays interactive information including protocols for common GenePattern analyses.',
-                position: 'left'
-            });
-        }
-
         intro.setOptions({
             steps: steps,
             showStepNumbers: false,
@@ -82,8 +64,9 @@ $(function()
             
             else if(intro._currentStep == 4)
             {
-                $( "#left-nav" ).tabs( "option", "active", 3 );
+                $( "#left-nav" ).tabs( "option", "active", 2 );
             }
+
             else if(targetElement.id == "submitJob")
             {
                 //hack to not show the hidden native file upload button
@@ -112,11 +95,31 @@ $(function()
 
         //create the steps
         var steps = [
+
+           {
+               intro:' <div class="tour-header"> Browser Notifications</div>'
+                   + ' <p>A browser notification is now displayed when jobs complete.</p>'
+                   + ' <p><em>Note, that you may need to enable browser notifications in order to see these.</em></p>'
+                   + ' <img src="../js/images/browser_notification_webtourJune2021.jpg" alt="GenePattern Browser Notification" width="420" />'
+           },
+           {
+                element: '#left-nav-notebook-tab',
+                intro:  '<div class="tour-header"> Notebook Tab</div>'
+                   + ' <p>The Notebook tab lists GenePattern notebooks available in the GenePattern Notebook Workspace.</p>'
+                   + ' <p>Selecting a notebook from this list will open a new browser tab in the GenePattern Notebook Workspace.</p>'
+                   + ' <p>If this is your first time in the <a href="https://notebook.genepattern.org" target="_blank">GenePattern Notebook Workspace</a>, you will be presented with an intro tour in that space.</p>'
+                   + ' <p><a href="https://notebook.genepattern.org" target="_blank">More information about the GenePattern Notebook Workspace can be found here.</a></p>',
+                position: 'right'
+            },
             {
-                intro: '<div class="tour-header"> Release Notes </div> This is a developer and bug fix release. For details '
+                intro: ' <div class="tour-header"> Congestion Estimate</div>'
+                    + ' <p>The congestion estimate for a job in the pending state now lists the number of jobs ahead of yours</p>'
+                    + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="1200" />'
+            },
+            {
+                intro: '<div class="tour-header"> Release Notes </div> For more details about the latest release '
                     + ' please see the <a href="https://github.com/genepattern/genepattern-server/releases/latest" target="_blank">release notes</a>.'
-            }
-        ];
+            }];
 
         intro.setOptions({
             steps: steps,
@@ -126,6 +129,17 @@ $(function()
             scrollToElement: false,
             prevLabel: "",
             showBullets: false
+        });
+
+        intro.onbeforechange(function(targetElement)
+        {
+            //switch the active left navigation tab to the appropriate one for the step
+            if(intro._currentStep == 1)
+            {
+                $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
+
+                $( "#left-nav" ).tabs( "option", "active", 3 );
+            }
         });
 
         intro.onexit(function()

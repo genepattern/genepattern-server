@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.  --%>
+  ~ Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.  --%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ page import="org.genepattern.webservice.TaskInfo,
