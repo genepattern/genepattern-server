@@ -383,6 +383,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             }
        } catch (Exception e){
             log.debug(e);
+            proc.destroyForcibly();
+            proc = null;
             return new ArrayList<GpFilePath>();
             
         } finally {

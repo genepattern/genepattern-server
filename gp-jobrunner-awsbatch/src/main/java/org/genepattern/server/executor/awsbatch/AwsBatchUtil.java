@@ -369,10 +369,21 @@ public class AwsBatchUtil {
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(execArgs);
-            proc.waitFor(3, TimeUnit.MINUTES);
+            proc.waitFor(30, TimeUnit.SECONDS);
             success = (proc.exitValue() == 0);
+        } catch (InterruptedException  ie){
+            log.error("AWSBatch S3FileExists dir ls took too long ", ie);
+            ie.printStackTrace();
+            if (proc != null) {
+                proc.destroyForcibly();
+                proc = null;
+            }
         } catch (Exception e){
             log.debug(e);
+            if (proc != null){
+                proc.destroyForcibly();
+                proc = null;
+            }
             return false;
             
         } finally {
