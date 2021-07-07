@@ -263,11 +263,10 @@ public class BatchInputFileHelper {
     
     
     public static boolean isDirectUploadEnabled(GpConfig jobConfig, final GpContext jobContext){
-        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
         final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
         final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
         
-        return (directExternalUploadEnabled || directDownloadEnabled || directDownloadEnabled_obsolete);
+        return (directExternalUploadEnabled || directDownloadEnabled);
     }
     
     

@@ -1112,11 +1112,10 @@ public class GenePatternAnalysisTask {
                                 }
                                 GpConfig jobConfig = ServerConfigurationFactory.instance();
                                 
-                                final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
                                 final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
                                 final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
                                
-                                if (directExternalUploadEnabled || directDownloadEnabled || directDownloadEnabled_obsolete){
+                                if (directExternalUploadEnabled || directDownloadEnabled ){
                                     // Using s3 direct up/downloads so we do not actually grab the file here
                                     // instead we write the URL and destination filename to a hidden file
                                     // that will be used to tell the JobRunner what needs to be done

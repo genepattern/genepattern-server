@@ -86,18 +86,14 @@ public class AwsBatchUtil {
     
     static String getBucketName(final GpConfig gpConfig, GpContext userContext) {
         String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
-        if (aws_s3_root == null){
-            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", null);
-        }
+        
         // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
         int endIdx = aws_s3_root.indexOf("/", 5);
         return aws_s3_root.substring(5,endIdx);
     }
      static String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
         String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
-        if (aws_s3_root == null){
-            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", null);
-        }
+       
         // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
         int endIdx = aws_s3_root.indexOf("/", 5);
         return aws_s3_root.substring(endIdx+1);
@@ -225,12 +221,8 @@ public class AwsBatchUtil {
         GpConfig jobConfig = ServerConfigurationFactory.instance();
         
         final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
-        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
         final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
-        
-        
-        
-        return (directDownloadEnabled || directExternalUploadEnabled || directDownloadEnabled_obsolete);
+        return (directDownloadEnabled || directExternalUploadEnabled );
         
     }
     
@@ -336,8 +328,7 @@ public class AwsBatchUtil {
                     // if the file is missing its normally an error.  However we do make an exception 
                     // if we are allowing direct S3 uploads.  In that case we need to make sure the 
                     // file is in the appropriate S3 directory even if not on the local disk
-                    String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
-                    if (directUploadBucket != null){
+                    if (filesMayBeInS3AndNotExistLocally){
                         boolean isPresentInS3 = s3FileExists(gpJob, localFilePath);
                         if (isPresentInS3){
                             jobInputFiles.add(file);

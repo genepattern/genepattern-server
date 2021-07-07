@@ -982,12 +982,10 @@ public class UploadResource {
             outfilename = tmp.getName();
             tmp.delete();
 
-            // need to get the bucket from the config file entries
-            //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
-            //     upload.aws.s3.bucket.root: tedslaptop
+          
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            // Get the user context
-                     
+            
+            // need to get the bucket from the config file entries
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
