@@ -1140,6 +1140,15 @@ public class AWSBatchJobRunner implements JobRunner {
                 }
             }
             for (String[] urlfile: urlsToFetch){
+                // first make sure the directory exists, wget won't make it
+                File aFile = new File(urlfile[1]);
+                String parentDir = aFile.getParentFile().getAbsolutePath();
+                bw.write("mkdir -p ");
+                bw.write(dest_prefix);
+                bw.write(parentDir);
+                bw.newLine();
+                bw.newLine();
+                // now get the file with wget
                 bw.write("wget -O ");
                 bw.write(dest_prefix);
                 bw.write(urlfile[1]);

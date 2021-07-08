@@ -127,6 +127,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -1101,8 +1102,8 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             if (downloadUrl) {
-                                
                                 outFile = new File(outDir, name);
+                                
                                 if (outFile.exists()) {
                                     // ensure that 2 file downloads for a job don't have the same name
                                     if (name.length() < 3) {
@@ -1121,6 +1122,22 @@ public class GenePatternAnalysisTask {
                                     // that will be used to tell the JobRunner what needs to be done
                                     // It will then setup a script that will be run on the compute node
                                     // to do the actual download
+                                    ParameterInfo formalParam = null;
+                                    for (int formal = 0; formals != null && formal < formals.length; formal++) {
+                                        if (formals[formal].getName().equals(pinfo.getName())) {
+                                            formalParam = formals[formal];
+                                            break;
+                                        }
+                                    }
+                                    try {
+                                        final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                            jobContext.getJobInput().getBaseGpHref(), formalParam, new ParamValue(uri.toString()));
+                                   
+                                        outFile = rec.getGpFilePath().getServerFile();
+                                    } catch (GpFilePathException gpe){
+                                        log.error("Could not update file path for URL parameter " + gpe.getMessage());
+                                    }
+                                    
                                     // JTL for URL download deferral to compute nodes
                                     File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(downloadListingFile, true));    
