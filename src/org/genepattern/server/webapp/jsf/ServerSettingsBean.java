@@ -13,10 +13,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -25,9 +28,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
-//import java.util.stream.Collectors;
-//import java.util.stream.IntStream;
-//import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.input.*;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -272,51 +277,53 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
-//    static public String getLog(File logFile, Integer len) {
-//
-//        StringBuffer buf = new StringBuffer();
-//        try {
-//
-//            if (logFile != null && logFile.exists()) {
-//                Path logAsPath = Paths.get(logFile.getAbsolutePath());
-//                tailFile(logAsPath,len, buf);
-//            }
-//        } catch (IOException exc) {
-//            log.error(exc);
-//        }
-//        
-//        return buf.toString();
-//        
-//    }
-    static public String getLog(File logFile, Integer len) {
-        StringBuffer buf = new StringBuffer();
-        BufferedReader br = null;
+    public String getLog(File logFile, Integer len) {
 
+        StringBuffer buf = new StringBuffer();
         try {
 
             if (logFile != null && logFile.exists()) {
-                br = new BufferedReader(new FileReader(logFile));
-                String thisLine = "";
-
-                while ((thisLine = br.readLine()) != null) { // while loop
-                    // begins here
-                    buf.append(thisLine).append("\n");
-                } // end while
+                Path logAsPath = Paths.get(logFile.getAbsolutePath());
+                tailFile(logAsPath,len, buf);
             }
         } catch (IOException exc) {
             log.error(exc);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } 
-                catch (IOException e) {
-                    log.error("Error", e);
-                }
-            }
         }
+        
         return buf.toString();
+        
     }
+//    static public String getLog(File logFile, Integer len) {
+//        StringBuffer buf = new StringBuffer();
+//        BufferedReader br = null;
+//
+//        try {
+//
+//            if (logFile != null && logFile.exists()) {
+//                br = new BufferedReader(new FileReader(logFile));
+//                String thisLine = "";
+//
+//                while ((thisLine = br.readLine()) != null) { // while loop
+//                    // begins here
+//                    buf.append(thisLine).append("\n");
+//                } // end while
+//            }
+//        } catch (IOException exc) {
+//            log.error(exc);
+//        } finally {
+//            if (br != null) {
+//                try {
+//                    br.close();
+//                } 
+//                catch (IOException e) {
+//                    log.error("Error", e);
+//                }
+//            }
+//        }
+//        return buf.toString();
+//    }
+    
+    
     /**
      * Adapted from https://roytuts.com/read-last-n-lines-from-a-file/
      * @param source
@@ -324,38 +331,145 @@ public class ServerSettingsBean implements Serializable {
      * @param buf
      * @throws IOException
      */
-//    public static final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
-//        try (Stream<String> stream = Files.lines(source)) {
-//            FileBuffer fileBuffer = new FileBuffer(noOfLines);
-//            stream.forEach(line -> fileBuffer.collect(line));
-//            List<String> lines =  fileBuffer.getLines();
-//            for (int i=0; i<lines.size();i++){
-//                buf.append(lines.get(i)).append("\n");
-//            }
-//            
-//        }
-//    }
+    public final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
+        ArrayList<String> reversedLines = new ArrayList<String>(noOfLines);
+        FastReverseLineInputStream stream = new FastReverseLineInputStream(source.toFile(), noOfLines);
+        BufferedReader in = new BufferedReader (new InputStreamReader (stream));
+        int count = 0;
+        while(count <= noOfLines) {
+            count++;
+            String line = in.readLine();
+            reversedLines.add(line);
+            if (line == null) {
+                break;
+            }
+            System.out.println("X:" + line);
+        }
+        for (int i = reversedLines.size()-1; i >= 0; i--){
+            buf.append(reversedLines.get(i));
+            buf.append("\n");
+        }
+    }
 
-//    private static final class FileBuffer {
-//        private int offset = 0;
-//        private final int noOfLines;
-//        private final String[] lines;
-//
-//        public FileBuffer(int noOfLines) {
-//            this.noOfLines = noOfLines;
-//            this.lines = new String[noOfLines];
-//        }
-//
-//        public void collect(String line) {
-//            lines[offset++ % noOfLines] = line;
-//        }
-//
-//        public List<String> getLines() {
-//            return IntStream.range(offset < noOfLines ? 0 : offset - noOfLines, offset)
-//                    .mapToObj(idx -> lines[idx % noOfLines]).collect(Collectors.toList());
-//        }
-//    }
-    
+    // based on https://stackoverflow.com/questions/8664705/how-to-read-file-from-end-to-start-in-reverse-order-in-java
+    public class FastReverseLineInputStream extends InputStream {
+
+        private static final int MAX_LINE_BYTES = 1024 * 1024;
+
+        private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024;
+
+        private RandomAccessFile in;
+
+        private long currentFilePos;
+
+        private int bufferSize;
+        private byte[] buffer;
+        private int currentBufferPos;
+
+        private int maxLineBytes;
+        private byte[] currentLine;
+        private int currentLineWritePos = 0;
+        private int currentLineReadPos = 0;
+        private boolean lineBuffered = false;
+
+        public FastReverseLineInputStream(File file,  int bufferSize) throws IOException {
+            this(file, bufferSize , MAX_LINE_BYTES);
+        }
+
+        public FastReverseLineInputStream(File file, int bufferSize, int maxLineBytes) throws IOException {
+            this.maxLineBytes = maxLineBytes;
+            in = new RandomAccessFile(file, "r");
+            currentFilePos = file.length() - 1;
+            in.seek(currentFilePos);
+            if (in.readByte() == 0xA) {
+                currentFilePos--;
+            }
+            currentLine = new byte[maxLineBytes];
+            currentLine[0] = 0xA;
+
+            this.bufferSize = bufferSize;
+            buffer = new byte[bufferSize];
+            fillBuffer();
+            fillLineBuffer();
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (currentFilePos <= 0 && currentBufferPos < 0 && currentLineReadPos < 0) {
+                return -1;
+            }
+
+            if (!lineBuffered) {
+                fillLineBuffer();
+            }
+
+
+            if (lineBuffered) {
+                if (currentLineReadPos == 0) {
+                    lineBuffered = false;
+                }
+                return currentLine[currentLineReadPos--];
+            }
+            return 0;
+        }
+
+        private void fillBuffer() throws IOException {
+            if (currentFilePos < 0) {
+                return;
+            }
+
+            if (currentFilePos < bufferSize) {
+                in.seek(0);
+                in.read(buffer);
+                currentBufferPos = (int) currentFilePos;
+                currentFilePos = -1;
+            } else {
+                in.seek(currentFilePos);
+                in.read(buffer);
+                currentBufferPos = bufferSize - 1;
+                currentFilePos = currentFilePos - bufferSize;
+            }
+        }
+
+        private void fillLineBuffer() throws IOException {
+            currentLineWritePos = 1;
+            while (true) {
+
+                // we've read all the buffer - need to fill it again
+                if (currentBufferPos < 0) {
+                    fillBuffer();
+
+                    // nothing was buffered - we reached the beginning of a file
+                    if (currentBufferPos < 0) {
+                        currentLineReadPos = currentLineWritePos - 1;
+                        lineBuffered = true;
+                        return;
+                    }
+                }
+
+                byte b = buffer[currentBufferPos--];
+
+                // \n is found - line fully buffered
+                if (b == 0xA) {
+                    currentLineReadPos = currentLineWritePos - 1;
+                    lineBuffered = true;
+                    break;
+
+                    // just ignore \r for now
+                } else if (b == 0xD) {
+                    continue;
+                } else {
+                    if (currentLineWritePos == maxLineBytes) {
+                        throw new IOException("file has a line exceeding " + maxLineBytes
+                                + " bytes; use constructor to pickup bigger line buffer");
+                    }
+
+                    // write the current line bytes in reverse order - reading from
+                    // the end will produce the correct line
+                    currentLine[currentLineWritePos++] = b;
+                }
+            }
+        }}
     
     
     /**
