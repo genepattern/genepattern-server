@@ -272,23 +272,51 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
+//    static public String getLog(File logFile, Integer len) {
+//
+//        StringBuffer buf = new StringBuffer();
+//        try {
+//
+//            if (logFile != null && logFile.exists()) {
+//                Path logAsPath = Paths.get(logFile.getAbsolutePath());
+//                tailFile(logAsPath,len, buf);
+//            }
+//        } catch (IOException exc) {
+//            log.error(exc);
+//        }
+//        
+//        return buf.toString();
+//        
+//    }
     static public String getLog(File logFile, Integer len) {
-
         StringBuffer buf = new StringBuffer();
+        BufferedReader br = null;
+
         try {
 
             if (logFile != null && logFile.exists()) {
-                Path logAsPath = Paths.get(logFile.getAbsolutePath());
-                tailFile(logAsPath,len, buf);
+                br = new BufferedReader(new FileReader(logFile));
+                String thisLine = "";
+
+                while ((thisLine = br.readLine()) != null) { // while loop
+                    // begins here
+                    buf.append(thisLine).append("\n");
+                } // end while
             }
         } catch (IOException exc) {
             log.error(exc);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } 
+                catch (IOException e) {
+                    log.error("Error", e);
+                }
+            }
         }
-        
         return buf.toString();
-        
     }
-
     /**
      * Adapted from https://roytuts.com/read-last-n-lines-from-a-file/
      * @param source
@@ -296,37 +324,37 @@ public class ServerSettingsBean implements Serializable {
      * @param buf
      * @throws IOException
      */
-    public static final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
-        try (Stream<String> stream = Files.lines(source)) {
-            FileBuffer fileBuffer = new FileBuffer(noOfLines);
-            stream.forEach(line -> fileBuffer.collect(line));
-            List<String> lines =  fileBuffer.getLines();
-            for (int i=0; i<lines.size();i++){
-                buf.append(lines.get(i)).append("\n");
-            }
-            
-        }
-    }
+//    public static final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
+//        try (Stream<String> stream = Files.lines(source)) {
+//            FileBuffer fileBuffer = new FileBuffer(noOfLines);
+//            stream.forEach(line -> fileBuffer.collect(line));
+//            List<String> lines =  fileBuffer.getLines();
+//            for (int i=0; i<lines.size();i++){
+//                buf.append(lines.get(i)).append("\n");
+//            }
+//            
+//        }
+//    }
 
-    private static final class FileBuffer {
-        private int offset = 0;
-        private final int noOfLines;
-        private final String[] lines;
-
-        public FileBuffer(int noOfLines) {
-            this.noOfLines = noOfLines;
-            this.lines = new String[noOfLines];
-        }
-
-        public void collect(String line) {
-            lines[offset++ % noOfLines] = line;
-        }
-
-        public List<String> getLines() {
-            return IntStream.range(offset < noOfLines ? 0 : offset - noOfLines, offset)
-                    .mapToObj(idx -> lines[idx % noOfLines]).collect(Collectors.toList());
-        }
-    }
+//    private static final class FileBuffer {
+//        private int offset = 0;
+//        private final int noOfLines;
+//        private final String[] lines;
+//
+//        public FileBuffer(int noOfLines) {
+//            this.noOfLines = noOfLines;
+//            this.lines = new String[noOfLines];
+//        }
+//
+//        public void collect(String line) {
+//            lines[offset++ % noOfLines] = line;
+//        }
+//
+//        public List<String> getLines() {
+//            return IntStream.range(offset < noOfLines ? 0 : offset - noOfLines, offset)
+//                    .mapToObj(idx -> lines[idx % noOfLines]).collect(Collectors.toList());
+//        }
+//    }
     
     
     
