@@ -1482,21 +1482,21 @@ public class GenePatternAnalysisTask {
                     // create a map of gp files to urls so we can tell the external file manager to have them downloaded.
                     // necessary here because batch jobs and file lists do their downloads at a different point where
                     // the job is not yet created so we cannot add the URL as we do for other files
-
-                    for(final ParamValue actualValue : actualValues.getValues()) {
-                        log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
-                        if (DataManager.getExternalFileManager(jobContext) != null){
-                            // we need to add the contents to the downloadFileListing
-                            try {
-                                final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
-                                        jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
-                                fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
-                            } catch(Exception e){
-
+                    if ((actualValues != null) && (actualValues.getValues() != null)){
+                        for(final ParamValue actualValue : actualValues.getValues()) {
+                            log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                            if (DataManager.getExternalFileManager(jobContext) != null){
+                                // we need to add the contents to the downloadFileListing
+                                try {
+                                    final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                            jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
+                                    fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
+                                } catch(Exception e){
+    
+                                }
                             }
                         }
                     }
-
                     try {
                         final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
                         if (gpFilePaths != null) {
@@ -1525,7 +1525,7 @@ public class GenePatternAnalysisTask {
                 }        
             }
         } catch (Exception e){
-            
+            e.printStackTrace();
         } finally {
             if (writer != null){
                 try {
