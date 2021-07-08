@@ -43,6 +43,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.quota.DiskInfo;
+import org.genepattern.server.util.FastReverseLineInputStream;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
 import com.google.common.base.Strings;
@@ -277,7 +278,7 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
-    public String getLog(File logFile, Integer len) {
+    public static String getLog(File logFile, Integer len) {
 
         StringBuffer buf = new StringBuffer();
         try {
@@ -293,35 +294,35 @@ public class ServerSettingsBean implements Serializable {
         return buf.toString();
         
     }
-//    static public String getLog(File logFile, Integer len) {
-//        StringBuffer buf = new StringBuffer();
-//        BufferedReader br = null;
-//
-//        try {
-//
-//            if (logFile != null && logFile.exists()) {
-//                br = new BufferedReader(new FileReader(logFile));
-//                String thisLine = "";
-//
-//                while ((thisLine = br.readLine()) != null) { // while loop
-//                    // begins here
-//                    buf.append(thisLine).append("\n");
-//                } // end while
-//            }
-//        } catch (IOException exc) {
-//            log.error(exc);
-//        } finally {
-//            if (br != null) {
-//                try {
-//                    br.close();
-//                } 
-//                catch (IOException e) {
-//                    log.error("Error", e);
-//                }
-//            }
-//        }
-//        return buf.toString();
-//    }
+    static public String getEntireLog(File logFile) {
+        StringBuffer buf = new StringBuffer();
+        BufferedReader br = null;
+
+        try {
+
+            if (logFile != null && logFile.exists()) {
+                br = new BufferedReader(new FileReader(logFile));
+                String thisLine = "";
+
+                while ((thisLine = br.readLine()) != null) { // while loop
+                    // begins here
+                    buf.append(thisLine).append("\n");
+                } // end while
+            }
+        } catch (IOException exc) {
+            log.error(exc);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } 
+                catch (IOException e) {
+                    log.error("Error", e);
+                }
+            }
+        }
+        return buf.toString();
+    }
     
     
     /**
@@ -331,7 +332,7 @@ public class ServerSettingsBean implements Serializable {
      * @param buf
      * @throws IOException
      */
-    public final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
+    public static final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
         ArrayList<String> reversedLines = new ArrayList<String>(noOfLines);
         FastReverseLineInputStream stream = new FastReverseLineInputStream(source.toFile(), noOfLines);
         BufferedReader in = new BufferedReader (new InputStreamReader (stream));
@@ -339,11 +340,11 @@ public class ServerSettingsBean implements Serializable {
         while(count <= noOfLines) {
             count++;
             String line = in.readLine();
-            reversedLines.add(line);
-            if (line == null) {
+            if (line != null) reversedLines.add(line);
+            else if (line == null) {
                 break;
             }
-            System.out.println("X:" + line);
+            
         }
         for (int i = reversedLines.size()-1; i >= 0; i--){
             buf.append(reversedLines.get(i));
@@ -351,136 +352,17 @@ public class ServerSettingsBean implements Serializable {
         }
     }
 
-    // based on https://stackoverflow.com/questions/8664705/how-to-read-file-from-end-to-start-in-reverse-order-in-java
-    public class FastReverseLineInputStream extends InputStream {
-
-        private static final int MAX_LINE_BYTES = 1024 * 1024;
-
-        private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024;
-
-        private RandomAccessFile in;
-
-        private long currentFilePos;
-
-        private int bufferSize;
-        private byte[] buffer;
-        private int currentBufferPos;
-
-        private int maxLineBytes;
-        private byte[] currentLine;
-        private int currentLineWritePos = 0;
-        private int currentLineReadPos = 0;
-        private boolean lineBuffered = false;
-
-        public FastReverseLineInputStream(File file,  int bufferSize) throws IOException {
-            this(file, bufferSize , MAX_LINE_BYTES);
-        }
-
-        public FastReverseLineInputStream(File file, int bufferSize, int maxLineBytes) throws IOException {
-            this.maxLineBytes = maxLineBytes;
-            in = new RandomAccessFile(file, "r");
-            currentFilePos = file.length() - 1;
-            in.seek(currentFilePos);
-            if (in.readByte() == 0xA) {
-                currentFilePos--;
-            }
-            currentLine = new byte[maxLineBytes];
-            currentLine[0] = 0xA;
-
-            this.bufferSize = bufferSize;
-            buffer = new byte[bufferSize];
-            fillBuffer();
-            fillLineBuffer();
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (currentFilePos <= 0 && currentBufferPos < 0 && currentLineReadPos < 0) {
-                return -1;
-            }
-
-            if (!lineBuffered) {
-                fillLineBuffer();
-            }
-
-
-            if (lineBuffered) {
-                if (currentLineReadPos == 0) {
-                    lineBuffered = false;
-                }
-                return currentLine[currentLineReadPos--];
-            }
-            return 0;
-        }
-
-        private void fillBuffer() throws IOException {
-            if (currentFilePos < 0) {
-                return;
-            }
-
-            if (currentFilePos < bufferSize) {
-                in.seek(0);
-                in.read(buffer);
-                currentBufferPos = (int) currentFilePos;
-                currentFilePos = -1;
-            } else {
-                in.seek(currentFilePos);
-                in.read(buffer);
-                currentBufferPos = bufferSize - 1;
-                currentFilePos = currentFilePos - bufferSize;
-            }
-        }
-
-        private void fillLineBuffer() throws IOException {
-            currentLineWritePos = 1;
-            while (true) {
-
-                // we've read all the buffer - need to fill it again
-                if (currentBufferPos < 0) {
-                    fillBuffer();
-
-                    // nothing was buffered - we reached the beginning of a file
-                    if (currentBufferPos < 0) {
-                        currentLineReadPos = currentLineWritePos - 1;
-                        lineBuffered = true;
-                        return;
-                    }
-                }
-
-                byte b = buffer[currentBufferPos--];
-
-                // \n is found - line fully buffered
-                if (b == 0xA) {
-                    currentLineReadPos = currentLineWritePos - 1;
-                    lineBuffered = true;
-                    break;
-
-                    // just ignore \r for now
-                } else if (b == 0xD) {
-                    continue;
-                } else {
-                    if (currentLineWritePos == maxLineBytes) {
-                        throw new IOException("file has a line exceeding " + maxLineBytes
-                                + " bytes; use constructor to pickup bigger line buffer");
-                    }
-
-                    // write the current line bytes in reverse order - reading from
-                    // the end will produce the correct line
-                    currentLine[currentLineWritePos++] = b;
-                }
-            }
-        }}
-    
+   
     
     /**
      * @return
      * @throws IOException
      */
-    public String getWsLog() {
+    public  String getWsLog() {
         File wsLogFile = getWsLogFile();
         String out = "";
         try {
-            out = getLog(wsLogFile, this.logFileDisplaySize);
+            out = getLog(wsLogFile, logFileDisplaySize);
         }
         catch (Exception e) {
             out = e.getLocalizedMessage();
@@ -542,7 +424,7 @@ public class ServerSettingsBean implements Serializable {
     /**
      * @return
      */
-    private File getWsLogFile()
+    private static File getWsLogFile()
     {
         return ServerConfigurationFactory.instance().getWsLogFile(GpContext.getServerContext());
     }

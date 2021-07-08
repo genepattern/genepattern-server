@@ -138,7 +138,7 @@ public class JobConfigurationBean {
         if (configFile == null) {
             return "configFile is null";
         }
-        String logFileContent = ServerSettingsBean.getLog(configFile, 20000);
+        String logFileContent = ServerSettingsBean.getEntireLog(configFile);
         return logFileContent;
     }
 
