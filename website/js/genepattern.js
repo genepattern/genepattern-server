@@ -1172,7 +1172,7 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
         	}
         },
         error: function(data) {
-        	fileUploadError(r, file, data);
+        	fileUploadError(r, file, data.error);
         	
             if (typeof data === 'object') {
                 data = data.responseText;
@@ -1212,7 +1212,7 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
         	
         },
         error: function(data) {
-        	fileUploadError(r, file, data);
+        	fileUploadError(r, file, data.error);
         	
             if (typeof data === 'object') {
                 data = data.responseText;
@@ -1268,13 +1268,13 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
           		 },
          		 failure: function(err){
          			 r.s3currentFile = null;
-         			 fileUploadError(r, file, err);
+         			 fileUploadError(r, file, err.error);
          			 // start the next file if there is one
          			s3DirectUploadStart(r, directory);
          		 },
          		 error: function(err){
          			r.s3currentFile = null;
-         			fileUploadError(r, file, err);
+         			fileUploadError(r, file, err.error);
          			 // start the next file if there is one
          			s3DirectUploadStart(r, directory);
          		 }

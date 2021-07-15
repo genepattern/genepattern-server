@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp;
 
@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -93,27 +94,16 @@ public class FileDownloader {
             // in an external location and redirect to its special download handler
             String userId = UIBeanHelper.getUserId();
             GpContext userContext = GpContext.getContextForUser(userId);
-            String downloaderClass_obsolete = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", null);
-            String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", downloaderClass_obsolete);
-
+            ExternalFileManager externalDownloader = DataManager.getExternalFileManager(userContext);
             
-            if (downloaderClass != null) {
+            
+            if (externalDownloader != null) {
                 try {
-                     
-                    final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                    final Class<?> svcClass = Class.forName(downloaderClass, false, classLoader);
-                    if (!ExternalFileManager.class.isAssignableFrom(svcClass)) {
-                        log.error(""+svcClass.getCanonicalName()+" does not implement "+ExternalFileManager.class.getCanonicalName());
-                    }
-                    final ExternalFileManager externalDownloader = (ExternalFileManager) svcClass.newInstance();
                     
                     externalDownloader.downloadFile(userContext, request, response, file);
                     return;
-                } catch(IOException ioe){
-                    log.error("Failed to download using external downloader class: " + downloaderClass, ioe);
-                    throw ioe;
                 } catch(Exception e){
-                    log.error("Failed to instantiate external downloader class: " + downloaderClass, e);
+                    log.error("External downloader failure: ", e);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 } 
                 

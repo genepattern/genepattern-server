@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server;
 
@@ -568,6 +568,22 @@ public class JobInfoManager {
     
     public static String getLaunchUrlFromJobDir(final File jobDir) throws IOException {
         final File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+     
+        /**
+         * Its totally unclear if we need the launchUrl.txt file for anything.  It was added in 2012 but nothing
+         * in the commit logs say why.  I think its unused but cannot be sure so to be safe we will
+         * grab it from the externalFileManager just to be safe  JTL 07/03/21 
+         */
+        
+        if (!launchUrlFile.exists()){
+            GpContext serverContext = GpContext.getServerContext();
+            final ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
+            if (externalFileManager != null){
+                externalFileManager.syncRemoteFileToLocal(serverContext, launchUrlFile);
+            }
+        }
+        
+        
         final String launchUrl = FileUtils.readFileToString(launchUrlFile, "UTF-8").trim();
         return launchUrl;
     }

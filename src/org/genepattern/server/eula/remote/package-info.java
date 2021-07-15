@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 /**
  * This package is for remotely recording an End-user license agreement (EULA) from the GP server

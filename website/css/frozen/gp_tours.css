@@ -1,13 +1,15 @@
 .tourStyle
 {
-    background-color: #FFFF99  !important;
-    font-size: 11px;
-    width: 270px;
+    background-color: #FFFFFF  !important;
+    font-size: 14px;
+    min-width: 350px !important;
+    max-width: 1200px !important;
+    line-height: normal;
 }
 
 .tour-header
 {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: bold;
     border-bottom: 1px solid #CFCFCF;
     margin-bottom: 7px;
@@ -18,8 +20,12 @@
     border: 3px solid red !important;
 }
 
+.browserNotification_2106
+{
+    width: 500px;
+}
 
-/*Added for the GP 3.9.5 What's New tour */
+/*Added for the GP 3.9.5 What's New tour
 #batchInfoDialogHeader h4
 {
     margin: 0;
@@ -54,4 +60,4 @@
 {
     background-color: #d3d3d3;
 }
-/* End of css for GP 3.9.5 What's New tour*/
+End of css for GP 3.9.5 What's New tour*/

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
@@ -138,7 +138,7 @@ public class JobConfigurationBean {
         if (configFile == null) {
             return "configFile is null";
         }
-        String logFileContent = ServerSettingsBean.getLog(configFile);
+        String logFileContent = ServerSettingsBean.getEntireLog(configFile);
         return logFileContent;
     }
 

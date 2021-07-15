@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.quota;
 
@@ -140,9 +140,7 @@ public class DiskInfo
         // default to 100 simultaneous jobs per user
         final int maxSimultaneousJobs = gpConfig.getGPIntegerProperty(context, "max_simultaneous_jobs", 100);
         final int directExternalUploadTriggerSize = gpConfig.getGPIntegerProperty(context, "direct_external_upload_trigger_size", -1);
-        final boolean directDownloadEnabled_obsolete = (gpConfig.getGPProperty(context, "download.aws.s3.downloader.class", null) != null);
-        final boolean directDownloadEnabled_new = (gpConfig.getGPProperty(context, ExternalFileManager.classPropertyKey, null) != null);
-        final boolean directDownloadEnabled = (directDownloadEnabled_obsolete || directDownloadEnabled_new);
+        final boolean directDownloadEnabled = (gpConfig.getGPProperty(context, ExternalFileManager.classPropertyKey, null) != null);
         final String maxJobNotificationEmail = gpConfig.getGPProperty(context, "max_simultaneous_jobs_notification_email");
         final DiskInfo diskInfo = new DiskInfo(userId);
         final boolean isInTransaction= mgr.isInTransaction();

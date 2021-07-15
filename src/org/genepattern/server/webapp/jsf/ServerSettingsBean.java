@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 /**
@@ -13,7 +13,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -32,9 +36,12 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.quota.DiskInfo;
+import org.genepattern.server.util.FastReverseLineInputStream;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
 import com.google.common.base.Strings;
+
+
 
 public class ServerSettingsBean implements Serializable {
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
@@ -51,7 +58,8 @@ public class ServerSettingsBean implements Serializable {
     private String newCSKey = "";
     private String newCSValue = "";
     private Calendar cal = Calendar.getInstance();
-
+    private Integer logFileDisplaySize = 10;
+    
     /**
      * 
      */
@@ -263,7 +271,23 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
-    static public String getLog(File logFile) {
+    public static String getLog(File logFile, Integer len) {
+
+        StringBuffer buf = new StringBuffer();
+        try {
+
+            if (logFile != null && logFile.exists()) {
+                Path logAsPath = Paths.get(logFile.getAbsolutePath());
+                tailFile(logAsPath,len, buf);
+            }
+        } catch (IOException exc) {
+            log.error(exc);
+        }
+        
+        return buf.toString();
+        
+    }
+    static public String getEntireLog(File logFile) {
         StringBuffer buf = new StringBuffer();
         BufferedReader br = null;
 
@@ -291,18 +315,47 @@ public class ServerSettingsBean implements Serializable {
             }
         }
         return buf.toString();
-
+    }
+    
+    
+    /**
+     * Adapted from https://roytuts.com/read-last-n-lines-from-a-file/
+     * @param source
+     * @param noOfLines
+     * @param buf
+     * @throws IOException
+     */
+    public static final void tailFile(final Path source, final int noOfLines, StringBuffer buf) throws IOException {
+        ArrayList<String> reversedLines = new ArrayList<String>(noOfLines);
+        FastReverseLineInputStream stream = new FastReverseLineInputStream(source.toFile(), noOfLines);
+        BufferedReader in = new BufferedReader (new InputStreamReader (stream));
+        int count = 0;
+        while(count <= noOfLines) {
+            count++;
+            String line = in.readLine();
+            if (line != null) reversedLines.add(line);
+            else if (line == null) {
+                break;
+            }
+            
+        }
+        for (int i = reversedLines.size()-1; i >= 0; i--){
+            buf.append(reversedLines.get(i));
+            buf.append("\n");
+        }
     }
 
+   
+    
     /**
      * @return
      * @throws IOException
      */
-    public String getWsLog() {
+    public  String getWsLog() {
         File wsLogFile = getWsLogFile();
         String out = "";
         try {
-            out = getLog(wsLogFile);
+            out = getLog(wsLogFile, logFileDisplaySize);
         }
         catch (Exception e) {
             out = e.getLocalizedMessage();
@@ -315,7 +368,7 @@ public class ServerSettingsBean implements Serializable {
      * @throws IOException
      */
     public String getGpLog() {
-        return getLog(getGpLogFile());
+        return getLog(getGpLogFile(), this.logFileDisplaySize);
     }
 
     /**
@@ -364,7 +417,7 @@ public class ServerSettingsBean implements Serializable {
     /**
      * @return
      */
-    private File getWsLogFile()
+    private static File getWsLogFile()
     {
         return ServerConfigurationFactory.instance().getWsLogFile(GpContext.getServerContext());
     }
@@ -780,6 +833,15 @@ public class ServerSettingsBean implements Serializable {
         }
     }
 
+    public Integer getLogFileDisplaySize() {
+        return this.logFileDisplaySize;
+    }
+
+    public void setLogFileDisplaySize(Integer size) {
+        logFileDisplaySize = size;
+    }
+    
+    
     public String getPurgeJobsAfter() {
         return settings.getProperty("purgeJobsAfter");
     }

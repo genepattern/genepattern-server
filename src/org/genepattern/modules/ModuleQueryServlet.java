@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 package org.genepattern.modules;
@@ -816,6 +816,7 @@ public class ModuleQueryServlet extends HttpServlet {
     }
 
     private void moveSupportFiles(String[] files, File copyTo) throws Exception {
+
        if (copyTo == null || !copyTo.isDirectory()) {
             throw new Exception("Attempting to copy files to a location that is not a directory");
         }

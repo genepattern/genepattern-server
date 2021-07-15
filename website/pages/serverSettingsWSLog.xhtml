@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.  
+  ~ Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
   -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -14,9 +14,19 @@
             <tr>
                 <td>WebServer Log</td>
             </tr>
+             </table>
+       <table width="100%" border="0" cellpadding="5" cellspacing="0">
+             <tr valign="top">
+                <td>Tail last # lines:<br/><br/>
+                    <h:inputText size="10" value="#{serverSettingsBean.logFileDisplaySize}" />
+                    
+                </td>
+            </tr>
+            
         </table>
         <p />
         <table width="100%" border="0" cellpadding="5" cellspacing="0">
+        
             <tr valign="top">
       	<pre>
       	<h:outputText value="#{serverSettingsBean.wsLogHeader}" />

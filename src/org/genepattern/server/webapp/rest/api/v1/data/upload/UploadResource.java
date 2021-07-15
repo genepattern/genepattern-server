@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
@@ -769,12 +769,19 @@ public class UploadResource {
 
             proc = Runtime.getRuntime().exec(execBuff.toString());
             debugProcessStdOutAndErr(proc, "UploadResource>>getExternalUploadUrl");
-            proc.waitFor();
+            proc.waitFor(30, TimeUnit.SECONDS);
 
             String resp = readOutputFileToString(filename);
             log.debug(resp);
             return Response.ok().entity(resp).build();
-
+        } catch (InterruptedException ie) {
+            try {
+                JSONObject respJson  =new JSONObject();
+                respJson.put("error", "AWS request for upload URL did not return within 30 seconds.  Aborting.");
+                return Response.serverError().entity(respJson.toString()).build();
+            } catch (Exception jee){
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
         } catch (Exception e){
             e.printStackTrace();
             log.error(e.getMessage(), e);
@@ -892,8 +899,6 @@ public class UploadResource {
 
             tmpInput = File.createTempFile("beginUpload", ".json");
 
-            System.out.println(tmpInput.getAbsolutePath());
-            
             BufferedWriter writer = new BufferedWriter(new FileWriter (tmpInput));
             writer.append(json.toString());
             writer.close();
@@ -913,11 +918,15 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource>>startS3MultipartUpload");
-                proc.waitFor();
+                proc.waitFor(30, TimeUnit.SECONDS);
             
                 
             } catch (InterruptedException ie) {
                log.error(ie);
+               JSONObject respJson  =new JSONObject();
+               respJson.put("error", "AWS request for upload URL did not return within 30 seconds.  Aborting.");
+               return Response.serverError().entity(json.toString()).build();
+               
             } finally {
                 proc.destroy();
                 proc = null;
@@ -943,14 +952,14 @@ public class UploadResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
             try {
-                if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
+                if (tmp != null) tmp.delete();   
             } catch (Exception e){
                 log.error("SMU: Failed to delete:" + tmp.getAbsolutePath(), e );
                 tmp.deleteOnExit();
                 
             }
             try {
-                if (!log.isDebugEnabled()) if (tmpInput != null) tmpInput.delete();
+                if (tmpInput != null) tmpInput.delete();
             } catch (Exception e){}
         }
     }
@@ -982,12 +991,10 @@ public class UploadResource {
             outfilename = tmp.getName();
             tmp.delete();
 
-            // need to get the bucket from the config file entries
-            //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
-            //     upload.aws.s3.bucket.root: tedslaptop
+          
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            // Get the user context
-                     
+            
+            // need to get the bucket from the config file entries
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
@@ -995,10 +1002,7 @@ public class UploadResource {
             String signingScript = "getS3MultipartPresingedUploadURL.sh" ;  // gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
 
             GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
-            String origPath = (String)request.getSession().getAttribute(uploadId+".path");
             String origFullPath = (String)request.getSession().getAttribute(uploadId+".fullPath");
-            String origUrl = (String)request.getSession().getAttribute(uploadId+".url");
-            
             
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
             // undo escaping of '@' in usernames that is baked in here
@@ -1039,9 +1043,13 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource>>getS3MultipartUploadOnePart");
-                proc.waitFor();
+                proc.waitFor(30, TimeUnit.SECONDS);
+                
             } catch (InterruptedException ie) {
                 log.error(ie);
+                JSONObject respJson  =new JSONObject();
+                respJson.put("error", "AWS request for upload URL did not return within 30 seconds.  Aborting.");
+                return Response.serverError().entity(json.toString()).build();
             } finally {
                 proc.destroy();
                 proc = null;
@@ -1059,8 +1067,8 @@ public class UploadResource {
             log.error(e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
-             try {
-                if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
+            try {
+                if (tmp != null) tmp.delete();   
             } catch (Exception e){
                 log.error("GSM: Failed to delete:" + tmp.getAbsolutePath(), e );
                 tmp.deleteOnExit();
@@ -1072,16 +1080,12 @@ public class UploadResource {
                  }
              } catch (Exception e) {}
             try {
-                if (!log.isDebugEnabled()) if (tmpInput != null) tmpInput.delete();
+                if (tmpInput != null) tmpInput.delete();
             } catch (Exception e){}
         }
 
 
     }
-
-    
-    
-    
 
     
     
@@ -1178,9 +1182,13 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource >> registerExternalUpload");
-                proc.waitFor();
+                proc.waitFor(30, TimeUnit.SECONDS);
             } catch (InterruptedException ie) {
+                
                log.error(ie);
+               JSONObject respJson  =new JSONObject();
+               respJson.put("error", "AWS request for to register multipart upload did not return within 30 seconds.  Aborting.");
+               return Response.serverError().entity(respJson.toString()).build();
             } finally {
                 if (proc != null) proc.destroy();
                 proc = null;
