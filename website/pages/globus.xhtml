@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.  
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+   
+   
+    <t:div rendered="#{not userPrefsBean.globusLinked}">
+              No Globus Identity has been linked to this account.<br/>
+              <br/>
+              To use <a href="https://docs.globus.org/">Globus</a> file transfer, you must login to GenePattern via the <a href="https://docs.globus.org/">Globus</a> link<br/>
+              on the login page. You may use a <a href="https://docs.globus.org/">Globus</a> identity or that of any of the identity providers<br/>
+              supported by <a href="https://docs.globus.org/api/auth/">Globus Auth</a>.  This includes Google, ORC-Id and many universities.<br/> 
+              <br/>
+              Logging in through <a href="https://docs.globus.org/">Globus</a> will create a GenePattern account with a username matching <br/>
+              the email address of the <a href="https://docs.globus.org/">Globus</a> account, or link to it if it already exists.   
+   </t:div>
+   
+   <t:div rendered="#{userPrefsBean.globusLinked}">
+    
+   <h:form onsubmit="return validateForm(this);" id="globusForm">
+       
+        <table  border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td>Globus Preferred Identity:</td>
+                <td>#{userPrefsBean.globusUserIdentity}</td>
+            </tr>
+             <tr valign="top">
+                <td>Globus Email:</td>
+                <td>#{userPrefsBean.globusUserEmail}</td>
+            </tr>
+            <tr valign="top">
+                <td>Globus Identity Provider:</td>
+                <td>#{userPrefsBean.globusIdentityProviderName} (#{userPrefsBean.globusIdentityProviderId})</td>
+            </tr>
+             <tr valign="top">
+                <td>Globus Access Token: (TEMP FOR DEBUGGING)</td>
+                <td>#{userPrefsBean.globusAccessToken}</td>
+            </tr>
+            </table>
+            
+        
+        <h:commandButton value="Clear globus association" action="#{userPrefsBean.clearGlobus}" />
+    </h:form>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+        
+        <tr valign="top">
+            <td>&#160;</td>
+            <td>Clears the current Globus identity association. <br />
+                After clearing you may again associate a <br />
+                Globus identity on your next login through Globus.
+            </td>
+        </tr>
+    </table>
+     <a href="/gp/GlobusTestServlet"> Globus test page (temporary)</a>
+    </t:div>
+    
+</html>
