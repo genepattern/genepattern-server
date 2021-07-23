@@ -155,8 +155,10 @@ aws s3 sync $GP_JOB_METADATA_DIR  $S3_ROOT$GP_JOB_METADATA_DIR  >> ${S3_LOG} 2>&
 echo "calculating --container-overrides for memory ..." >> ${CMD_LOG} 2>&1
 echo "    GP_JOB_MEMORY_MB=${GP_JOB_MEMORY_MB:-x}" >> ${CMD_LOG} 2>&1
 mem_arg="";
+mem_resource_req="";
 if in_range "${GP_JOB_MEMORY_MB:-x}" "400" "1000000"; then
   mem_arg="memory=${GP_JOB_MEMORY_MB},";
+  mem_resource_req="{type=\"MEMORY\",value=\"${GP_JOB_MEMORY_MB}\"},";
 fi
 
 # vcpus override, e.g. 
@@ -166,9 +168,14 @@ fi
 echo "calculating --container-overrides for vcpus ..." >> ${CMD_LOG} 2>&1
 echo "    GP_JOB_CPU_COUNT=${GP_JOB_CPU_COUNT:-x}" >> ${CMD_LOG} 2>&1
 vcpus_arg="";
+vcpus_resource_req="";
 if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
   vcpus_arg="vcpus=${GP_JOB_CPU_COUNT},";
+  vcpus_resource_req="{type=\"VCPU\",value=\"${GP_JOB_CPU_COUNT}\"}";
 fi
+
+__res_req_arg="resourceRequirements=[${mem_resource_req}${vcpus_resource_req}]";
+
 
 # environment override
 : ${GP_USER_ID=test}
@@ -207,7 +214,7 @@ __args=( \
   "--timeout" "attemptDurationSeconds=${GP_JOB_WALLTIME_SEC}" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
   "--parameters" "taskLib=$GP_MODULE_DIR,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$AWS_S3_PREFIX,working_dir=$WORKING_DIR,exe1=$EXEC_SHELL"  \
-  "--container-overrides" "${vcpus_arg}${mem_arg}${__env_arg:-}" \
+  "--container-overrides" "${__env_arg:-},${__res_req_arg:-}" \
 );
 
 # for debugging ...
