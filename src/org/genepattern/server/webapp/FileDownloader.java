@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp;
 
@@ -94,16 +94,17 @@ public class FileDownloader {
             // in an external location and redirect to its special download handler
             String userId = UIBeanHelper.getUserId();
             GpContext userContext = GpContext.getContextForUser(userId);
-            ExternalFileManager externalDownloader = DataManager.getExternalFileManager(userContext);
-            
+            ExternalFileManager externalDownloader = DataManager.getExternalFileManager(GpContext.getServerContext());
             
             if (externalDownloader != null) {
                 try {
-                    
                     externalDownloader.downloadFile(userContext, request, response, file);
                     return;
+                } catch(IOException ioe){
+                    log.error("Failed to download using external file manager class: " + externalDownloader, ioe);
+                    throw ioe;
                 } catch(Exception e){
-                    log.error("External downloader failure: ", e);
+                    log.error("Failed to download (2) with : " + externalDownloader, e);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 } 
                 

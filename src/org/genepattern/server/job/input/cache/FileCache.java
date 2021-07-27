@@ -108,6 +108,7 @@ public class FileCache {
      * @return
      */
     public static CachedFile initCachedFileObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+        // this only checks for the file in local.choiceDirs but not other cached URLs
         final File mappedFile=MapLocalEntry.initLocalFileSelection(gpConfig, jobContext, externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -121,7 +122,8 @@ public class FileCache {
                     log.error("Invalid externalUrl="+externalUrl, e);
                 }
             }
-        }
+        } 
+        
         
         /*
          * change the default ftp downloader by making an edit to the config.yaml file, e.g.  
@@ -131,7 +133,18 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
         if (!isRemoteDir) {
-            return CachedFtpFileFactory.instance().newCachedFtpFile(mgr, gpConfig, jobContext, externalUrl);
+            CachedFtpFile cachedFile =  CachedFtpFileFactory.instance().newCachedFtpFile(mgr, gpConfig, jobContext, externalUrl);
+            if (cachedFile.getLocalPath().getServerFile().exists()) {
+                // for cached files that are not part of a local.choiceDir
+                try {
+                    return new MapLocalFile(externalUrl, cachedFile.getLocalPath().getServerFile());
+                }
+                catch (MalformedURLException e) {
+                    log.error("Invalid externalUrl="+externalUrl, e);
+                }
+            }
+            
+            return cachedFile;
         }
         else {
             return new CachedFtpDir(mgr, gpConfig, jobContext, externalUrl);
