@@ -788,6 +788,13 @@
  	<servlet-name>GlobusTestServlet</servlet-name>
  	<servlet-class>org.genepattern.server.webapp.rest.api.v1.oauth.GlobusTestServlet</servlet-class>
  </servlet>
+ <servlet>
+ 	<description>
+ 	</description>
+ 	<display-name>GlobusTransferInServlet</display-name>
+ 	<servlet-name>GlobusTransferInServlet</servlet-name>
+ 	<servlet-class>org.genepattern.server.webapp.rest.api.v1.oauth.GlobusTransferInServlet</servlet-class>
+ </servlet>
  
  
  
@@ -807,6 +814,10 @@
  <servlet-mapping>
  	<servlet-name>GlobusTestServlet</servlet-name>
  	<url-pattern>/GlobusTestServlet</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+ 	<servlet-name>GlobusTransferInServlet</servlet-name>
+ 	<url-pattern>/GlobusTransferInServlet</url-pattern>
  </servlet-mapping>
 
  <welcome-file-list>

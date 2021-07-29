@@ -119,6 +119,9 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, userJson);
             // and do these to prevent an earlier session leaking through
             
+            System.out.println("TRANSFER_TOKEN="+transferToken);
+            System.out.println("ACCESS_TOKEN="+accessToken);
+            
             String urlTargetPostLogin = (String)servletRequest.getSession().getAttribute("origin");
             if (urlTargetPostLogin == null){
                 urlTargetPostLogin  = gpConfig.getGenePatternURL().toString();

@@ -28,4 +28,8 @@ public class OAuthConstants {
     public static final String  OAUTH_TOKEN_ATTR_KEY = "globus.access.token";
     public static final String  OAUTH_TRANSFER_TOKEN_ATTR_KEY = "globus.transfer.token";
     
+    
+    // used for transfer in from other locations
+    public static final String OAUTH_LOCAL_ENPOINT_ID = "globus.local.endpoint.id";
+    
 }

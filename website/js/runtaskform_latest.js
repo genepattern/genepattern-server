@@ -1868,6 +1868,8 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
         openServerFileDialog(this);
     });
 
+    
+    
     fileUploadDiv.append("<span class='drop-box'>Drag Files Here</span>");
     fileUploadDiv.append("<div class='fileSizeCaption'> 2GB file upload limit using the " + uploadFileText + " button. For files > 2GB upload from the Files tab. </div>");
 
