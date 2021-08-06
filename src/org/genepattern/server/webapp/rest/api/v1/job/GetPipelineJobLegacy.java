@@ -292,7 +292,7 @@ public class GetPipelineJobLegacy implements GetJob {
             }
             catch (Exception e)
             {
-                log.error("Error getting launch Url", e);
+                log.error("Error getting launch Url: "+ e.getMessage());
             }
 
             //access permissions

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -720,6 +721,7 @@ public class AWSBatchJobRunner implements JobRunner {
                 } catch (Exception ee){}
             }
         }
+        Process proc = null;
         try {
             String envp[] = new String[cmdEnv.size()];
             int i=0;
@@ -727,9 +729,9 @@ public class AWSBatchJobRunner implements JobRunner {
                 String val = cmdEnv.get(key);
                 envp[i++] = key + "="+val;
             }
-            Process proc = Runtime.getRuntime().exec(execArgs, envp);
+            proc = Runtime.getRuntime().exec(execArgs, envp);
             
-            proc.waitFor();
+            proc.waitFor(30, TimeUnit.SECONDS);
         
             BufferedReader stdInput = new BufferedReader(new     InputStreamReader(proc.getInputStream()));
             BufferedReader stdError = new BufferedReader(new  InputStreamReader(proc.getErrorStream()));
@@ -765,6 +767,7 @@ public class AWSBatchJobRunner implements JobRunner {
                    
                } catch (Exception e){
                    // ignore
+                   e.printStackTrace();
                }
            }
            File outListFile = new File(s3filepath+ExternalFileManager.nonRetrievedFilesFileName);
@@ -779,9 +782,24 @@ public class AWSBatchJobRunner implements JobRunner {
                    log.debug(s);
                }     
            }
+        } catch (InterruptedException  ie){
+            log.error("AWSBatch fake sync dir took too long ", ie);
+            ie.printStackTrace();
+            if (proc != null){
+                proc.destroyForcibly();
+                proc = null;
+            }
         } catch (Exception e){
+        
             e.printStackTrace();
-            
+            if (proc != null){
+                proc.destroyForcibly();
+                proc = null;
+            }
+        } finally {
+            if (proc != null) {
+                proc.destroy();
+            }
         }
     }
     
@@ -947,19 +965,17 @@ public class AWSBatchJobRunner implements JobRunner {
     protected static boolean isSkipWorkingDirDownload(final DrmJobRecord jobRecord) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         GpConfig jobConfig = ServerConfigurationFactory.instance();
-        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
         final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
-      
-        return (directDownloadEnabled_obsolete || directDownloadEnabled);
+       
+        return (  directDownloadEnabled);
     }
     
     protected static boolean isSkipWorkingDirDownload(final DrmJobSubmission jobSubmission) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobSubmission);
         GpConfig jobConfig = ServerConfigurationFactory.instance();
-        String downloaderClass_obsolete = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
         String downloaderClass = jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null);
         
-        return ((downloaderClass != null) || (downloaderClass_obsolete != null));
+        return ((downloaderClass != null));
     }
     
    
@@ -1124,6 +1140,15 @@ public class AWSBatchJobRunner implements JobRunner {
                 }
             }
             for (String[] urlfile: urlsToFetch){
+                // first make sure the directory exists, wget won't make it
+                File aFile = new File(urlfile[1]);
+                String parentDir = aFile.getParentFile().getAbsolutePath();
+                bw.write("mkdir -p ");
+                bw.write(dest_prefix);
+                bw.write(parentDir);
+                bw.newLine();
+                bw.newLine();
+                // now get the file with wget
                 bw.write("wget -O ");
                 bw.write(dest_prefix);
                 bw.write(urlfile[1]);

@@ -127,6 +127,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -1101,8 +1102,8 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             if (downloadUrl) {
-                                
                                 outFile = new File(outDir, name);
+                                
                                 if (outFile.exists()) {
                                     // ensure that 2 file downloads for a job don't have the same name
                                     if (name.length() < 3) {
@@ -1112,16 +1113,31 @@ public class GenePatternAnalysisTask {
                                 }
                                 GpConfig jobConfig = ServerConfigurationFactory.instance();
                                 
-                                final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
                                 final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
                                 final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
                                
-                                if (directExternalUploadEnabled || directDownloadEnabled || directDownloadEnabled_obsolete){
+                                if (directExternalUploadEnabled || directDownloadEnabled ){
                                     // Using s3 direct up/downloads so we do not actually grab the file here
                                     // instead we write the URL and destination filename to a hidden file
                                     // that will be used to tell the JobRunner what needs to be done
                                     // It will then setup a script that will be run on the compute node
                                     // to do the actual download
+                                    ParameterInfo formalParam = null;
+                                    for (int formal = 0; formals != null && formal < formals.length; formal++) {
+                                        if (formals[formal].getName().equals(pinfo.getName())) {
+                                            formalParam = formals[formal];
+                                            break;
+                                        }
+                                    }
+                                    try {
+                                        final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                            jobContext.getJobInput().getBaseGpHref(), formalParam, new ParamValue(uri.toString()));
+                                   
+                                        outFile = rec.getGpFilePath().getServerFile();
+                                    } catch (GpFilePathException gpe){
+                                        log.error("Could not update file path for URL parameter " + gpe.getMessage());
+                                    }
+                                    
                                     // JTL for URL download deferral to compute nodes
                                     File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(downloadListingFile, true));    
@@ -1483,21 +1499,21 @@ public class GenePatternAnalysisTask {
                     // create a map of gp files to urls so we can tell the external file manager to have them downloaded.
                     // necessary here because batch jobs and file lists do their downloads at a different point where
                     // the job is not yet created so we cannot add the URL as we do for other files
-
-                    for(final ParamValue actualValue : actualValues.getValues()) {
-                        log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
-                        if (DataManager.getExternalFileManager(jobContext) != null){
-                            // we need to add the contents to the downloadFileListing
-                            try {
-                                final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
-                                        jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
-                                fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
-                            } catch(Exception e){
-
+                    if ((actualValues != null) && (actualValues.getValues() != null)){
+                        for(final ParamValue actualValue : actualValues.getValues()) {
+                            log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                            if (DataManager.getExternalFileManager(jobContext) != null){
+                                // we need to add the contents to the downloadFileListing
+                                try {
+                                    final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
+                                            jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
+                                    fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
+                                } catch(Exception e){
+    
+                                }
                             }
                         }
                     }
-
                     try {
                         final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
                         if (gpFilePaths != null) {
@@ -1526,7 +1542,7 @@ public class GenePatternAnalysisTask {
                 }        
             }
         } catch (Exception e){
-            
+            e.printStackTrace();
         } finally {
             if (writer != null){
                 try {

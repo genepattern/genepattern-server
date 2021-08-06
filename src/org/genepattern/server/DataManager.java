@@ -353,8 +353,7 @@ public class DataManager {
 
     public static ExternalFileManager getExternalFileManager(GpContext gpContext) {
         ExternalFileManager externalManager = null;
-        String downloaderClass_obsolete = ServerConfigurationFactory.instance().getGPProperty(gpContext, "download.aws.s3.downloader.class", null);
-        String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, ExternalFileManager.classPropertyKey, downloaderClass_obsolete);
+        String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, ExternalFileManager.classPropertyKey);
         
         try {
              
@@ -482,27 +481,27 @@ public class DataManager {
         if (!canDelete) {
             return false;
         }
-        if (!file.exists()) {
-            try {
-                if (nonLocalFiles){
-                    if (directory){
-                        externalFileManager.deleteDirectory(gpContext, file);
-                    } else {
-                        externalFileManager.deleteFile(gpContext, file);
-                    }
+ 
+        try {
+            if (nonLocalFiles){
+                if (directory){
+                    externalFileManager.deleteDirectory(gpContext, file);
+                } else {
+                    externalFileManager.deleteFile(gpContext, file);
                 }
-            } catch(IOException e){
-                // swallow it because we don't care
-                log.debug("Failed to delete remote file " + file.getAbsolutePath());
             }
-            //indicate success even if the file doesn't exist
-            deleted = true;
+        } catch(IOException e){
+            // swallow it because we don't care
+            log.debug("Failed to delete remote file " + file.getAbsolutePath());
         }
+        
+        
             
         if (file.exists()) {
             if (directory) {
                 try {
                     FileUtils.deleteDirectory(file);
+                    
                     deleted = true;
                 }
                 catch (IOException e) {
@@ -511,10 +510,13 @@ public class DataManager {
             }
             else {
                 deleted = file.delete();
+               
             }
             if (!deleted) {
                 log.error("Error deleting file: "+file.getPath());
             }
+        } else {
+            deleted = true;  // its gone so it must be deleted
         }
         //2) remove the record from the DB, even if it doesn't exist in the file system
         if (!file.exists() ) {
@@ -818,10 +820,9 @@ public class DataManager {
         GpConfig jobConfig = ServerConfigurationFactory.instance();
         
         final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(gpContext, "direct_external_upload_trigger_size", -1) >= 0);
-        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(gpContext, "download.aws.s3.downloader.class", null) != null);
         final boolean directDownloadEnabled = (jobConfig.getGPProperty(gpContext, ExternalFileManager.classPropertyKey, null) != null);
         
-        return (directDownloadEnabled || directExternalUploadEnabled || directDownloadEnabled_obsolete);
+        return (directDownloadEnabled || directExternalUploadEnabled );
         
     }
     
