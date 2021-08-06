@@ -154,7 +154,10 @@ public class ReCaptchaSession {
         if (request == null) {
             return "";
         }
-        return request.getParameter(G_RECAPTCHA_RESPONSE);
+
+        String captcha_param = request.getParameter(G_RECAPTCHA_RESPONSE);
+        if (captcha_param == null) return "";
+        else return captcha_param;
     }
 
     /**
