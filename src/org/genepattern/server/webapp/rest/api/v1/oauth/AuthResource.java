@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.oauth;
 
+import com.google.common.base.Strings;
 import org.apache.log4j.Logger;
 import org.apache.oltu.oauth2.as.issuer.MD5Generator;
 import org.apache.oltu.oauth2.as.issuer.OAuthIssuer;
@@ -454,6 +455,7 @@ public class AuthResource {
         String password = request2.getParameter(OAuth.OAUTH_PASSWORD);
         String clientID = request2.getParameter(OAuth.OAUTH_CLIENT_ID);
         String email = request2.getParameter(AuthResource.OAUTH_EMAIL);
+        String recaptcha_token = request2.getParameter(ReCaptchaSession.G_RECAPTCHA_RESPONSE);
 
         // Verify parameters
         boolean validationError = false;
@@ -476,9 +478,9 @@ public class AuthResource {
         }
 
         ReCaptchaSession recaptcha = ReCaptchaSession.init(ServerConfigurationFactory.instance(), GpContext.getServerContext());
-        if (recaptcha.isEnabled() && (recaptcha.isRequiredForRest() || !ReCaptchaSession.initResponseTokenFromRequest(request).isEmpty())) {
+        if (recaptcha.isEnabled() && recaptcha.isRequiredForRest()) {
             try {
-                recaptcha.verifyReCaptcha(request);
+                recaptcha.verifyReCaptcha(recaptcha_token);
             }
             catch (ReCaptchaException e) {
                 errorMessage = "missing or invalid recaptcha token";
