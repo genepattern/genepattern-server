@@ -144,9 +144,9 @@ default.properties:
     #     https://www.google.com/recaptcha/admin
     #   Copy the 'Site key' and 'Secret key' to this config file
     # Example
-    #   recaptcha.enabled: "true"
+    #   recaptcha.enabled: true
     #   recaptcha.site-key: "{Site key from admin page}"
-    #   repatcha.secret-key: "{Secret key from admin page}"
+    #   recaptcha.secret-key: "{Secret key from admin page}"
     # 
     # Additional param(s)
     #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
