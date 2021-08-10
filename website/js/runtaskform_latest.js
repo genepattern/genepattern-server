@@ -1065,7 +1065,7 @@ function addSendToParam(parameterInfo) {
     var type = parameterInfo.type;
     var directoryType = "directory";
     if (parameterInfo.fileFormat) {
-        var formats = parameterInfo.fileFormat.split(";");
+        var formats = parameterInfo.fileFormat.toLowerCase().split(";");
         for (var i = 0; i < formats.length; i++) {
             var format = formats[i];
             if (run_task_info.sendTo[format] === undefined) {
@@ -3521,7 +3521,7 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
 
             ////////////////////// JTL 082520 
             var fileBits = (files[i].name).split(".");
-            var fileType = fileBits[fileBits.length -1];
+            var fileType = (fileBits[fileBits.length -1]).toLowerCase();
             var okParamsForThisFile = run_task_info.sendTo[fileType];
             var indicateMismatch = false;
             // if file types are specified and they do not contain this parameterName
@@ -3533,11 +3533,11 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
             // but now we have to check if there were types specified for this parameter, reversing the sendTo
             for (var aFileType in run_task_info.sendTo) {
                 // check if the property/key is defined in the object itself, not in parent
-                if (run_task_info.sendTo.hasOwnProperty(aFileType)) {           
+                if (run_task_info.sendTo.hasOwnProperty(aFileType) ) {           
                 	if (run_task_info.sendTo[aFileType].includes(paramName)){
                 		fileTypesForParam.push(aFileType);
                 	}
-                }
+                } 
             }
             if (fileTypesForParam.length > 0){
             	indicateMismatch =  ! (fileTypesForParam.includes(fileType));
@@ -4167,7 +4167,7 @@ function cloneTask() {
 }
 
 function sendToByKind(url, kind) {
-    var paramNames = run_task_info.sendTo[kind];
+    var paramNames = run_task_info.sendTo[kind.toLowerCase()];
     if (paramNames === undefined || paramNames === null || paramNames.length < 1) {
         console.log("ERROR: Sending to kind " + kind);
         return;
