@@ -220,29 +220,33 @@ It's a very good way for you to document succinctly why your module exists.<br><
 
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
 
-<a name="Documentation"></a><h4>Documentation</h4>
+<a name="Documentation"></a><h4>Documentation URL and  <i>(deprecated)</i> Documentation File </h4>
 
-Provide a URL (link) to a web page describing the module and how to use it.  This link will be available
-when users run the module.
+Documentation URL: Provide a URL (link) to a web page describing the module and how to use it. 
+ This link will be available when users run the module.
 <br/><br/>
-<strong>Deprecated:</strong>strong> Older modules may have included an upload  pdf, txt, html, htm, xhtml, or rtf file 
-instead of the link. A link to these files on the GenePattern server will be generated if no documentation URL is provided
-but one of these file types is provided. You can modify this list of extensions by editing the files.doc property in the
+Documentation File (<i> Deprecated </i>): Older modules may have included an uploaded pdf, txt, html, htm, xhtml, or rtf file 
+instead of a URL. When present, a link to these files on the GenePattern server will be generated if no documentation 
+URL is provided. You can modify this list of extensions by editing the files.doc property in the
 GenePattern /resources/genepattern.properties file.  In cases where both a documentation file and a documentation URL are
 provided, only the documentation URL will be displayed to users.<br><br/>
 
-<strong>Module documentation</strong>: Public modules should always include a link that provides instructions
-for using the module, a detailed description of each input parameter, a detailed description of each output
-file (both its format and content), and either an explanation of the algorithm or a reference to the paper, journal or book that
-explains it.
-
-When a user selects your module, GenePattern displays a form that includes the
-module parameters and the documentation link. If no documentation file was provided, GenePattern displays 
-a message indicating that no information is
-available. (By default, the supported documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
-You can modify this list of extensions by editing the files.doc property in the
-GenePattern /resources/genepattern.properties file.)<br><br>
-
+Module documentation should include:
+<ul>
+<li>an explaination what the module does and why someone might want to use it</li> 
+<li>instructions for using the module</li>
+<li>a detailed description of each input parameter</li>
+<li>a detailed description of each output file (both its format and content)</li>
+<li>the identity of the author and their contact information</li>
+<li>an explanation of the algorithm or a reference to the paper, journal or book that explains it and other reference papers that would be useful for a user</li>
+<li>the Docker container tag in which the module runs</li>
+<li>the language in which the module was written</li>
+<li>links to one or more example known good input and their corresponding outputs, 
+so that users can see data that works in the module. Include any settings require to achieve the 
+included output (an execution log would suffice)</li>
+<li>version comments so that your users know what changed from version to version</li>
+</UL>
+<BR/>
 <a name="Author"></a><h4>Author</h4>
 Enter the author&apos;s name.  If you share this module
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,
