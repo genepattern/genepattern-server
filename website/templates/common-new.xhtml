@@ -48,6 +48,7 @@
                 var adminServerAllowed = #{authorizationBean.adminServerAllowed};
                 var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
                 var username = "${requestScope.userID}";
+                console.log("Username set just now to "+ username);
             </script>
             
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-1.8.3.js?version=#{aboutBean.buildTag}" />

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,7 +41,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     public void downloadFile(GpContext userContext, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException {
         try {
            String redirectUrl = getDownloadURL(userContext, file);
-           resp.sendRedirect(redirectUrl);
+           resp.sendRedirect(redirectUrl+"&genepatternUrl="+URLEncoder.encode(req.getRequestURL().toString()));
            
         } catch (Exception e){
             e.printStackTrace();

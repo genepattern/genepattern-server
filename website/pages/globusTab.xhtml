@@ -21,16 +21,120 @@
                 window.globus_tab_init = true;
             }
 
-        
+           
+            function browseGlobusIfLoginValid(){
+            	$.ajax({
+                    cache: false,
+                    type: "GET",
+                    url: "/gp/rest/v1/globus/currentTasks",
+                    dataType: "json",
+                    success: function(data) {
+                    	if (data.loginValid == true) {
+                    		glb_browse();
+                    	} else {
+                    		alert("Your Globus login is incorrect or expired.  Please logout and login again  ")
+                    	}
+                    	
+                    },
+                    error: function {
+                    	alert("Error verifying Globus login. ")
+                    }
+                    
+            	});   	
+            }
+            
             function glb_browse() {
-                //alert('browse globus');
-                // window.open("https://app.globus.org/file-manager?action=http",'_gpglobus');
+                // Post the form to globus and post to it 
                 //
-                // Create a form and post to it 
-                //
+                var w = window.open('', 'form-target', 'width=800, height=800');
+			    
+			    window.globusCallbackFunction = function(){
+		  	    	globusTransferInitiated();
+		    		setTimeout( getGlobusTransferStatus , 10000 );
+		        }
+			    
+			    $("#glbBrowseForm").target="form-target";
                 $("#glbBrowseForm").submit();
+              
+				// Update the UI
+                globusTransferInitiated();
+			    return false;
             }
 
+            function globusTransferInitiated(){
+            	console.log("Globus file transfer initiated");
+            	$("#glb-no-transfers").hide();
+            	$("#glb-transfer-initiated").show();
+            	// leave the transfer list in whatever state it is in 
+            	// to be updated at the next check status
+            	
+            }
+            
+            
+            function getGlobusTransferStatus(){
+            	$.ajax({
+                    cache: false,
+                    type: "GET",
+                    url: "/gp/rest/v1/globus/currentTasks",
+                    dataType: "json",
+                    beforeSend: function(a,b,c){
+                    	console.log("before send");
+                    },
+                    success: function(data) {
+                    	$("#glb-no-transfers").hide();
+                    	$("#glb-transfer-initiated").hide();
+                    	
+                    	var anyRunning = false;
+                    	$("#glb-transfer-list").empty();
+                    	if (data.length > 0){
+                        	for (var i=0; i < data.length; i++){
+                        		var task = data[i];
+                        		var timeCheck = new Date(Number(task.lastStatusCheckTime));
+//                         		 transferObject.addProperty("id", map.get("id"));
+//                         	        transferObject.addProperty("error", map.get("error"));
+//                         	        transferObject.addProperty("status", map.get("status"));
+//                         	        transferObject.addProperty("prevStatus", map.get("prevStatus"));
+//                         	        transferObject.addProperty("lastStatusCheckTime", map.get("lastStatusCheckTime"));
+//                         	        transferObject.addProperty("file", map.get("file"));
+                        		
+	                    		var taskDiv = $("<div></div>");
+	                    		$(taskDiv).append("<span>ID: "+task.id+"</span><br/>");
+	                    		$(taskDiv).append("<span>STATUS: "+ task.status+"</span><br/>");
+	                    		$(taskDiv).append("<span>FILE:"+ task.file +"</span><br/>");
+	                    		$(taskDiv).append("<span>Last update:"+timeCheck.toString()+"</span><br/>");
+	                    		$(taskDiv).append("<span>"+i+"</span><br/><br/>");
+	                    		
+	                    		if (task.status == "ACTIVE") anyRunning = true;
+	                    		
+	                    		
+	                    		
+	                    		$("#glb-transfer-list").append(taskDiv);
+	                    	}
+                        	$("#glb-transfer-list").show();
+	                 	} else {
+	                 		$("#glb-no-transfers").show();
+                    	}
+                    	
+                    	// check back once a minute if any are still running
+                    	if (anyRunning){
+                    		setTimeout( function(){ 
+                    		    getGlobusTransferStatus();
+                    		  }  , 60000 );
+                    	} 
+                    	// finally refresh the files tab to make sure it shows any recent additions
+                    	refreshUploadTree();
+                    	
+                    },
+                    error: function(data){
+                    	
+                    }
+            	});
+            	
+            	
+            	
+            	
+            }
+            
             // Load the notebooks tab
             $(document).ready(init_globus_tab);
 
@@ -102,35 +206,56 @@
     <div class="left-nav-top">
         <div id="glb-header">
             Transfer files from Globus to GenePattern 
-        </div>
-        <button id="glb-login" onclick="glb_browse();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-            Browse <img src="/gp/images/globusLogo.png" alt="Globus" height="12px" /> ›
-        </button>
-        <div id="glb-form" style="display:none">
-        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" target="_globus">
-        		<input type="text" value="POST" name="method" />
-        		<input type="text" value="http://127.0.0.1:8180/gp/GlobusTransferInServlet" name="cancelurl" />
-        		<input type="text" value="http://127.0.0.1:8180/gp/GlobusTransferInServlet" name="action" />
-        		<input type="text" value="0" name="folderLimit" />
-        		<input type="text" value="1" name="fileLimit" />
-        		<input type="text" value="To GenePattern" name="label" />
-        		
-        		
-    			<input type='submit'/>
-        	
-        	</form>
+        <t:div rendered="#{not userPrefsBean.globusLinked}">
+             <h:outputLink
+                value="#{facesContext.externalContext.requestContextPath}/oauthglobus">Authenticate with Globus</h:outputLink>
+        </t:div>
         
         </div>
+        <t:div rendered="#{userPrefsBean.globusLinked}">
+	        <button id="glb-login" onclick="browseGlobusIfLoginValid();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+	            Browse <img src="/gp/images/globusLogo.png" alt="Globus" height="12px" /> ›
+	        </button>
+	        <div id="glb-form" style="display:none" >
+	        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" name="globusTransferForm" target="form-target">
+	        		<input type="text" value="POST" name="method" />
+	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="cancelurl" />
+	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="action" />
+	        		<input type="text" value="0" name="folderLimit" />
+	        		<input type="text" value="1" name="fileLimit" />
+	        		<input type="text" value="To GenePattern" name="label" />
+	        		
+	        	
+	        	</form>
+	        
+	        </div>
+        </t:div>
         
     </div>
 
+   
+    <br/>
+    <div class="info-box">
+<!--         <button id="glb-refresh-transferlist" onclick="getGlobusTransferStatus();false"  -->
+<!--         			class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"> -->
+<!-- 	            Refresh  -->
+<!-- 	    </button> -->
+	    <div id="glb-no-transfers">
+       No Globus transfer's currently in progress.
+       </div>
+       <div id="glb-transfer-initiated" style="display:none;">
+          Globus transfer status will be updated in 1 minute.
+       </div>
+       <div id="glb-transfer-list" style="display:none;">
+       </div>
+       
+        
+    </div>
+    
     <div class="info-box sidebarhead-bkg">
        To learn more about
         <a href="https://www.genepattern.org/" target="_blank">GenePattern and Globus Integration, click here</a>.
     </div>
-
-    
-
 
 </ui:composition>
 </html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Globus transfer complete</title>
+<script>
+
+function onLoad(){
+	
+	try {
+		opener.globusCallbackFunction();  
+		
+	} catch (e){
+		// failed but its not truly necessary and better to close the window than leave it hanging
+		console.log(e);
+	}
+	
+	
+	window.close();
+}
+
+
+</script>
+
+
+</head>
+<body onload="onLoad()">
+here we are
+</body>
+</html>

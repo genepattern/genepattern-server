@@ -34,7 +34,9 @@ public class UserPrefsBean {
     private UserProp globusIdentityProviderIdProp;
     private UserProp globusIdentityProviderNameProp;
     private UserProp globusAccessTokenProp;
-    
+    private UserProp globusRefreshTokenProp;
+    private UserProp globusTransferTokenProp;
+    private UserProp globusTransferRefreshTokenProp;
    
 
     public UserPrefsBean() {
@@ -49,7 +51,10 @@ public class UserPrefsBean {
         globusUserEmailProp = dao.getProperty(userId, OAuthConstants.OAUTH_EMAIL_USERPROPS_KEY, "");
         globusIdentityProviderIdProp = dao.getProperty(userId, OAuthConstants.OAUTH_ID_PROVIDER_ID_USERPROPS_KEY, "");
         globusIdentityProviderNameProp = dao.getProperty(userId, OAuthConstants.OAUTH_ID_PROVIDER_DISPLAY_USERPROPS_KEY, "");
-        globusAccessTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_ACCESS_TOKEN_USERPROPS_KEY, "");
+        globusAccessTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TOKEN_ATTR_KEY, "");
+        globusRefreshTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, "");
+        globusTransferTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, "");
+        globusTransferRefreshTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, "");
         
         String historySize = null;
         try {
@@ -86,6 +91,11 @@ public class UserPrefsBean {
         globusIdentityProviderNameProp.setValue(null);
         globusUserEmailProp.setValue(null);
         globusAccessTokenProp.setValue(null);
+        globusRefreshTokenProp.setValue(null);
+        
+        globusTransferTokenProp.setValue(null);
+        globusTransferRefreshTokenProp.setValue(null);
+        
         UIBeanHelper.setInfoMessage("Globus association cleared.");
         return "my settings";
     }
@@ -161,6 +171,28 @@ public class UserPrefsBean {
     public void setGlobusAccessToken(String value){
         if (globusAccessTokenProp == null) return;
         globusAccessTokenProp.setValue(null);
+    }
+    public String getGlobusRefreshToken(){
+        return globusRefreshTokenProp.getValue();
+    }
+    public void setGlobusRefreshToken(String value){
+        if (globusRefreshTokenProp == null) return;
+        globusRefreshTokenProp.setValue(null);
+    }
+    
+    public String getGlobusTransferToken(){
+        return globusTransferTokenProp.getValue();
+    }
+    public void setGlobusTransferToken(String value){
+        if (globusTransferTokenProp == null) return;
+        globusTransferTokenProp.setValue(null);
+    }
+    public String getGlobusTransferRefreshToken(){
+        return globusTransferRefreshTokenProp.getValue();
+    }
+    public void setGlobusTransferRefreshToken(String value){
+        if (globusTransferRefreshTokenProp == null) return;
+        globusTransferRefreshTokenProp.setValue(null);
     }
     
     //add support for groups

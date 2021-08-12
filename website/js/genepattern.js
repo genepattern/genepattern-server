@@ -3079,6 +3079,9 @@ function initRecentJobs() {
         type: "GET",
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
+        beforeSend: function(a,b,c){
+        	console.log("before send");
+        },
         success: function(data) {
             // Clear away the old rendering of the tab
             $("#loading-jobs").hide();
@@ -4386,6 +4389,8 @@ function updateDiskUsageBox(diskInfo)
 }
 
 
+
+
 var diskInfo;  // save as global as its needed in many places now 
 
 function initStatusBox()
@@ -4419,3 +4424,8 @@ function userBoxClick() {
         });
     }, 1);
 }
+
+
+
+
+

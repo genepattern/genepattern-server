@@ -24,4 +24,10 @@ public class UIBean {
     public static String skin() {
         return (new UIBean()).getSkin();
     }
+    
+    public String getBaseURL(){
+        return UIBeanHelper.getServer();
+    }
+    
+    
 }
