@@ -830,7 +830,8 @@ public class UploadResource {
           Thread.currentThread().interrupt();
           throw ex;
         } finally {
-          process.destroyForcibly();
+          process.destroy();
+          
         }
       }
         
