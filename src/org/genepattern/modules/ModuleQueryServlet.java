@@ -816,26 +816,27 @@ public class ModuleQueryServlet extends HttpServlet {
     }
 
     private void moveSupportFiles(String[] files, File copyTo) throws Exception {
-        if (copyTo == null || !copyTo.isDirectory()) {
-             throw new Exception("Attempting to copy files to a location that is not a directory");
-         }
 
-         for (String path : files) {
-             File file = new File(path);
-             File target = new File(copyTo, file.getName());
-             
-             if (!file.exists()) {
-                 throw new Exception("Attempting to move a file that does not exist: " + path);
-             }
+       if (copyTo == null || !copyTo.isDirectory()) {
+            throw new Exception("Attempting to copy files to a location that is not a directory");
+        }
 
-             // Move file to new directory
-             //boolean success = file.renameTo());
-             Files.move(file.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            // if (!success) {
-            //     throw new Exception("Unable to move file: " + file.getName());
-            // }
-         }
-     }
+        for (String path : files) {
+            File file = new File(path);
+            File target = new File(copyTo, file.getName());
+            
+            if (!file.exists()) {
+                throw new Exception("Attempting to move a file that does not exist: " + path);
+            }
+
+            // Move file to new directory
+            //boolean success = file.renameTo());
+            Files.move(file.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+           // if (!success) {
+           //     throw new Exception("Unable to move file: " + file.getName());
+           // }
+        }
+    }
 
     private void transferUpload(FileItem from, File to) throws IOException {
         InputStream is = null;

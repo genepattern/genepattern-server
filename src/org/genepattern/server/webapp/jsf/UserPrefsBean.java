@@ -19,6 +19,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.server.webapp.rest.api.v1.oauth.OAuthConstants;
 import org.genepattern.visualizer.RunVisualizerConstants;
 
 public class UserPrefsBean {
@@ -28,6 +29,15 @@ public class UserPrefsBean {
     private UserProp recentJobsProp;
     private List<String> groups;
 
+    private UserProp globusUserIdentityProp;
+    private UserProp globusUserEmailProp;
+    private UserProp globusIdentityProviderIdProp;
+    private UserProp globusIdentityProviderNameProp;
+    private UserProp globusAccessTokenProp;
+    private UserProp globusRefreshTokenProp;
+    private UserProp globusTransferTokenProp;
+    private UserProp globusTransferRefreshTokenProp;
+   
 
     public UserPrefsBean() {
         this.userId = UIBeanHelper.getUserId();
@@ -37,6 +47,15 @@ public class UserPrefsBean {
         String systemVisualizerJavaFlags = ServerConfigurationFactory.instance().getGPProperty(userContext, RunVisualizerConstants.JAVA_FLAGS_VALUE);
         javaFlagsProp = dao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS, systemVisualizerJavaFlags);
 
+        globusUserIdentityProp = dao.getProperty(userId, OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, "");
+        globusUserEmailProp = dao.getProperty(userId, OAuthConstants.OAUTH_EMAIL_USERPROPS_KEY, "");
+        globusIdentityProviderIdProp = dao.getProperty(userId, OAuthConstants.OAUTH_ID_PROVIDER_ID_USERPROPS_KEY, "");
+        globusIdentityProviderNameProp = dao.getProperty(userId, OAuthConstants.OAUTH_ID_PROVIDER_DISPLAY_USERPROPS_KEY, "");
+        globusAccessTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TOKEN_ATTR_KEY, "");
+        globusRefreshTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, "");
+        globusTransferTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, "");
+        globusTransferRefreshTokenProp = dao.getProperty(userId, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, "");
+        
         String historySize = null;
         try {
             historySize = (String) PropertiesManager_3_2.getDefaultProperties().get("historySize");
@@ -65,6 +84,22 @@ public class UserPrefsBean {
         UIBeanHelper.setInfoMessage("Number of recent jobs successfully updated.");
         return "my settings";
     }
+    
+    public String clearGlobus(){
+        globusUserIdentityProp.setValue(null);
+        globusIdentityProviderIdProp.setValue(null);
+        globusIdentityProviderNameProp.setValue(null);
+        globusUserEmailProp.setValue(null);
+        globusAccessTokenProp.setValue(null);
+        globusRefreshTokenProp.setValue(null);
+        
+        globusTransferTokenProp.setValue(null);
+        globusTransferRefreshTokenProp.setValue(null);
+        
+        UIBeanHelper.setInfoMessage("Globus association cleared.");
+        return "my settings";
+    }
+    
 
     public int getNumberOfRecentJobs() {
         if (recentJobsProp == null) {
@@ -92,6 +127,72 @@ public class UserPrefsBean {
             return;
         }
         this.javaFlagsProp.setValue(value);
+    }
+    
+    public boolean isGlobusLinked() {
+        String val = globusUserIdentityProp.getValue();
+        if (val == null) return false;
+        else return !val.isEmpty();
+    }
+    
+    public String getGlobusUserIdentity(){
+        return globusUserIdentityProp.getValue();
+    }
+    public void setGlobusUserIdentity(String value){
+        if (globusUserIdentityProp == null) return;
+         globusUserIdentityProp.setValue(null);
+    }
+    
+    public String getGlobusUserEmail(){
+        return globusUserEmailProp.getValue();
+    }
+    public void setGlobusUserEmail(String value){
+        if (globusUserEmailProp == null) return;
+         globusUserEmailProp.setValue(null);
+    }
+    
+    public String getGlobusIdentityProviderId(){
+        return globusIdentityProviderIdProp.getValue();
+    }
+    public void setGlobusIdentityProviderId(String value){
+        if (globusIdentityProviderIdProp == null) return;
+        globusIdentityProviderIdProp.setValue(null);
+    }
+    public String getGlobusIdentityProviderName(){
+        return globusIdentityProviderNameProp.getValue();
+    }
+    public void setGlobusIdentityProviderName(String value){
+        if (globusIdentityProviderNameProp == null) return;
+        globusIdentityProviderNameProp.setValue(null);
+    }
+    public String getGlobusAccessToken(){
+        return globusAccessTokenProp.getValue();
+    }
+    public void setGlobusAccessToken(String value){
+        if (globusAccessTokenProp == null) return;
+        globusAccessTokenProp.setValue(null);
+    }
+    public String getGlobusRefreshToken(){
+        return globusRefreshTokenProp.getValue();
+    }
+    public void setGlobusRefreshToken(String value){
+        if (globusRefreshTokenProp == null) return;
+        globusRefreshTokenProp.setValue(null);
+    }
+    
+    public String getGlobusTransferToken(){
+        return globusTransferTokenProp.getValue();
+    }
+    public void setGlobusTransferToken(String value){
+        if (globusTransferTokenProp == null) return;
+        globusTransferTokenProp.setValue(null);
+    }
+    public String getGlobusTransferRefreshToken(){
+        return globusTransferRefreshTokenProp.getValue();
+    }
+    public void setGlobusTransferRefreshToken(String value){
+        if (globusTransferRefreshTokenProp == null) return;
+        globusTransferRefreshTokenProp.setValue(null);
     }
     
     //add support for groups

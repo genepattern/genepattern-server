@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  */
 
 .module-listing {
@@ -183,7 +183,7 @@
     z-index: 1;
     top: 0px;
     bottom: 0px;
-    left: 351px;
+    left: 371px;
     background-color: #FCFCFC;
     /*height: 100%;*/
     width: 50%;
@@ -315,7 +315,7 @@ body {
     /*position: absolute;*/
     color: #333366;
     background-color: #F1F2F2;
-    width: 348px;
+    width: 398px;
     /*top: 0px;*/
     bottom: 0px;
     padding: 0px;
@@ -337,7 +337,7 @@ body {
     position: absolute;
     bottom: 0px;
     top: 33px;
-    width: 348px;
+    width: 373px;
     background-color: #F1F2F2 !important;
     display: none;
 }
@@ -386,7 +386,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 329px;
+    width: 353px;
 }
 
 #genomeSpaceFileTree {
@@ -715,7 +715,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 328px;
+    width: 353px;
 }
 
 #left-nav-modules-list {
@@ -724,7 +724,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 349px;
+    width: 353px;
 }
 
 .job-status-icon {

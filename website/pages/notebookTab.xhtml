@@ -137,13 +137,13 @@
 
                 // If user credentials can be retrieved, login
                 if (genepattern_cookie) {
-                    const username = usernameFromCookie(genepattern_cookie);
-                    const password = passwordFromCookie(genepattern_cookie);
+                    const nbusername = usernameFromCookie(genepattern_cookie);
+                    const nbpassword = passwordFromCookie(genepattern_cookie);
 
                     // Create the login form and submit it in the new tab
                     $('<form action="' + login_url + '" method="POST" target="_blank"></form>')
-                        .append($('<input type="hidden" name="username" value="' + username + '">'))
-                        .append($('<input type="hidden" name="password" value="' + password + '">'))
+                        .append($('<input type="hidden" name="username" value="' + nbusername + '">'))
+                        .append($('<input type="hidden" name="password" value="' + nbpassword + '">'))
                         .appendTo($("body"))
                         .submit();
                 }
@@ -278,7 +278,7 @@
                 position: absolute;
                 bottom: 0px;
                 top: 33px;
-                width: 348px;
+                width: 373px;
                 background-color: #F1F2F2 !important;
             }
 

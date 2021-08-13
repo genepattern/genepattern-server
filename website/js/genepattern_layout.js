@@ -6,7 +6,7 @@ $(function()
         ,   center__minWidth:	'100%'
         //,	resizerClass:			"resizer"
         ,	togglerClass:			"toggler"
-        ,   west__size:					352
+        ,   west__size:					375
         ,	west__spacing_open:		0
         ,	west__spacing_closed:		23
         ,	west__togglerLength_closed:	20 //"100%"

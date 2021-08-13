@@ -175,7 +175,8 @@ if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
 fi
 
 __res_req_arg="resourceRequirements=[${mem_resource_req}${vcpus_resource_req}]";
-
+# make sure a default container is set
+GP_JOB_DOCKER_IMAGE=${GP_JOB_DOCKER_IMAGE:-"genepattern/docker-java17:0.12"}
 
 # environment override
 : ${GP_USER_ID=test}
