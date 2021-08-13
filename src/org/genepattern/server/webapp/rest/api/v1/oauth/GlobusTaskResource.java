@@ -118,7 +118,7 @@ public class GlobusTaskResource {
             e.printStackTrace();
             ret.addProperty("loginValid", false);
         }
-        return Response.status(200).entity(ret.getAsString()).build();
+        return Response.status(200).entity(ret.toString()).build();
     
     }
     

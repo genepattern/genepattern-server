@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -769,7 +770,9 @@ public class UploadResource {
 
             proc = Runtime.getRuntime().exec(execBuff.toString());
             debugProcessStdOutAndErr(proc, "UploadResource>>getExternalUploadUrl");
-            proc.waitFor(30, TimeUnit.SECONDS);
+            //proc.waitFor(30, TimeUnit.SECONDS);
+            // damn java 7 and no waitFor with timeout
+            waitForProcess(proc, 30000);
 
             String resp = readOutputFileToString(filename);
             log.debug(resp);
@@ -796,10 +799,46 @@ public class UploadResource {
                 tmp.deleteOnExit();
             }
         }
-
-
     }
 
+    private static class Worker extends Thread {
+        private final Process process;
+        private Integer exit;
+        private Worker(Process process) {
+          this.process = process;
+        }
+        public void run() {
+          try { 
+            exit = process.waitFor();
+          } catch (InterruptedException ignore) {
+            return;
+          }
+        }  
+      }
+    
+    public Integer waitForProcess(Process process, int timeout) throws TimeoutException, InterruptedException{
+        Worker worker = new Worker(process);
+        worker.start();
+        try {
+          worker.join(timeout);
+          if (worker.exit != null)
+            return worker.exit;
+          else
+            throw new TimeoutException();
+        } catch(InterruptedException ex) {
+          worker.interrupt();
+          Thread.currentThread().interrupt();
+          throw ex;
+        } finally {
+          process.destroyForcibly();
+        }
+      }
+        
+        
+    
+    
+    
+    
     private String s3AdjustPath(String path, GpContext userContext, boolean encodePath) {
         String userId=userContext.getUserId();
         // for users with '@' in their name it will have been escaped in the path but we have
@@ -918,8 +957,8 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource>>startS3MultipartUpload");
-                proc.waitFor(30, TimeUnit.SECONDS);
-            
+                //proc.waitFor(30, TimeUnit.SECONDS);
+                waitForProcess(proc, 30000);
                 
             } catch (InterruptedException ie) {
                log.error(ie);
@@ -1043,8 +1082,8 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource>>getS3MultipartUploadOnePart");
-                proc.waitFor(30, TimeUnit.SECONDS);
-                
+                //proc.waitFor(30, TimeUnit.SECONDS);
+                waitForProcess(proc, 30000);
             } catch (InterruptedException ie) {
                 log.error(ie);
                 JSONObject respJson  =new JSONObject();
@@ -1182,7 +1221,8 @@ public class UploadResource {
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource >> registerExternalUpload");
-                proc.waitFor(30, TimeUnit.SECONDS);
+                //proc.waitFor(30, TimeUnit.SECONDS);
+                waitForProcess(proc, 30000);
             } catch (InterruptedException ie) {
                 
                log.error(ie);

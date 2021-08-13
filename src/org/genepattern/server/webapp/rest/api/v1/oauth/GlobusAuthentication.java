@@ -2,7 +2,7 @@ package org.genepattern.server.webapp.rest.api.v1.oauth;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Base64;
+
 import java.util.Random;
 
 import javax.servlet.http.Cookie;
@@ -24,6 +24,7 @@ import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.GPConstants;
 
+import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -89,7 +90,10 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
         // document.cookie = "GenePattern=" + $("#username").val() + "|" +
         // encodeURIComponent(btoa($("#password").val())) + ";path=/;domain=" + window.location.hostname;
         String s = username+"|"+"";
-        String token = new String(Base64.getEncoder().encode(s.getBytes()));
+       // String token = new String(Base64.getEncoder().encode(s.getBytes()));
+        String token = BaseEncoding.base64().encode(s.getBytes());
+        
+        
         Cookie cookie = new Cookie("GenePattern", token);
         cookie.setPath("/");
         response.addCookie(cookie);

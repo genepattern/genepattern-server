@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +42,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.common.io.BaseEncoding;
 
 public class GlobusClient {
     public static String transferAPIBaseUrl = "https://transfer.api.globusonline.org/v0.10" ;
@@ -272,8 +273,9 @@ public class GlobusClient {
         
         
         String auth = oAuthClientId + ":" + oAuthClientSecret;
-        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
-        String authHeaderValue = "Basic " + new String(encodedAuth);
+        // byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+        String encodedAuth = BaseEncoding.base64().encode(auth.getBytes());
+        String authHeaderValue = "Basic " + encodedAuth;
         return authHeaderValue;
     }
     
