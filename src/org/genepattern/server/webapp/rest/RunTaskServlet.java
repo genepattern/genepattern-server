@@ -228,16 +228,15 @@ public class RunTaskServlet extends HttpServlet
             File[] allFiles = null;
             try {
                 String docUrlx = taskInfo.getTaskInfoAttributes().get("documentationUrl");
+                
+                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
+                docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+                allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+
                 if (!StringUtils.isEmpty(docUrlx )){
                     hasDoc = true;
                 } else {
-                
-                    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
-                    docFiles = taskIntegratorClient.getDocFiles(taskInfo);
-                    allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-    
-                    if(docFiles == null || docFiles.length == 0)
-                    {
+                    if(docFiles == null || docFiles.length == 0)   {
                         hasDoc = false;
                     }
                 }
