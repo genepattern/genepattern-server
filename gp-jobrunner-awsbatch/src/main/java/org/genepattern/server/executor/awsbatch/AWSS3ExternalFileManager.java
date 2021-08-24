@@ -1,11 +1,9 @@
 package org.genepattern.server.executor.awsbatch;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -56,13 +54,23 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
         String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+        String awsS3CustomUrl = gpConfig.getGPProperty(userContext,"aws-s3-custom-url"); // e.g. "https://betafiles.genepattern.org/"
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
         
+        // this line for when custom domain not used for the url to s3
         String thePath = bucket+ "/"+bucketRoot+file.getAbsolutePath();
+        String execArgs[];
         
+        if (awsS3CustomUrl  != null) {
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath, "--endpoint-url", awsS3CustomUrl};
+        } else {
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath};
+        }
         
-        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath};
-       // String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
+        // these 2 for custom domain testing for GSEA
+        //String 
+        
+       
         BufferedReader stdInput = null;
         Process proc = Runtime.getRuntime().exec(execArgs);
         try {
@@ -74,9 +82,11 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
            String s = null;
            String redirectUrl = null;
            while ((s = stdInput.readLine()) != null) {
+               System.out.println("==== REDIRECT URL result IS :" + s);
                log.debug(s);
                redirectUrl = s;
            }  
+           redirectUrl = redirectUrl.replace("betafiles.genepattern.org/betafiles.genepattern.org/", "betafiles.genepattern.org/");
            // Read any errors from the attempted command
            logStderr(proc, " download file");    
            
@@ -289,7 +299,6 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         File dummyFile = File.createTempFile(placeholderPrefix, "");
         
         String thePath = subdir.getAbsolutePath();
-        String userId = userContext.getUserId();       
         
         String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", dummyFile.getAbsolutePath(),"s3://"+bucket+ "/"+bucketRoot+thePath+"/"+dummyFile.getName()};
         
