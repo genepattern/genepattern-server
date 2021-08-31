@@ -46,6 +46,7 @@
             function glb_browse() {
                 // Post the form to globus and post to it 
                 //
+                
                 var w = window.open('', 'form-target', 'width=800, height=800');
 			    
 			    window.globusCallbackFunction = function(){
@@ -100,6 +101,7 @@
 	                    		var taskDiv = $("<div></div>");
 	                    		$(taskDiv).append("<span>ID: "+task.id+"</span><br/>");
 	                    		$(taskDiv).append("<span>STATUS: "+ task.status+"</span><br/>");
+	                    		$(taskDiv).append("<span>ERROR: "+ task.error+"</span><br/>");
 	                    		$(taskDiv).append("<span>FILE:"+ task.file +"</span><br/>");
 	                    		$(taskDiv).append("<span>Last update:"+timeCheck.toString()+"</span><br/>");
 	                    		$(taskDiv).append("<span>"+i+"</span><br/><br/>");
@@ -120,7 +122,12 @@
                     		setTimeout( function(){ 
                     		    getGlobusTransferStatus();
                     		  }  , 60000 );
-                    	} 
+                    	} else {
+                    		setTimeout( function(){ 
+                    		    getGlobusTransferStatus();
+                    		  }  , 180000 );
+                    		
+                    	}
                     	// finally refresh the files tab to make sure it shows any recent additions
                     	refreshUploadTree();
                     	
@@ -220,7 +227,7 @@
 	        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" name="globusTransferForm" target="form-target">
 	        		<input type="text" value="POST" name="method" />
 	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="cancelurl" />
-	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="action" />
+	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet?gp_user_id=${requestScope.userID}" name="action" />
 	        		<input type="text" value="0" name="folderLimit" />
 	        		<input type="text" value="1" name="fileLimit" />
 	        		<input type="text" value="To GenePattern" name="label" />
@@ -236,10 +243,10 @@
    
     <br/>
     <div class="info-box">
-<!--         <button id="glb-refresh-transferlist" onclick="getGlobusTransferStatus();false"  -->
-<!--         			class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"> -->
-<!-- 	            Refresh  -->
-<!-- 	    </button> -->
+        <button id="glb-refresh-transferlist" onclick="getGlobusTransferStatus();false" 
+        			class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+	            Refresh 
+	    </button>
 	    <div id="glb-no-transfers">
        No Globus transfer's currently in progress.
        </div>

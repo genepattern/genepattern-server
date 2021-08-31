@@ -54,7 +54,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
         String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
-        String awsS3CustomUrl = gpConfig.getGPProperty(userContext,"aws-s3-custom-url"); // e.g. "https://betafiles.genepattern.org/"
+        String awsS3CustomUrl = gpConfig.getGPProperty(userContext,"aws-s3-custom-url", "https://betafiles.genepattern.org/"); // e.g. "https://betafiles.genepattern.org/"
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
         
         // this line for when custom domain not used for the url to s3

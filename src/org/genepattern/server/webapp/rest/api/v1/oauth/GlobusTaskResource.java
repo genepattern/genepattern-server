@@ -113,7 +113,11 @@ public class GlobusTaskResource {
             // are good to go
             gc.refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
             ret.addProperty("loginValid", true);
-        
+            // cache the session since the verify happens right before handoff to globus
+            // but globus screws up byt not letting us get our cookies when it comes back due to
+            // using an ajax CORS post instead of a form submit
+            request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
+            
         } catch (Exception e){
             e.printStackTrace();
             ret.addProperty("loginValid", false);

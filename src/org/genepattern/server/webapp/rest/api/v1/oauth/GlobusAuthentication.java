@@ -62,7 +62,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
 
             LoginManager.instance().addUserIdToSession(request, globusEmail);;
             LoginManager.instance().attachAccessCookie(response, globusEmail);
-            setGenePatternCookie(response, globusEmail);
+            setGenePatternCookie(request, response, globusEmail);
             
             linkGlobusAccountToGenePattern(request, globusEmail, accessToken, transferToken, refreshToken, transferRefreshToken, generatedPassword);
             //if (!inTransaction) hmgr.commitTransaction();
@@ -74,7 +74,13 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
         // [optionally] use default authentication
         String userId =  super.authenticate(request, response);
         
+      
+         
+        
         if (userId != null) populateFromPastGlobusLogin(request, userId);
+        
+        // save the session since the globus redirect will kill it by leaving the cookies out
+        request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
         
         return userId;
     }
@@ -86,13 +92,21 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
      * @param response
      * @param username
      */
-    public void setGenePatternCookie(HttpServletResponse response, String username){
+    public void setGenePatternCookie(HttpServletRequest request, HttpServletResponse response, String username){
         // document.cookie = "GenePattern=" + $("#username").val() + "|" +
         // encodeURIComponent(btoa($("#password").val())) + ";path=/;domain=" + window.location.hostname;
         String s = username+"|"+"";
        // String token = new String(Base64.getEncoder().encode(s.getBytes()));
         String token = BaseEncoding.base64().encode(s.getBytes());
-        
+        Cookie[] cookies = request.getCookies();
+        for (int i=0; i < cookies.length; i++){
+            Cookie c = cookies[i];
+            if (c.getName().equalsIgnoreCase("genepattern")){
+                System.out.println("found old cookie");
+                c.setValue(token);
+            }
+            
+        }
         
         Cookie cookie = new Cookie("GenePattern", token);
         cookie.setPath("/");

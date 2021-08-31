@@ -214,6 +214,7 @@ public class LoginManager {
        
         if (session != null) {
             session.removeAttribute(GPConstants.USERID);
+            session.removeAttribute( "userID");
             session.invalidate();
         }
 

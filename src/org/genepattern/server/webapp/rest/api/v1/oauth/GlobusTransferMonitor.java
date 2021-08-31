@@ -1,16 +1,28 @@
 package org.genepattern.server.webapp.rest.api.v1.oauth;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
+import org.genepattern.server.executor.awsbatch.AWSBatchJobRunner;
+import org.genepattern.server.executor.awsbatch.AWSS3ExternalFileManager;
+import org.genepattern.server.executor.awsbatch.AwsBatchUtil;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.util.HttpNotificationManager;
 import org.genepattern.server.webapp.rest.api.v1.Util;
@@ -22,6 +34,9 @@ public class GlobusTransferMonitor {
     private static GlobusTransferMonitor instance = null;
     private ArrayList<TransferWaitThread> threads = new  ArrayList<TransferWaitThread>();
     private ArrayList<HashMap<String,String>> finishedTransfers = new ArrayList<HashMap<String,String>>();
+    
+    private static Logger log = Logger.getLogger(GlobusTransferMonitor.class);
+    
     
     public static GlobusTransferMonitor getInstance(){
         if (instance == null) instance = new GlobusTransferMonitor();
@@ -95,6 +110,7 @@ class TransferWaitThread extends Thread {
     String error = null;
     String file;
     GpContext userContext;
+    private static Logger log = Logger.getLogger(TransferWaitThread.class);
     
     int initialSleep = 60000;  // one minute
 
@@ -187,23 +203,15 @@ class TransferWaitThread extends Thread {
         HibernateSessionManager hib =  HibernateUtil.instance();
         try {
             GpConfig gpConfig=ServerConfigurationFactory.instance();
-           
-            String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
-            File newFile = new File(myEndpointRoot + user +"/globus/"+file);
-            if (newFile.exists()) {
-                // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
-                GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+newFile.getName(), (LSID)null);
-                newFile.renameTo(uploadFilePath.getServerFile());
-                JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
-                
-                hib.beginTransaction();
-                fileUtil.updateUploadsDb(hib, uploadFilePath);
-                hib.commitTransaction();
-            } else {
-                throw new Exception("File from Globus is missing.  Not at " + newFile.getAbsolutePath());
-            }
-            String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+            String myEndpointType = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
             
+            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+                finalizeLocalFileTransfer(hib, gpConfig);
+            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+                finalizeLocalFileTransfer(hib, gpConfig);
+            }
+            
+            String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
             String ACLRuleId = this.globusClient.getUserACLId(token);
             if (ACLRuleId != null){
                 this.globusClient.teardownOpenACLForTransfer(token, ACLRuleId);
@@ -213,6 +221,45 @@ class TransferWaitThread extends Thread {
             this.error = e.getMessage();
         } finally {
             if (hib.isInTransaction()) hib.rollbackTransaction();
+        }
+    }
+
+    private void finalizeLocalFileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
+        String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+        File newFile = new File(myEndpointRoot + user +"/globus/"+file);
+        if (newFile.exists()) {
+            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+newFile.getName(), (LSID)null);
+            newFile.renameTo(uploadFilePath.getServerFile());
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
+            
+            hib.beginTransaction();
+            fileUtil.updateUploadsDb(hib, uploadFilePath);
+            hib.commitTransaction();
+        } else {
+            throw new Exception("File from Globus is missing.  Not at " + newFile.getAbsolutePath());
+        }
+    }
+    
+    private void finalizeS3FileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
+        String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+        ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
+        
+       xxx
+       ;
+        if (verifyS3FileExists(this.userContext, myEndpointRoot + user +"/globus/"+file)) {
+            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+file, (LSID)null);
+      
+            // move the file within S3 to the desired location   
+            s3CopyFile(myEndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
+            
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
+            hib.beginTransaction();
+            fileUtil.updateUploadsDb(hib, uploadFilePath);
+            hib.commitTransaction();
+        } else {
+            throw new Exception("File from Globus is missing.  Not at " + myEndpointRoot + user +"/globus/"+file);
         }
     }
     
@@ -264,4 +311,105 @@ class TransferWaitThread extends Thread {
         return true;
     }
     
+    
+    public  boolean verifyS3FileExists(GpContext userContext, String s3PathAndFile  ) throws IOException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+     
+        String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");        
+        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "ls",  s3PathAndFile};
+
+        boolean success = false;
+        Process proc = null;
+        try {
+            proc = Runtime.getRuntime().exec(execArgs);
+            proc.waitFor(3, TimeUnit.MINUTES);
+            success = (proc.exitValue() == 0);
+            if (!success){
+                logStdout(proc, "sync S3 file"); 
+                logStderr(proc, "sync S3 file"); 
+            } 
+        } catch (Exception e){
+            log.debug(e);
+        } finally {
+            if (proc != null) proc.destroy();
+        }
+        return success;
+    }
+    
+    private void logStderr(Process proc, String action) throws IOException {
+        String s;
+        BufferedReader stdError = null;
+        try {
+            stdError = new BufferedReader(new  InputStreamReader(proc.getErrorStream()));
+            log.debug("Here is the standard error of "+action+" from S3 (if any):\n");
+            while ((s = stdError.readLine()) != null) {
+                log.debug(s);
+            }
+        } finally {
+            if (stdError != null) stdError.close();
+        }
+    }
+    private void logStdout(Process proc, String action) throws IOException {
+        String s;
+        BufferedReader stdOut = null;
+        try {
+            stdOut = new BufferedReader(new  InputStreamReader(proc.getInputStream()));
+            log.debug("Here is the standard out of "+action+" from S3 (if any):\n");
+            while ((s = stdOut.readLine()) != null) {
+                log.debug(s);
+            }
+        } finally {
+            if (stdOut != null) stdOut.close();
+        }
+    }
+    
+    public boolean s3CopyFile(GpContext userContext, String fromFileS3Url, File toFile) throws IOException {
+        // For S3 file downloads, we want to generate a presigned URL to redirect to
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String bucket = getBucketName(gpConfig, userContext);
+        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+         
+        String execArgs[];
+        
+        execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
+        
+        
+        boolean success = false;
+        Process proc = Runtime.getRuntime().exec(execArgs);
+        try {
+            proc.waitFor(3, TimeUnit.MINUTES);
+        
+            success = (proc.exitValue() == 0);
+            if (!success){
+                logStdout(proc, "copy s3 file"); 
+                logStderr(proc, "copy s3 file"); 
+            }
+            
+        } catch (Exception e){
+            log.debug(e);
+            return false;
+            
+        } finally {
+            proc.destroy();
+        }
+        return success;
+    
+    }
+    static String getBucketName(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        
+        // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(5,endIdx);
+    }
+     static String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+       
+        // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(endIdx+1);
+    }
 }

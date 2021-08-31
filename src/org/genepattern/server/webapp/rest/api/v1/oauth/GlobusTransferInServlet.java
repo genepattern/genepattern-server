@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -72,14 +73,33 @@ public class GlobusTransferInServlet extends HttpServlet {
     		String endpointId = null;
     		String path = null;
     		String file = null;
-		
+    		String gp_user_id = null;
     		try {
     		    endpointId = request.getParameter("endpoint_id");
     		    path = request.getParameter("path");
     		    file = request.getParameter("file[0]");
+    		    gp_user_id = request.getParameter("gp_user_id");
     		} catch (Exception ex){
     		    ex.printStackTrace();
     		}
+    		
+    		
+    		// this was set on login
+    		// request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
+    		HttpSession oldSession = (HttpSession) request.getSession().getServletContext().getAttribute("globus_session_"+gp_user_id);
+    		if (oldSession != null){
+    		    Enumeration names = oldSession.getAttributeNames();
+    		    while (names.hasMoreElements()){
+    		        String name = (String)names.nextElement();
+    		        Object val = oldSession.getAttribute(name);
+    		        request.getSession().setAttribute(name, val);
+    		        
+    		    }
+    		    // now we have moved to this session
+    		    request.getSession().getServletContext().setAttribute("globus_session_"+gp_user_id, request.getSession());
+                
+    		}
+    		
     		
     		if ((endpointId == null)||(path==null)||(file==null)){
     		    // user probably hit the cancel button
@@ -97,15 +117,11 @@ public class GlobusTransferInServlet extends HttpServlet {
                 
                 // a new thread is automatically started to poll for completion
                 
-                
                 // now the transfer is complete, move the file from the globus drop 
                 // to the user's top level directory, and push to an external File Manager
                 // if appropriate 
                 // XXX TODO: allow the user to specify where to put the files
-         
-                
-               
-                
+                   
             }  catch (InterruptedException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -117,8 +133,6 @@ public class GlobusTransferInServlet extends HttpServlet {
 		    response.getWriter().append("\nERROR ").append(ex.getMessage());
 		}
 		
-		// XXX TODO need to redirect to a GP page saying transfer is complete with a close window button on it
-		response.getWriter().append("\nDONE ").append(request.getContextPath());
 		// redirect to a page to close the popup and call the parent window to tell it to look
 		// for the new file to appear in the user's files tab
 		response.sendRedirect("/gp/GlobusTransferComplete.html");

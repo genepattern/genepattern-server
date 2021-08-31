@@ -127,7 +127,9 @@ public class GlobusClient {
      */
     public void refreshToken(HttpServletRequest servletRequest, String refreshTokenKey, String accessTokenKey) throws IOException{
         String userId = (String)servletRequest.getSession().getAttribute(GPConstants.USERID);
-        
+        if (userId == null) {
+            userId = servletRequest.getParameter("user_id");
+        }
         String refreshToken = (String) servletRequest.getSession().getAttribute(refreshTokenKey);
         String accessToken = (String) servletRequest.getSession().getAttribute(accessTokenKey);
         if ((refreshToken == null) || (accessToken == null)){
@@ -182,6 +184,7 @@ public class GlobusClient {
     public String getTokenFromUserPrefs(String userId, String key){
         HibernateSessionManager hmgr = HibernateUtil.instance();
         UserDAO dao = new UserDAO(hmgr);
+        
         return dao.getProperty(userId, key).getValue();
     }
     
@@ -319,6 +322,10 @@ public class GlobusClient {
     
         
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
+        if (userId == null) {
+            userId = request.getParameter("gp_user_id");
+        }
+        
         final GpContext context =  GpContext.getContextForUser(userId);
              
         //refreshToken(request, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
@@ -337,7 +344,7 @@ public class GlobusClient {
         //   which we can get via inspection call using the access_token
         
         // so to transfer in we need to know our endpoint ID
-        String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
+        String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
         String submissionId = getSubmissionId(transferToken);
 
         JsonObject transferObject = new JsonObject();
@@ -454,12 +461,29 @@ public class GlobusClient {
         String userAccessToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         
+        
+        
         GpContext context = GpContext.getServerContext();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENPOINT_ID);
+        String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID);
+        String token = getTokenFromUserPrefs(userId, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
         
-        JsonElement tokenDetails = getTokenDetails(userAccessToken);
-        String userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
+        JsonElement tokenDetails = null;
+        String userUUID = null;
+        try {
+            tokenDetails = getTokenDetails(userAccessToken);
+            userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
+        } catch (Exception e){
+            e.printStackTrace();
+            try {
+                tokenDetails = getTokenDetails(token);
+                userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
+            } catch (Exception e2){
+                e2.printStackTrace();
+            }
+        }
+        
+         
         String appAccessToken = getApplicationCredentials() ;
         
         URL anUrl = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/"+myEndpointID+"/access");  
@@ -521,7 +545,7 @@ public class GlobusClient {
         try {
             GpContext context = GpContext.getServerContext();
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENPOINT_ID);
+            String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID);
             
             JsonElement tokenDetails = getTokenDetails(userAccessToken);
             String userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
@@ -552,7 +576,7 @@ public class GlobusClient {
         try {
             GpContext context = GpContext.getServerContext();
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENPOINT_ID);
+            String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID);
             
             JsonElement tokenDetails = getTokenDetails(userAccessToken);
             String userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
