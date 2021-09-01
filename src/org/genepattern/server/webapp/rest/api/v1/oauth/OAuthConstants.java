@@ -29,6 +29,7 @@ public class OAuthConstants {
     // used for transfer in from other locations
     public static final String OAUTH_LOCAL_ENDPOINT_ID = "globus.local.endpoint.id";
     public static final String OAUTH_LOCAL_ENDPOINT_ROOT ="globus.local.endpoint.root";
+    public static final String OAUTH_S3_ENDPOINT_ROOT ="globus.local.endpoint.root.s3";
     public static final String OAUTH_LOCAL_ENDPOINT_TYPE = "globus.local.endpoint.type";
     public static final String OAUTH_ENDPOINT_TYPE_LOCALFILE = "localfile";
     public static final String OAUTH_ENDPOINT_TYPE_S3 = "s3";

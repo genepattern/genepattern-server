@@ -208,7 +208,7 @@ class TransferWaitThread extends Thread {
             if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
                 finalizeLocalFileTransfer(hib, gpConfig);
             } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
-                finalizeLocalFileTransfer(hib, gpConfig);
+                finalizeS3FileTransfer(hib, gpConfig);
             }
             
             String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
@@ -219,6 +219,7 @@ class TransferWaitThread extends Thread {
             
         } catch (Exception e){
             this.error = e.getMessage();
+            this.status = "Error after transfer completed";
         } finally {
             if (hib.isInTransaction()) hib.rollbackTransaction();
         }
@@ -242,24 +243,23 @@ class TransferWaitThread extends Thread {
     }
     
     private void finalizeS3FileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
-        String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+        String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
         ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
         
-       xxx
-       ;
-        if (verifyS3FileExists(this.userContext, myEndpointRoot + user +"/globus/"+file)) {
+       
+        if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+file, (LSID)null);
       
             // move the file within S3 to the desired location   
-            s3CopyFile(myEndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
+            s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
             
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
             hib.beginTransaction();
             fileUtil.updateUploadsDb(hib, uploadFilePath);
             hib.commitTransaction();
         } else {
-            throw new Exception("File from Globus is missing.  Not at " + myEndpointRoot + user +"/globus/"+file);
+            throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);
         }
     }
     
@@ -325,10 +325,10 @@ class TransferWaitThread extends Thread {
             proc = Runtime.getRuntime().exec(execArgs);
             proc.waitFor(3, TimeUnit.MINUTES);
             success = (proc.exitValue() == 0);
-            if (!success){
+          //  if (!success){
                 logStdout(proc, "sync S3 file"); 
                 logStderr(proc, "sync S3 file"); 
-            } 
+          //  } 
         } catch (Exception e){
             log.debug(e);
         } finally {
