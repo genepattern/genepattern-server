@@ -110,7 +110,7 @@ public class GlobusClient {
         
         // THESE CALLS ARE JUST FOR TEST/DEBUG
         JsonElement tokenDetails = getTokenDetails(accessToken);
-        System.out.println("@login TokenDetails: "+ accessToken+"\n\t"+ tokenDetails);
+        //System.out.println("@login TokenDetails: "+ accessToken+"\n\t"+ tokenDetails);
         
        
         
@@ -137,9 +137,9 @@ public class GlobusClient {
             accessToken = getTokenFromUserPrefs(userId, accessTokenKey);
         }
         
-        System.out.println("Refresh Token: " + refreshTokenKey);
-        System.out.println("\told refresh: " + refreshToken);
-        System.out.println("\told access: " + accessToken);
+        //System.out.println("Refresh Token: " + refreshTokenKey);
+        //System.out.println("\told refresh: " + refreshToken);
+        //System.out.println("\told access: " + accessToken);
         
         String authHeaderValue = getAppAuthHeader();
         
@@ -162,13 +162,13 @@ public class GlobusClient {
         }    
         // get the json response
         JsonElement je = getJsonResponse(con);
-        System.out.println(je);
+        //System.out.println(je);
         
         String newAccess = je.getAsJsonObject().get("access_token").getAsString();
         String newRefresh = je.getAsJsonObject().get("refresh_token").getAsString();
        
-        System.out.println("\tnew refresh: " + newRefresh);
-        System.out.println("\tnew access: " + newAccess);
+        //System.out.println("\tnew refresh: " + newRefresh);
+        //System.out.println("\tnew access: " + newAccess);
     
         
         servletRequest.getSession().setAttribute(refreshTokenKey, newRefresh);
@@ -366,7 +366,7 @@ public class GlobusClient {
         
         transferObject.add("DATA", transferItems);
         
-        System.out.println("     "+transferObject);
+        //System.out.println("     "+transferObject);
         URL url = new URL(transferAPIBaseUrl+"/transfer");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
         connection.setRequestMethod("POST");
@@ -395,28 +395,34 @@ public class GlobusClient {
         return taskId;
     }
     
-   
-    
-   public String checkTransferStatus(String taskId, String transferToken) throws IOException{
-        
-        // ?: change to different call using the GP client token instead of the user's transfer token
-        // to monitor the transfer progress.  This is because transfer tokens are only good for 2 hours
-        // or else refresh the token
-       
-        String status = "ACTIVE";
-        URL url = new URL(transferAPIBaseUrl+"/task/"+taskId);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestProperty("Authorization","Bearer "+ transferToken);
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setReadTimeout(20000);
-        
-        JsonElement submissionResponse =  getJsonResponse(connection);
-        String transferStatus = submissionResponse.getAsJsonObject().get("status").getAsString();
-        
+    public String checkTransferStatus(JsonObject statusObject){
+        String transferStatus = statusObject.get("status").getAsString();
         return transferStatus;
     }
     
+    public String checkTransferStatus(String taskId, String transferToken) throws IOException{
+       return checkTransferStatus( getTransferDetails( taskId,  transferToken));   
+    }
+    
+   public JsonObject getTransferDetails(String taskId, String transferToken) throws IOException{
+       
+       // ?: change to different call using the GP client token instead of the user's transfer token
+       // to monitor the transfer progress.  This is because transfer tokens are only good for 2 hours
+       // or else refresh the token
+      
+       String status = "ACTIVE";
+       URL url = new URL(transferAPIBaseUrl+"/task/"+taskId);
+       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+       connection.setRequestProperty("Authorization","Bearer "+ transferToken);
+       connection.setRequestMethod("GET");
+       connection.setRequestProperty("Accept", "application/json");
+       connection.setReadTimeout(20000);
+       
+       JsonElement submissionResponse =  getJsonResponse(connection);
+       return  submissionResponse.getAsJsonObject();       
+   }
+   
+   
    /**
     * Get credentials to make globus calls as the GenePattern application (and not as an end user)
     * Used for ACL setup/teardown 
@@ -488,7 +494,7 @@ public class GlobusClient {
         
         URL anUrl = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/"+myEndpointID+"/access");  
         
-        System.out.println("ACL CALL " + anUrl.toString());
+        // System.out.println("ACL CALL " + anUrl.toString());
         HttpURLConnection con = (HttpURLConnection) anUrl.openConnection();
          
         String authHeaderValue = "Bearer " + appAccessToken; 
@@ -512,7 +518,7 @@ public class GlobusClient {
             byte[] input = aclObject.toString().getBytes("utf-8");
             os.write(input, 0, input.length);           
             JsonElement je = getJsonResponse(con);
-            System.out.println(je);
+            //System.out.println(je);
            
             
         } catch (Exception e){
@@ -523,7 +529,7 @@ public class GlobusClient {
                 String code = jerr.getAsJsonObject().get("code").getAsString();
                 if ("Exists".equalsIgnoreCase(code)){
                     String ruleId = getUserACLId( userAccessToken);
-                    System.out.println("GLOBUS access rule already existed "+ ruleId);
+                    //System.out.println("GLOBUS access rule already existed "+ ruleId);
                 } else {
                     realError = true;
                 }
@@ -560,7 +566,7 @@ public class GlobusClient {
             Xcon.setRequestProperty("Accept", "application/json");
             
             JsonElement je = getJsonResponse(Xcon);
-            System.out.println(je);
+            //System.out.println(je);
                 
             String code = je.getAsJsonObject().get("code").getAsString();
             return "Deleted".equalsIgnoreCase(code);
@@ -590,7 +596,7 @@ public class GlobusClient {
             Xcon.setRequestProperty("Accept", "application/json");
             
             JsonElement je = getJsonResponse(Xcon);
-            System.out.println(je);
+            //System.out.println(je);
             JsonArray aclEntries = je.getAsJsonObject().get("DATA").getAsJsonArray();
             for (int i=0; i< aclEntries.size(); i++){
                 JsonObject anAccess = aclEntries.get(i).getAsJsonObject();
