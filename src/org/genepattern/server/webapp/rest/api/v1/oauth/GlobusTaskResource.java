@@ -71,12 +71,11 @@ public class GlobusTaskResource {
     public Response getCurrentTasks(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         
-        ArrayList<HashMap<String,String>> taskList = GlobusTransferMonitor.getInstance().getStatusForUser(userId);
+        ArrayList<JsonObject> taskList = GlobusTransferMonitor.getInstance().getStatusForUser(userId);
  
         JsonArray taskListJson = new JsonArray();
         for (int i=0; i < taskList.size(); i++){
-            HashMap<String,String> taskMap = taskList.get(i);
-            JsonObject task = this.mapToJson(taskMap);
+            JsonObject task = taskList.get(i);
             taskListJson.add(task);
         }
         String listString = taskListJson.toString();
@@ -85,26 +84,22 @@ public class GlobusTaskResource {
     
     }
     
-
- 
-    JsonObject mapToJson(HashMap<String,String> map){
-        JsonObject transferObject = new JsonObject();
-        transferObject.addProperty("id", map.get("id"));
-        transferObject.addProperty("error", map.get("error"));
-        transferObject.addProperty("status", map.get("status"));
-        transferObject.addProperty("prevStatus", map.get("prevStatus"));
-        transferObject.addProperty("lastStatusCheckTime", map.get("lastStatusCheckTime"));
-        transferObject.addProperty("file", map.get("file"));
-        
-        return transferObject;
+    
+    @GET
+    @Path("/clearCompletedTasks")
+    public Response clearCompletedTasks(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+        String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
+         
+        GlobusTransferMonitor.getInstance().clearCompletedForUser(userId);
+        return Response.status(200).build();
     }
+    
     
     @GET
     @Path("/verifyGlobusLogin")
     public Response verifyGlobusLogin(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
-        
-        ArrayList<HashMap<String,String>> taskList = GlobusTransferMonitor.getInstance().getStatusForUser(userId);
+   
         JsonObject ret = new JsonObject();
         
         try {
@@ -117,6 +112,7 @@ public class GlobusTaskResource {
             // but globus screws up byt not letting us get our cookies when it comes back due to
             // using an ajax CORS post instead of a form submit
             request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
+            request.getSession().getServletContext().setAttribute("globus_session_id_"+userId, request.getSession().getId());
             
         } catch (Exception e){
             e.printStackTrace();

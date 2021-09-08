@@ -81,6 +81,7 @@ public class GlobusAuthentication extends DefaultGenePatternAuthentication {
         
         // save the session since the globus redirect will kill it by leaving the cookies out
         request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
+        request.getSession().getServletContext().setAttribute("globus_session_id_"+userId, request.getSession().getId());
         
         return userId;
     }

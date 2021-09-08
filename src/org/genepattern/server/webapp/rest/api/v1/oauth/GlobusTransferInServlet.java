@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
@@ -63,45 +64,58 @@ public class GlobusTransferInServlet extends HttpServlet {
     		// we should receive endpoint_id, path, folder[0..n] rel to path, file[0..n] rel to path, label
     		// for now it should be a single file
     		
-            Enumeration<String> e = request.getParameterNames();
-            while (e.hasMoreElements()){
-                String key = (String)e.nextElement();
-                String val = request.getParameter(key);
-                System.out.println("==> " + key + " = " + val);
-                
-            }
+            
     		String endpointId = null;
     		String path = null;
-    		String file = null;
+    		ArrayList<String> files = new ArrayList<String>();
     		String gp_user_id = null;
+    		String gp_session_id = null;
+    		
+    		
     		try {
     		    endpointId = request.getParameter("endpoint_id");
     		    path = request.getParameter("path");
-    		    file = request.getParameter("file[0]");
-    		    gp_user_id = request.getParameter("gp_user_id");
+    		    
+    		    Enumeration<String> e = request.getParameterNames();
+                
+                while (e.hasMoreElements()){
+                    String key = (String)e.nextElement();
+                    String val = request.getParameter(key);
+                    if (key.startsWith("file[")){
+                        
+                        files.add(val);
+                    }
+                    System.out.println("==> " + key + " = " + val);
+                }
+    		    
+    		    
+    		    gp_user_id = request.getParameter("gp_username");
+    		    gp_session_id = request.getParameter("gp_session_id");
     		} catch (Exception ex){
     		    ex.printStackTrace();
     		}
     		
-    		
-    		// this was set on login
-    		// request.getSession().getServletContext().setAttribute("globus_session_"+userId, request.getSession());
+    		// this was set before going to globus so we can identify the user in its response which will not have our cookies
     		HttpSession oldSession = (HttpSession) request.getSession().getServletContext().getAttribute("globus_session_"+gp_user_id);
-    		if (oldSession != null){
-    		    Enumeration names = oldSession.getAttributeNames();
-    		    while (names.hasMoreElements()){
-    		        String name = (String)names.nextElement();
-    		        Object val = oldSession.getAttribute(name);
-    		        request.getSession().setAttribute(name, val);
-    		        
-    		    }
-    		    // now we have moved to this session
-    		    request.getSession().getServletContext().setAttribute("globus_session_"+gp_user_id, request.getSession());
-                
+    		String oldSessionId = (String) request.getSession().getServletContext().getAttribute("globus_session_id_"+gp_user_id);
+            if (oldSession != null){
+                if (oldSessionId.equals(gp_session_id)){
+        		    Enumeration names = oldSession.getAttributeNames();
+        		    while (names.hasMoreElements()){
+        		        String name = (String)names.nextElement();
+        		        Object val = oldSession.getAttribute(name);
+        		        request.getSession().setAttribute(name, val);
+        		        
+        		    }
+        		    // now we have moved to this session
+        		    request.getSession().getServletContext().setAttribute("globus_session_"+gp_user_id, request.getSession());
+        		    request.getSession().getServletContext().setAttribute("globus_session_id_"+gp_user_id, request.getSession().getId());
+                    
+                }
     		}
     		
     		
-    		if ((endpointId == null)||(path==null)||(file==null)){
+    		if ((endpointId == null)||(path==null)||(files.size()==0)){
     		    // user probably hit the cancel button
     		    // so nothing to do here but go to the 
     		    // transfer complete page which itself does
@@ -113,7 +127,9 @@ public class GlobusTransferInServlet extends HttpServlet {
     		
     		
      		try {
-                String taskId = globusClient.startGlobusFileTransfer(request, endpointId, path, file);
+     		    for (int i=0; i<files.size();i++){
+     		       globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i));
+                }
                 
                 // a new thread is automatically started to poll for completion
                 

@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -30,10 +33,12 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 
+import com.google.gson.JsonObject;
+
 public class GlobusTransferMonitor {
     private static GlobusTransferMonitor instance = null;
     private ArrayList<TransferWaitThread> threads = new  ArrayList<TransferWaitThread>();
-    private ArrayList<HashMap<String,String>> finishedTransfers = new ArrayList<HashMap<String,String>>();
+    private ArrayList<JsonObject> finishedTransfers = new ArrayList<JsonObject>();
     
     private static Logger log = Logger.getLogger(GlobusTransferMonitor.class);
     
@@ -45,7 +50,9 @@ public class GlobusTransferMonitor {
     
     protected void threadFinished(TransferWaitThread t){
         threads.remove(t);
-        finishedTransfers.add(t.getStatusMap());
+        synchronized(this.finishedTransfers){
+            finishedTransfers.add(t.getAsJson());
+        }
     }
     
     public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext) {
@@ -65,28 +72,37 @@ public class GlobusTransferMonitor {
         }
     }
     
-    public HashMap<String,String> getStatus(String user, String taskID) {
+    public JsonObject getStatus(String user, String taskID) {
         for (TransferWaitThread twt: threads){
             if (twt.matchTaskAndUser(user, taskID)) {
                
-                return twt.getStatusMap();
+                return twt.getAsJson();
             }
         }
         return null;
     }
-    
-    public ArrayList<HashMap<String,String>> getStatusForUser(String user) {
-        ArrayList<HashMap<String,String>> l = new ArrayList<HashMap<String,String>> ();
+    public ArrayList<TransferWaitThread> getRunningForUser(String user) {
+        ArrayList<TransferWaitThread> l = new ArrayList<TransferWaitThread> ();
         for (TransferWaitThread twt: threads){
             if (twt.matchUser(user)) {
-                l.add(twt.getStatusMap());
+                l.add(twt);
+            }
+        }
+        return l;
+    }
+    
+    public ArrayList<JsonObject> getStatusForUser(String user) {
+        ArrayList<JsonObject> l = new ArrayList<JsonObject> ();
+        for (TransferWaitThread twt: threads){
+            if (twt.matchUser(user)) {
+                l.add(twt.getAsJson());
             }
         }
         
        // loop in reverse since we add at the end
        for (int j = finishedTransfers.size() - 1; j >= 0; j--){    
-           HashMap<String,String> finishedTransfer = finishedTransfers.get(j);
-           if (user.equals(finishedTransfer.get("user"))){
+           JsonObject finishedTransfer = finishedTransfers.get(j);
+           if (user.equals(finishedTransfer.get("user").getAsString())){
                 l.add(finishedTransfer);
            }
         }
@@ -94,7 +110,22 @@ public class GlobusTransferMonitor {
         
         return l;
     }
-    
+   
+    public void clearCompletedForUser(String user) {
+       // loop in reverse since we add at the end
+        synchronized(this.finishedTransfers){
+           ArrayList<JsonObject> newFinishedTransfers = new ArrayList<JsonObject>(); 
+           for (int i=0; i<finishedTransfers.size();i++){
+               JsonObject transfer = finishedTransfers.get(i);
+               if (! user.equals(transfer.get("user").getAsString())){
+                   newFinishedTransfers.add(transfer);
+               }
+               
+           }
+       
+           this.finishedTransfers = newFinishedTransfers;
+       }
+    }
     
 }
 
@@ -106,9 +137,12 @@ class TransferWaitThread extends Thread {
     GlobusClient globusClient = null;
     String prevStatus = null;
     String status = null;
+    JsonObject statusObject = null;
     long lastStatusCheckTime = 0L;
     String error = null;
     String file;
+    String awsFileDetails;
+    
     GpContext userContext;
     private static Logger log = Logger.getLogger(TransferWaitThread.class);
     
@@ -130,18 +164,19 @@ class TransferWaitThread extends Thread {
         stopQuietly = true;
     }
 
-    public HashMap<String,String> getStatusMap(){
-        HashMap<String,String> map = new HashMap();
-        map.put("status", status);
-        map.put("prevStatus", status);
-        map.put("lastStatusCheckTime", ""+ lastStatusCheckTime);
-        map.put("error", error);
-        map.put("id", this.taskId);
-        map.put("file", this.file);
-        map.put("error", this.error);
-        map.put("user", this.user);
-         
-        return map;
+    public JsonObject getAsJson(){
+        JsonObject transferObject = new JsonObject();
+        transferObject.addProperty("id", this.taskId);
+        transferObject.addProperty("user", this.user);
+        transferObject.addProperty("error", this.error);
+        transferObject.addProperty("status", this.status);
+        transferObject.addProperty("prevStatus", this.prevStatus);
+        transferObject.addProperty("lastStatusCheckTime", this.lastStatusCheckTime);
+        transferObject.addProperty("file", this.file);
+        transferObject.add("statusObject", this.statusObject);
+        
+        
+        return transferObject;
     }
     
     public void run() {
@@ -165,8 +200,14 @@ class TransferWaitThread extends Thread {
             try {
                 // TODO should we refresh the token before each use?
                 String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-                System.out.println("\tTRANSFER TOKEN (get status):"+token );
-                status = globusClient.checkTransferStatus(taskId, token);
+                statusObject = globusClient.getTransferDetails(taskId, token);
+                
+                //System.out.println("\tTRANSFER TOKEN (get status):"+token );
+                //String appAccessToken = globusClient.getApplicationCredentials() ;
+                //statusObject = globusClient.getTransferDetails(taskId, appAccessToken);
+                
+                status = globusClient.checkTransferStatus(statusObject);
+                
                 lastStatusCheckTime = System.currentTimeMillis();
             } catch (Exception e){
                 error = e.getMessage();
@@ -196,6 +237,7 @@ class TransferWaitThread extends Thread {
         
     } finally {
         GlobusTransferMonitor.getInstance().threadFinished(this);
+        cleanUpACL(); // get rid of the ACL if no transfers are in progress
     }
     }
 
@@ -211,17 +253,26 @@ class TransferWaitThread extends Thread {
                 finalizeS3FileTransfer(hib, gpConfig);
             }
             
-            String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+           
+            
+        } catch (Exception e){
+            log.error(e);
+            e.printStackTrace();
+            this.error = "Error after transfer completed" + e.getMessage();
+            this.status = "ERROR";
+        } finally {
+            if (hib.isInTransaction()) hib.rollbackTransaction();
+        }
+    }
+
+    private void cleanUpACL() {
+        ArrayList<TransferWaitThread> running = GlobusTransferMonitor.getInstance().getRunningForUser(this.user);
+        if (running.size() == 0){
+        String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
             String ACLRuleId = this.globusClient.getUserACLId(token);
             if (ACLRuleId != null){
                 this.globusClient.teardownOpenACLForTransfer(token, ACLRuleId);
             }
-            
-        } catch (Exception e){
-            this.error = e.getMessage();
-            this.status = "Error after transfer completed";
-        } finally {
-            if (hib.isInTransaction()) hib.rollbackTransaction();
         }
     }
 
@@ -255,9 +306,17 @@ class TransferWaitThread extends Thread {
             s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
             
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
+            BigInteger size = statusObject.get("bytes_transferred").getAsBigInteger();
+            
+            uploadFilePath.setFileLength(new Long(size.longValue()));
+            uploadFilePath.setLastModified(new Date());
             hib.beginTransaction();
             fileUtil.updateUploadsDb(hib, uploadFilePath);
             hib.commitTransaction();
+            
+            // now we use the details in the globus status object to get the size and we need to set ther date
+            
+            
         } else {
             throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);
         }
@@ -325,9 +384,26 @@ class TransferWaitThread extends Thread {
             proc = Runtime.getRuntime().exec(execArgs);
             proc.waitFor(3, TimeUnit.MINUTES);
             success = (proc.exitValue() == 0);
-          //  if (!success){
-                logStdout(proc, "sync S3 file"); 
+            if (success) {
+                String s;
+                BufferedReader stdOut = null;
+                try {
+                    stdOut = new BufferedReader(new  InputStreamReader(proc.getInputStream()));
+                    int lineNumber = 0;
+                    while ((s = stdOut.readLine()) != null) {
+                        System.out.println(s);
+                        if (lineNumber == 1){
+                            // this is the line containing size etc we will need for the finalize step
+                            awsFileDetails = s;
+                        }
+                        lineNumber++;
+                    }
+                } finally {
+                    if (stdOut != null) stdOut.close();
+                }
+            } else {
                 logStderr(proc, "sync S3 file"); 
+            }
           //  } 
         } catch (Exception e){
             log.debug(e);

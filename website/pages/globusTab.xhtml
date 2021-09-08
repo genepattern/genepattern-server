@@ -11,14 +11,25 @@
 
             var globus_enabled = #{loginBean.globusEnabled};
            
-
+            
+            
             window.globus_tab_init = false;
             function init_globus_tab() {
                 if (window.globus_tab_init) return;
        
-
+               // $("#glbBrowseForm").append('<input type="text" name="gp_session_id" value="'+getCookie("JSESSIONID")+'" />');
+                var oldAction = $("#globusAction")[0].value;
+                var sessionId = getCookie("JSESSIONID");
+               
+                
+			    if (oldAction.indexOf("gp_session_id") <1){
+			    	$("#globusAction")[0].value = oldAction + "?gp_session_id="+ sessionId+"&gp_username="+username;
+			    }
 
                 window.globus_tab_init = true;
+                
+                // check for any transfers upon startup
+                getGlobusTransferStatus();
             }
 
            
@@ -54,23 +65,147 @@
 		    		setTimeout( getGlobusTransferStatus , 10000 );
 		        }
 			    
+			    // add our session ID to be able to recognize the return
 			    $("#glbBrowseForm").target="form-target";
+			  
+			    var sessionId = getCookie("JSESSIONID");
+			    
+			    //$("#glbBrowseForm").append('<input type="hidden" name="gp_session_id" value="'+getCookie("JSESSIONID")+'" />');
+			    var oldAction = $("#globusAction")[0].value;
+			    if (oldAction.indexOf("gp_session_id") <1){
+			    	$("#globusAction")[0].value = oldAction + "?gp_session_id="+ sessionId+"&gp_username="+username;
+			    }
+			    
                 $("#glbBrowseForm").submit();
-              
+                console.log($("#glbBrowseForm").serialize);
+                
 				// Update the UI
                 globusTransferInitiated();
 			    return false;
             }
 
+            function clearGlobusTransfers(){
+            	$.ajax({
+                    cache: false,
+                    type: "GET",
+                    url: "/gp/rest/v1/globus/clearCompletedTasks",
+                    dataType: "json",
+                    success: function(data) {
+                    	// clear things out
+                    	$("#glb-transfer-list").html("");
+                    	// go get any still running
+                    	getGlobusTransferStatus();
+                    
+                    },
+                    error: function(data){
+                    	console.log("FAIL");
+                    }
+            	});
+            	
+            }
+            
+            
             function globusTransferInitiated(){
             	console.log("Globus file transfer initiated");
-            	$("#glb-no-transfers").hide();
+            	
             	$("#glb-transfer-initiated").show();
             	// leave the transfer list in whatever state it is in 
             	// to be updated at the next check status
             	
             }
             
+            function formatBytes(bytes,decimals) {
+            	   if(bytes == 0) return '0 Bytes';
+            	   var k = 1024,
+            	       dm = decimals || 2,
+            	       sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            	       i = Math.floor(Math.log(bytes) / Math.log(k));
+            	   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            	}
+            
+            function createTransferTaskDiv(task) {
+            	var timeCheck = new Date(Number(task.lastStatusCheckTime));
+            	var taskDiv;
+            	var titleDiv;
+            	var wrapperDiv;
+            	var oldTask = $("#transfer_wrapper_"+task.id)[0];
+            	
+            	// XXX
+            	
+            	if (oldTask != null){
+            		taskDiv = $("#transfer_"+task.id);
+            		titleDiv = $("#transfer_title_"+task.id);
+                	$(titleDiv).removeClass(); // remove all classes
+            		
+            	} else {
+            		titleDiv = $("<div id='transfer_title_"+task.id+"' >  "+task.file+"</div>");
+               		var titleOpenImg = $("<img id='transfer_open_"+task.id+"' src='../images/triangle_black_run.gif'/>");
+               		var titleClosedImg = $("<img id='transfer_closed_"+task.id+"' src='../images/triangle_black.gif' style='display:none' />");
+               		$(titleDiv).prepend(titleOpenImg);
+               		$(titleDiv).prepend(titleClosedImg);
+               		
+               		
+               		
+               		taskDiv = $("<div id='transfer_"+task.id+"'></div>");
+               		
+    				$(titleDiv).click(function(e){
+    					$("#transfer_"+task.id).toggle();
+    					$("#transfer_open_"+task.id).toggle();
+    					$("#transfer_closed_"+task.id).toggle();
+    					});
+    				wrapperDiv = $("<div id='transfer_wrapper_"+task.id+"'></div>");
+               		$(taskDiv).addClass("globusTransferListing");
+               		wrapperDiv.append(titleDiv);
+               		wrapperDiv.append(taskDiv);
+               		$("#glb-transfer-list").prepend(wrapperDiv);
+            	}
+            	
+            	// update the status section and class for the title
+              	$(titleDiv).addClass("globusTransferStatus_"+ task.status);
+              	$(titleDiv).addClass("globusTransferTitle");
+              	// clear the task div
+              	$(taskDiv).html("");
+              	
+           		//$(taskDiv).append("<span>ID: "+task.id+"</span><br/>");
+           		$(taskDiv).append("<span>STATUS: "+ task.status+"</span><br/>");
+           		if (task.error != null){
+           			$(taskDiv).append("<span>ERROR: "+ task.error +"</span><br/>");
+           		}
+           		if (task.statusObject != null){
+           			var nBytes = task.statusObject.bytes_transferred;
+           			if (nBytes == null) {
+           				nBytes = "0";
+           			} else {
+           				nBytes = formatBytes(nBytes);
+           			}
+           			
+           			var timeString = "";
+           			if (task.statusObject.completion_time != null){
+	           			timeCheck =  new Date(task.statusObject.completion_time) ;
+	           		} 	
+           			timeString = "\nas of "+ timeCheck.toLocaleString();
+	           		
+           			
+           			if (task.error != null){
+           			  // put the details in the hover
+                   		$(titleDiv).attr('title', "ERROR:" + task.error + "\n" +nBytes+" transferred" + timeString);
+               		} else {
+               		  // put the details in the hover
+                   		$(titleDiv).attr('title', task.status + "\n" +nBytes+" transferred "+ timeString);
+               		}
+           		  
+               		
+           			
+	           		$(taskDiv).append("<span>bytes transferred:"+nBytes+"</span><br/>");
+	           		
+	           		
+           		}
+           		$(taskDiv).append("<span>as of "+timeCheck.toLocaleString()+"</span><br/>");
+           		
+           		
+           		
+           		return wrapperDiv;
+            }
             
             function getGlobusTransferStatus(){
             	$.ajax({
@@ -78,44 +213,27 @@
                     type: "GET",
                     url: "/gp/rest/v1/globus/currentTasks",
                     dataType: "json",
-                    beforeSend: function(a,b,c){
-                    	console.log("before send");
-                    },
                     success: function(data) {
-                    	$("#glb-no-transfers").hide();
+                    
                     	$("#glb-transfer-initiated").hide();
                     	
+                    	$('#glb-clear').prop("disabled",true);
+                    	$('#glb-clear').hide();
+                    	
                     	var anyRunning = false;
-                    	$("#glb-transfer-list").empty();
+                    	//$("#glb-transfer-list").empty();
                     	if (data.length > 0){
                         	for (var i=0; i < data.length; i++){
                         		var task = data[i];
-                        		var timeCheck = new Date(Number(task.lastStatusCheckTime));
-//                         		 transferObject.addProperty("id", map.get("id"));
-//                         	        transferObject.addProperty("error", map.get("error"));
-//                         	        transferObject.addProperty("status", map.get("status"));
-//                         	        transferObject.addProperty("prevStatus", map.get("prevStatus"));
-//                         	        transferObject.addProperty("lastStatusCheckTime", map.get("lastStatusCheckTime"));
-//                         	        transferObject.addProperty("file", map.get("file"));
-                        		
-	                    		var taskDiv = $("<div></div>");
-	                    		$(taskDiv).append("<span>ID: "+task.id+"</span><br/>");
-	                    		$(taskDiv).append("<span>STATUS: "+ task.status+"</span><br/>");
-	                    		$(taskDiv).append("<span>ERROR: "+ task.error+"</span><br/>");
-	                    		$(taskDiv).append("<span>FILE:"+ task.file +"</span><br/>");
-	                    		$(taskDiv).append("<span>Last update:"+timeCheck.toString()+"</span><br/>");
-	                    		$(taskDiv).append("<span>"+i+"</span><br/><br/>");
-	                    		
-	                    		if (task.status == "ACTIVE") anyRunning = true;
-	                    		
-	                    		
-	                    		
-	                    		$("#glb-transfer-list").append(taskDiv);
+                         		createTransferTaskDiv(task);
+         	                    if (task.status == "ACTIVE") anyRunning = true;
+         	                    else {
+         	                    	$('#glb-clear').prop("disabled",false);
+         	                    	$('#glb-clear').show();
+         	                    }
 	                    	}
                         	$("#glb-transfer-list").show();
-	                 	} else {
-	                 		$("#glb-no-transfers").show();
-                    	}
+	                 	} 
                     	
                     	// check back once a minute if any are still running
                     	if (anyRunning){
@@ -170,7 +288,31 @@
             #glb-header img {
                 filter: drop-shadow(2px 2px 2px #445e7e);
             }
-
+			#glb-clear {
+                float: left;
+            	color: #555555;
+            	background-color: #EFEFEF;
+            	border-color: #999999;
+            	color: #555555;
+            
+            }
+			#glb-clear > span {
+               background-color: #EFEFEF;
+            }
+            #glb-clear > .ui-button-text {
+                font-size: 0.9em;
+                color: #555555;
+            }
+            
+            #glb-clear:disabled {
+            	background-color: #EFEFEF;
+            	border-color: #AAAAAA;
+            	color: #777777;
+            }
+            #glb-clear:disabled > .ui-button-text {
+                color: #999999;
+            }
+            
             #glb-login {
                 float: right;
             }
@@ -192,34 +334,75 @@
             #glb-public .module-listing {
                 height: 17px;
             }
-            .info-box {
-                margin: 10px;
-                border: 1px solid #A3B1DD;
-                border-radius: 5px;
-                padding: 5px;
-                font-size: 1.1em;
-                line-height: 1.3em;
+            
+            
+            .globusTransferTitle {
+            	
+            	margin-top: 10px;
             }
-            .info-box > a {
-                color: #000099;
-                text-decoration: none;
+            .globusTransferStatus_SUCCEEDED {
+            	background-image: url('../images/complete.gif');
+           		background-repeat: no-repeat;
+           		background-attachement: fixed;
+           		background-position: right;
             }
-            .info-box > a:hover {
-                color: #6666FF;
+            .globusTransferStatus_ACTIVE {
+           		 background-image: url('../images/run.gif');
+           		 background-repeat: no-repeat;
+           		 background-attachement: fixed;
+           		 background-position: right;
             }
+            .globusTransferStatus_ERROR {
+            	 background-image: url('../images/error.gif');
+           		 background-repeat: no-repeat;
+           		 background-attachement: fixed;
+           		 background-position: right;
+            }
+            
+            .globusTransferListing {
+			    margin-top: 10px;
+			    border-style: solid;
+			    border-width: 1px;
+			    border-color: #BBBBEE;
+			    padding: 2px;
+			    cursor: pointer;
+			    height: 51px;
+			    overflow: hidden;
+			    z-index: 100;
+			    background-color: #FDFDFD;
+			    border-radius: 5px;
+			}
+            #glbMain {
+			    margin: 10px;
+			    padding: 5px;
+			    font-size: 1.1em;
+			    line-height: 1.3em;
+			}
+            
+            #glbInfo {
+            	position: fixed;
+            	bottom: 32px;
+            	width: 340px;
+            	height:52px;
+            }
+            
+            .glbRight {
+            	display: inline;
+            }
+            
         </style>
     </ui:define>
 
     <div class="left-nav-top">
-        <div id="glb-header">
-            Transfer files from Globus to GenePattern 
-        <t:div rendered="#{not userPrefsBean.globusLinked}">
-             <h:outputLink
-                value="#{facesContext.externalContext.requestContextPath}/oauthglobus">Authenticate with Globus</h:outputLink>
-        </t:div>
-        
-        </div>
-        <t:div rendered="#{userPrefsBean.globusLinked}">
+        <t:div  styleClass="glbRight" rendered="#{not userPrefsBean.globusLinked}">
+	             <h:outputLink
+	                value="#{facesContext.externalContext.requestContextPath}/oauthglobus">Authenticate with Globus</h:outputLink>
+	    </t:div>
+        <t:div styleClass="glbRight"  rendered="#{userPrefsBean.globusLinked}">
+            <button id="glb-clear" onclick="clearGlobusTransfers();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" >
+	            Clear completed
+	        </button>
+	        
 	        <button id="glb-login" onclick="browseGlobusIfLoginValid();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
 	            Browse <img src="/gp/images/globusLogo.png" alt="Globus" height="12px" /> ›
 	        </button>
@@ -227,7 +410,7 @@
 	        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" name="globusTransferForm" target="form-target">
 	        		<input type="text" value="POST" name="method" />
 	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="cancelurl" />
-	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet?gp_user_id=${requestScope.userID}" name="action" />
+	        		<input id="globusAction" type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="action" />
 	        		<input type="text" value="0" name="folderLimit" />
 	        		<input type="text" value="1" name="fileLimit" />
 	        		<input type="text" value="To GenePattern" name="label" />
@@ -239,17 +422,14 @@
         </t:div>
         
     </div>
-
-   
+    
     <br/>
-    <div class="info-box">
-        <button id="glb-refresh-transferlist" onclick="getGlobusTransferStatus();false" 
-        			class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-	            Refresh 
-	    </button>
-	    <div id="glb-no-transfers">
-       No Globus transfer's currently in progress.
-       </div>
+    <div id="glbMain" >
+<!--         <button id="glb-refresh-transferlist" onclick="getGlobusTransferStatus();false"  -->
+<!--         			class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"> -->
+<!-- 	            Refresh  -->
+<!-- 	    </button> -->
+	    
        <div id="glb-transfer-initiated" style="display:none;">
           Globus transfer status will be updated in 1 minute.
        </div>
@@ -259,7 +439,8 @@
         
     </div>
     
-    <div class="info-box sidebarhead-bkg">
+    <div id="glbInfo" class="info-box sidebarhead-bkg">
+    Transfer files from Globus to GenePattern.<br/>
        To learn more about
         <a href="https://www.genepattern.org/" target="_blank">GenePattern and Globus Integration, click here</a>.
     </div>
