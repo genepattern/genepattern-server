@@ -84,4 +84,7 @@ public abstract class ExternalFileManager {
         return contents;
         
     }
+    
+    public abstract boolean isUsableURI(String value);
+    
 }

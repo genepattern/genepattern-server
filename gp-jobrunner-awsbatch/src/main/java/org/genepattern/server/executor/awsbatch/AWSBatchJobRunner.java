@@ -1148,13 +1148,33 @@ public class AWSBatchJobRunner implements JobRunner {
                 bw.write(parentDir);
                 bw.newLine();
                 bw.newLine();
-                // now get the file with wget
-                bw.write("wget -O ");
-                bw.write(dest_prefix);
-                bw.write(urlfile[1]);
-                bw.write("  ");
-                bw.write(urlfile[0]);
-                bw.write("  || echo 'download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                
+                // if its S3: then get the file with an aws s3 copy, otherwise use wget
+                if (urlfile[0].toLowerCase().startsWith("s3://")) {
+                
+                    // aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1
+                    // now get the file with wget
+                    bw.write("aws s3 sync --exclude \"*\" --include \"");
+                    bw.write(aFile.getName());
+                    bw.write("\"  ");
+                    bw.write(urlfile[0]);
+                    bw.write("  ");
+                    bw.write(dest_prefix);
+                    bw.write(urlfile[1]);
+                    bw.write("  || echo 's3 download failed "+urlfile[1]+"' ; rm -f "+urlfile[1]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                } else {
+                 // now get the file with wget
+                    bw.write("wget -O ");
+                    bw.write(dest_prefix);
+                    bw.write(urlfile[1]);
+                    bw.write("  ");
+                    bw.write(urlfile[0]);
+                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                    
+                    
+                }
+                
+                
                 bw.newLine();
                 bw.newLine();
                 // better safe than sorry

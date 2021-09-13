@@ -5,6 +5,7 @@ package org.genepattern.server.job.input;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -355,4 +356,13 @@ public class JobInputFileUtil {
         return input;
     }
 
+    public static GpFilePath getDistinctPathForExternalUrl(final GpConfig gpConfig, final GpContext jobContext, final URI uri) 
+            throws GpFilePathException 
+            {
+                File relPath=new File(DEFAULT_ROOT_PATH+"external/"+uri.getHost()+"/"+uri.getPath());
+                GpFilePath input=GpFileObjFactory.getUserUploadFile(gpConfig, jobContext, relPath);
+                return input;
+            }
+    
+    
 }

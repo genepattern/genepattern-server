@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -34,7 +36,20 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     private static Logger log = Logger.getLogger(AWSS3ExternalFileManager.class);
     private static String placeholderPrefix = ".hiddenS3placeholder";
     
-   
+    public boolean isUsableURI(String value){
+        if (value.startsWith("s3://") || value.startsWith("S3://")){
+            try {
+                new URI(value);
+                return true;
+            } catch (URISyntaxException ue){
+                return false;
+            }
+            
+        }
+        return false;
+        
+    }
+    
     
     public void downloadFile(GpContext userContext, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException {
         try {

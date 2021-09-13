@@ -57,6 +57,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.MalformedURLException;
@@ -166,6 +167,7 @@ import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.MailSender;
+import org.genepattern.server.util.ProcReadStream;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -576,6 +578,21 @@ public class GenePatternAnalysisTask {
         }
         return jobType;
     }
+    
+    
+    private void debugProcessStdOutAndErr(Process proc, String name) {
+        try {
+              
+            ProcReadStream s1 = new ProcReadStream(name +" stdin", proc.getInputStream ());
+            ProcReadStream s2 = new ProcReadStream(name + " stderr", proc.getErrorStream ());
+            s1.start ();
+            s2.start ();
+            
+        } catch (Exception e){
+            log.error(e);
+        }
+    }
+    
 
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
@@ -912,6 +929,8 @@ public class GenePatternAnalysisTask {
                         }
                     }
                     boolean isURL = false;
+                    boolean isS3URI = false;
+                    
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
                         // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
                         if (new File(originalPath).exists()) {
@@ -938,9 +957,13 @@ public class GenePatternAnalysisTask {
                         } 
                         else {
                             try {
-                                if (originalPath != null) {
-                                    new URL(originalPath);
-                                    isURL = true;
+                                if (!originalPath.startsWith("s3://")){
+                                    if (originalPath != null) {
+                                        new URL(originalPath);
+                                        isURL = true;
+                                    }
+                                } else {
+                                    isS3URI=true;
                                 }
                             } 
                             catch (MalformedURLException mfe) {
@@ -953,10 +976,11 @@ public class GenePatternAnalysisTask {
                             }
                         }
                     }
-                    if (isURL && jobType == JOB_TYPE.JOB && !isUrlMode) {
+                    if ((isURL || isS3URI) && jobType == JOB_TYPE.JOB && !isUrlMode) {
                         //don't translate input urls for visualizers and pipelines
                         //    and passByReference parameters
                         //    including special-case for IGV, GENEE, and GENE_E
+                        
                         URI uri = null;
                         try {
                             uri = new URI(originalPath);
@@ -1063,7 +1087,44 @@ public class GenePatternAnalysisTask {
                                     downloadUrl = false;
                                 }
                             }
-                            else {
+                            else if ("s3".equalsIgnoreCase(uri.getScheme())) {
+                                   
+                                        //URLConnection conn = url.openConnection();
+                                        //is = conn.getInputStream();
+                                // always need the name        
+                                int idx = uri.getPath().lastIndexOf("/");
+                                name = uri.getPath().substring(idx+1);
+                                
+                                GpConfig jobConfig = ServerConfigurationFactory.instance();
+                                final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
+                                final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
+                               
+                                if (is == null && downloadUrl && !(directExternalUploadEnabled || directDownloadEnabled )) {
+                                    // its a remote S3 file but we are not running on AWS  
+                                    // Therefore we need to either throw an error or download the
+                                    // S3 URL to local, but since no AWSExternalFileManager exists we
+                                    // don't know how to set the AWS env (i.e. no init-aws-cli.sh will exist)
+                                    // so we will just give a try to exec and copy the file down and error if
+                                    // it does not work. We will try to get an "aws" command line expansion
+                                    // so that this can be setup if need be by someone running locally
+                                    File tmp = File.createTempFile("name","");
+                                    String filename = tmp.getName();
+                                    tmp.delete();
+                                    String aws = jobConfig.getGPProperty(jobContext, "aws", "aws");
+                                    BufferedWriter bw = new BufferedWriter(new StringWriter());
+                                    bw.write("aws s3 sync --exclude \"*\" --include \"");
+                                    bw.write(name);
+                                    bw.write("\"  ");
+                                    bw.write(uri.toString());
+                                    bw.write("  ");
+                                    bw.write(tmp.getAbsolutePath());
+                                    Process proc = Runtime.getRuntime().exec(bw.toString());
+                                    debugProcessStdOutAndErr(proc, "s3download");
+                                    is = new FileInputStream(tmp);
+                                    
+                                }
+                            
+                            } else {
                                 final URL url = uri.toURL();
                                 final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, baseGpHref, uri);
                                 if (log.isDebugEnabled()) {
@@ -1449,7 +1510,7 @@ public class GenePatternAnalysisTask {
         BufferedWriter writer = null;
         
         try {
-            Map<String, URL>  fileUrlMap = new HashMap< String,URL>(); 
+            Map<String, URI>  fileUrlMap = new HashMap< String,URI>(); 
             try {
                 final File path = JobManager.getWorkingDirectory(jobContext.getJobInfo());
                 if (!path.exists()){
@@ -1458,7 +1519,7 @@ public class GenePatternAnalysisTask {
                 }
                 File outDir = path.getAbsoluteFile();
                 File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
-                // existing file contents, we don't want to download the same filw twice needlessly
+                // existing file contents, we don't want to download the same file twice needlessly
                
                 writer = new BufferedWriter(new FileWriter(downloadListingFile, true));  
             } catch (Exception e){
@@ -1507,7 +1568,11 @@ public class GenePatternAnalysisTask {
                                 try {
                                     final ParamListValue rec=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, 
                                             jobContext.getJobInput().getBaseGpHref(), formal, actualValue);
-                                    fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl());
+                                    if (rec.getUrl() != null) {                                    
+                                        fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUrl().toURI());
+                                    } else if (rec.getUri() != null){
+                                        fileUrlMap.put(rec.getGpFilePath().getServerFile().getAbsolutePath(), rec.getUri());
+                                    }
                                 } catch(Exception e){
     
                                 }
@@ -1524,11 +1589,12 @@ public class GenePatternAnalysisTask {
                                 if (localPath!=null) {
                                     inputFilePaths.add(localPath.getPath());
                                     if (!localPath.exists()){
-                                        URL url = fileUrlMap.get(localPath.getAbsolutePath());
                                         
-                                        if ((url != null) && (writer != null) ){
+                                        URI uri = fileUrlMap.get(localPath.getAbsolutePath());
+                                        
+                                        if ((uri != null) && (writer != null) ){
                                             writer.newLine();
-                                            writer.write(url + "\t" + localPath.getAbsolutePath());
+                                            writer.write(uri + "\t" + localPath.getAbsolutePath());
                                             
                                         }
                                     }
@@ -2867,7 +2933,7 @@ public class GenePatternAnalysisTask {
                                     props.put(inputParamName + INPUT_EXTENSION, ""); // filename
                                     // extension
                                 }
-                                if (inputFilename.startsWith("http:") || inputFilename.startsWith("https:")  || inputFilename.startsWith("ftp:")) {
+                                if (inputFilename.startsWith("http:") || inputFilename.startsWith("https:")  || inputFilename.startsWith("ftp:") || inputFilename.startsWith("s3:")) {
                                     j = baseName.lastIndexOf("?");
                                     if (j != -1) {
                                         baseName = baseName.substring(j + 1);

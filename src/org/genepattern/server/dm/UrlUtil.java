@@ -419,6 +419,20 @@ public class UrlUtil {
         return filename;
     }
     
+    public static String getFilenameFromUri(final URI uri, final boolean keepTrailingSlash) {
+        if (uri==null) {
+            return null;
+        }
+        String urlPath=uri.getPath();
+        
+        String filename=new File(urlPath).getName();
+        // special-case for GenomeSpace linked to Google drive reference
+       
+        if (keepTrailingSlash && urlPath.endsWith("/")) {
+            filename += "/";
+        }
+        return filename;
+    }
     /**
      * Extracts the file's kind from the URL and filename. 
      * @param url

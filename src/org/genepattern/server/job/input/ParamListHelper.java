@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.job.input.cache.CachedFile;
@@ -929,8 +931,11 @@ public class ParamListHelper {
             final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
     throws GpFilePathException 
     {
+        
         final String value=pval.getValue();
         URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, baseGpHref, value);
+      
+        
         final boolean isPassByReference=isPassByReference(formalParam);
         
         if (externalUrl != null) {
@@ -957,7 +962,25 @@ public class ParamListHelper {
                 ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUrl);
                 return record;
             }
-        }        
+        } else {
+            // check if its an external URI (like s3://) that our ExternalFileManager can handle (if there is one)
+            URI externalUri = null;
+            externalUri = JobInputHelper.initExternalUri(gpConfig, value);
+            final boolean isCached=false; // TODO make the cache handle URIs as well
+            // final boolean isCached=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, formalParam, externalUri);
+            
+            if ((externalUri != null)){
+                
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUri);
+                
+                ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUri);
+                record.isCached=false;
+                record.isPassByReference=false;
+                return record;   
+                
+            }
+        
+        }
         LSID lsid=null;
         try {
             lsid=new LSID(jobContext.getLsid());
@@ -969,7 +992,7 @@ public class ParamListHelper {
         
         try {
             final GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, value, lsid);
-            return new ParamListValue(ParamListValue.Type.SERVER_URL, gpPath, null);
+            return new ParamListValue(ParamListValue.Type.SERVER_URL, gpPath, (URL)null);
         }
         catch (Exception e) {
             log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
@@ -1015,7 +1038,7 @@ public class ParamListHelper {
             }
         }
         if (gpPath != null) {
-            return new ParamListValue(ParamListValue.Type.SERVER_PATH, gpPath, null); 
+            return new ParamListValue(ParamListValue.Type.SERVER_PATH, gpPath, (URL)null); 
         }
         throw new GpFilePathException("Error initializing gpFilePath for value="+value);
     }

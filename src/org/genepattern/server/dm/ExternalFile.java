@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+i * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.dm;
 
@@ -35,10 +35,39 @@ public class ExternalFile extends GpFilePath {
         setUrl(url);
     }
     
+    
+    public ExternalFile(URI uri) {
+        super(false); // required to flag this as an external url
+        setUri(uri);
+    }
+    
     public void setUrl(URL url) {
         this.url = url;
         initNameKindExtensionFromUrl(url);
         initIsDirectoryFromKind();
+    }
+    
+    public void setUri(URI uri) {
+        this.uri = uri;
+        initNameKindExtensionFromUri(uri);
+        initIsDirectoryFromKind();
+    }
+
+    /**
+     * Set name, extension, kind for this instance based on the given URL.
+     * Added as a helper method when creating external url instances.
+     * 
+     * @param url
+     */
+    public void initNameKindExtensionFromUri(final URI anUri) {
+        final boolean keepTrailingSlash=true;
+        final String filename=UrlUtil.getFilenameFromUri(uri, keepTrailingSlash);
+        this.setName(filename);
+        
+        final String extension=SemanticUtil.getExtension(filename);
+        final String kind=UrlUtil.getKindFromUrl(url, filename, extension);
+        this.setKind(kind);
+        this.setExtension(extension);
     }
     
     protected void initIsDirectoryFromKind() {

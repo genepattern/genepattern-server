@@ -4,6 +4,7 @@
 package org.genepattern.server.job.input;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -13,9 +14,11 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.batch.BatchGenerator;
@@ -79,6 +82,26 @@ public class JobInputHelper {
         List<String> baseGpHrefs=UrlUtil.initBaseGpHrefs(gpConfig, baseGpHref);
         return initExternalUrl(baseGpHrefs, value);
     }
+    
+    /**
+     * Is the input value an external URI that our ExternalFileManager can handle?
+     */
+    public static URI initExternalUri(final GpConfig gpConfig, final String value){
+        GpContext context = GpContext.getServerContext();
+        ExternalFileManager efm = DataManager.getExternalFileManager(context);
+        URI uri = null;
+        if (efm.isUsableURI( value)){
+            try {
+                uri = new URI(value);
+            } catch (Exception e){
+                
+            }
+        }
+        return uri;
+    }
+    
+    
+    
 
     /**
      * Is the input value an external URL?
