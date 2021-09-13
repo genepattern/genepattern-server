@@ -1173,7 +1173,15 @@ public class GenePatternAnalysisTask {
                                     outFile = File.createTempFile(name, null, outDir);
                                 }
                                 GpConfig jobConfig = ServerConfigurationFactory.instance();
-                                
+
+                                // Handle URLs pointed at GenePattern Notebook projects as a special case
+                                boolean gpnbDownloadsEnabled = jobConfig.getGPBooleanProperty(jobContext, GPNBDownloadHelper.ENBLED_KEY, true);
+                                if (gpnbDownloadsEnabled && GPNBDownloadHelper.isGPNBFile(jobContext, uri)) {
+                                    uri = GPNBDownloadHelper.constructDownloadURL(jobContext, uri);
+                                    is = GPNBDownloadHelper.constructInputStream(uri);
+                                }
+
+                                // Handle S3 support
                                 final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
                                 final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
                                
@@ -2231,7 +2239,7 @@ public class GenePatternAnalysisTask {
      *     e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
      * If the given outputFile is absolute, return its path relative to the jobResultsDir.
      * 
-     * @param jobResultDir, e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>
+     * @param jobDir, e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>
      * @param outputFile, e.g. stdout.txt or /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
      * 
      * @return a relative File or null if the outputFile is not an ancestor of the jobResultDir.
