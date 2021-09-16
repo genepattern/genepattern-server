@@ -367,7 +367,7 @@ class TransferWaitThread extends Thread {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
      
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
-        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");        
+        String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");        
         String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "ls",  s3PathAndFile};
 
         boolean success = false;
@@ -439,7 +439,7 @@ class TransferWaitThread extends Thread {
         String bucket = getBucketName(gpConfig, userContext);
         String bucketRoot = getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
-        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+        String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
          
         String execArgs[];
         
