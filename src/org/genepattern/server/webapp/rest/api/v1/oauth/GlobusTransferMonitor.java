@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -21,7 +20,6 @@ import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
-import org.genepattern.server.executor.awsbatch.AWSBatchJobRunner;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.util.LSID;
 
