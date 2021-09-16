@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -372,8 +373,10 @@ class TransferWaitThread extends Thread {
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(execArgs);
-            // proc.waitFor(3, TimeUnit.MINUTES);
-            proc.wait();
+            //proc.waitFor(3, TimeUnit.MINUTES);
+            proc.waitFor();
+            
+            
             success = (proc.exitValue() == 0);
             if (success) {
                 String s;
@@ -448,7 +451,7 @@ class TransferWaitThread extends Thread {
         Process proc = Runtime.getRuntime().exec(execArgs);
         try {
             // proc.waitFor(3, TimeUnit.MINUTES);
-            proc.wait();
+            proc.waitFor();
             success = (proc.exitValue() == 0);
             if (!success){
                 logStdout(proc, "copy s3 file"); 
