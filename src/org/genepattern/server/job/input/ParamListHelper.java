@@ -1072,11 +1072,7 @@ public class ParamListHelper {
         }
         else {
             //copy the external url into a new file in the user upload folder
-            if (DataManager.getExternalFileManager(jobContext) != null){
-                
-                System.out.println("=====XXX "+ jobContext.getJobNumber());
-                
-            } else {
+            if (DataManager.getExternalFileManager(jobContext) == null){
                 org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
             }
             //add a record of the file to the DB, so that a link will appear in the Uploads tab

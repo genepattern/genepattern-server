@@ -31,6 +31,10 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+import org.apache.tools.ant.taskdefs.Execute;
+import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
@@ -39,6 +43,7 @@ import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
 import org.genepattern.drm.Walltime;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -47,6 +52,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.util.Expander;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -686,6 +692,8 @@ public class AWSBatchJobRunner implements JobRunner {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         GpConfig gpConfig =  ServerConfigurationFactory.instance();
         
+        
+        
         String awsfilepath = gpConfig.getGPProperty(jobContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(jobContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
         String bucket = getBucketName(gpConfig, jobContext);
@@ -746,7 +754,7 @@ public class AWSBatchJobRunner implements JobRunner {
            //  .non.retrieved.output.files.json
            JSONArray outFilesJSON = new JSONArray();
            while ((s = stdInput.readLine()) != null) {
-               System.out.println(s);
+               // System.out.println(s);
                String[] lineParts = s.split("\\s+",4); // only grab the first 4 bits, any other spaces are part of the filename
                // strip out the bucketroot which is not wanted for the local file
                try {
@@ -808,11 +816,37 @@ public class AWSBatchJobRunner implements JobRunner {
         // pull the job.metaDir from s3
         awsSyncDirectory(jobRecord, metadataDir, cmdEnv);
         
+      
+        
         // pull the job.workingDir from s3
         // unless an external downloader has been configured in which case we can skip this and let
         // them be directly downloaded from S3
-        if (isSkipWorkingDirDownload(jobRecord)) {
+        if (isSkipWorkingDirDownload(jobRecord) ) {
+
             awsFakeSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
+
+            //
+            //  For some modules (eg GSEA) we want to grab the generated zip file synch it back and 
+            // expand it to prevent the many sync calls
+            //
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+            String allLsids = gpConfig.getGPProperty(jobContext, ExternalFileManager.pullZipsForLSIDsKey);
+            String[] lsidsToPullZipsFor = allLsids.split(",");
+            String lsid = jobRecord.getLsid();
+            boolean pullZip = false;
+            for (String anLsid: lsidsToPullZipsFor){
+                if (lsid.startsWith(anLsid)){
+                    pullZip = true;
+                    break;
+                }
+            }
+            
+            if (pullZip){
+                getZipFromAwsAndExpand(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
+            }
+
+
         } else {
             awsSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
         }
@@ -830,6 +864,54 @@ public class AWSBatchJobRunner implements JobRunner {
             throw new RuntimeException("Did not get the job.metadata directory. Something seriously went wrong with the AWS batch run");
         }
     }
+    
+    
+    protected void getZipFromAwsAndExpand(final DrmJobRecord jobRecord, final File filepath, final Map<String,String> cmdEnv) {
+        String s3filepath = filepath.getAbsolutePath();
+        
+        File ef = new File(s3filepath +"/"+ ExternalFileManager.nonRetrievedFilesFileName);
+        JSONArray externalFileList = null;
+        
+        if (ef.exists()){
+            // we have output files that are external and not on the local disk.
+            // add them as outputs as if they were present JTL 01/19/2021
+            // see AWSBatchJobRunner>>awsFakeSyncDirectory()
+           try {
+               String externalFileJson = new String(Files.readAllBytes(ef.toPath()));
+               externalFileList = new JSONArray(externalFileJson);
+               for (int i=0; i<externalFileList.length(); i++){
+                   JSONObject obj = externalFileList.getJSONObject(i);
+                   String fileName = obj.getString("filename");
+                   if (fileName.toLowerCase().endsWith(".zip")){
+                       File aFile = new File(fileName); // need the relative name only, XXX update for sub directories
+                       GpContext context = GpContext.getServerContext();
+                       GpConfig config = ServerConfigurationFactory.instance();
+                       
+                       
+                       if (!aFile.exists()){
+                           long startTime = System.currentTimeMillis();
+                           
+                           // pull it down and open it up
+                           ExternalFileManager efm = DataManager.getExternalFileManager(GpContext.getServerContext());
+                           efm.syncRemoteFileToLocal(GpContext.getServerContext(), aFile);
+                           
+                           Expander.unzip(aFile, s3filepath);
+                           
+                           long complete = System.currentTimeMillis();
+                           log.debug("--> ZIP DOWNLOAD AND EXPAND TOOK " + (complete - startTime) + " ms for " +  jobRecord.getGpJobNo());
+                       }
+                    
+                   }
+                   
+                   
+               }
+               
+           } catch (Exception ee){
+               log.error(ee);
+           }
+        }
+        }
+    
 
     // in the case of a AWS error, there may also be a dockererr.log file in the metadata dir
     // we will copy it to the working dir so that it can be seen
@@ -845,6 +927,8 @@ public class AWSBatchJobRunner implements JobRunner {
             System.out.println("Did NOT find dockererr.log =============" + dockerErr.getAbsolutePath());  
         }
     }
+    
+    
     
     
     

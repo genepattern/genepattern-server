@@ -90,11 +90,13 @@ public class JobInputHelper {
         GpContext context = GpContext.getServerContext();
         ExternalFileManager efm = DataManager.getExternalFileManager(context);
         URI uri = null;
-        if (efm.isUsableURI( value)){
-            try {
-                uri = new URI(value);
-            } catch (Exception e){
-                
+        if (efm != null){
+            if (efm.isUsableURI( value)){
+                try {
+                    uri = new URI(value);
+                } catch (Exception e){
+                    
+                }
             }
         }
         return uri;

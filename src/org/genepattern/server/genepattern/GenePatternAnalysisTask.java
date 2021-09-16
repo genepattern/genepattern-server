@@ -165,6 +165,7 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
+import org.genepattern.server.util.Expander;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.MailSender;
 import org.genepattern.server.util.ProcReadStream;
@@ -4458,18 +4459,8 @@ public class GenePatternAnalysisTask {
 	return new String[] { ANY, "C", "C++", "Java", "MATLAB", "Perl", "Python", "R" };
     }
 
-    /**
-     * The Expander uses ant's unzip instead of Java's to preserve file permissions
-     */
-    private static class Expander extends Expand {
-	public Expander() {
-	    project = new Project();
-	    project.init();
-	    taskType = "unzip";
-	    taskName = "unzip";
-	    target = new Target();
-	}
-    }
+  
+   
 
     /**
      * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER table entries for new or modified
