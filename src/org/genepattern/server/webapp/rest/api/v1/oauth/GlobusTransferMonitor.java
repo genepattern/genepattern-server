@@ -7,8 +7,6 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -24,14 +22,8 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.executor.awsbatch.AWSBatchJobRunner;
-import org.genepattern.server.executor.awsbatch.AWSS3ExternalFileManager;
-import org.genepattern.server.executor.awsbatch.AwsBatchUtil;
 import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.util.HttpNotificationManager;
-import org.genepattern.server.webapp.rest.api.v1.Util;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.JobInfo;
 
 import com.google.gson.JsonObject;
 
@@ -382,7 +374,8 @@ class TransferWaitThread extends Thread {
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(execArgs);
-            proc.waitFor(3, TimeUnit.MINUTES);
+            // proc.waitFor(3, TimeUnit.MINUTES);
+            proc.wait();
             success = (proc.exitValue() == 0);
             if (success) {
                 String s;
@@ -456,8 +449,8 @@ class TransferWaitThread extends Thread {
         boolean success = false;
         Process proc = Runtime.getRuntime().exec(execArgs);
         try {
-            proc.waitFor(3, TimeUnit.MINUTES);
-        
+            // proc.waitFor(3, TimeUnit.MINUTES);
+            proc.wait();
             success = (proc.exitValue() == 0);
             if (!success){
                 logStdout(proc, "copy s3 file"); 
