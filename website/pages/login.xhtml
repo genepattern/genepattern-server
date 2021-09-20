@@ -87,16 +87,18 @@
                             Forgot your password?
                         </h:outputLink>
 						<br/><br/> 
-	                    <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
-                              
+	                          
                                <br />
                               
                                <t:div rendered="#{loginBean.globusEnabled}">
+                               
             <h:outputLink
                 value="#{facesContext.externalContext.requestContextPath}/oauthglobus">Sign on using your Globus account</h:outputLink>
-            <br/>You may also use this link to sign in with Google or institutional (for many universities) credentials via Globus.
+            <br/>You may also use this link to sign in with Google or institutional (for many universities) credentials via Globus.<br/><br/>
                             </t:div>  
-                             
+                           
+                           <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /><br/></h:outputLink>
+                          
                     </h:form>
                 </td>
 
