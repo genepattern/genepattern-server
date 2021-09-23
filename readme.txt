@@ -4,4 +4,4 @@ See: http://genepattern.org/
 
 This is the source code repository for the GenePattern Server platform.
 
-Test push for webhook
+Testing push for webhook
