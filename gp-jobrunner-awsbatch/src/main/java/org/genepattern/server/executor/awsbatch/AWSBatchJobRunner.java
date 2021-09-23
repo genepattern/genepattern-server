@@ -1236,10 +1236,9 @@ public class AWSBatchJobRunner implements JobRunner {
                 // if its S3: then get the file with an aws s3 copy, otherwise use wget
                 if (urlfile[0].toLowerCase().startsWith("s3://")) {
                     
-                    int len = urlfile[0].length() - aFile.getName().length() -1;
+                    int len = urlfile[0].length() - aFile.getName().length() ;
                     String s3ParentDir = urlfile[0].substring(0, len);
                     
-                    // aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1
                     //  aws s3 sync --exclude "*" --include "all_aml_test.gct"  s3://datasets-genepattern-org/data/all_aml/ /local/path/to/dir
                     // 
                     bw.write("aws s3 sync --exclude \"*\" --include \"");
@@ -1249,7 +1248,7 @@ public class AWSBatchJobRunner implements JobRunner {
                     bw.write("  ");
                     bw.write(dest_prefix);
                     bw.write(parentDir);
-                    bw.write("  || echo 's3 download failed "+urlfile[1]+"' ; rm -f "+urlfile[1]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                    bw.write("  >> "+dest_prefix+""+script_dir+"/s3_downloads.log");
                 } else {
                  // now get the file with wget
                     bw.write("wget -O ");
