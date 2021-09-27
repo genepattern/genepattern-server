@@ -67,6 +67,7 @@ public class GlobusTransferInServlet extends HttpServlet {
             
     		String endpointId = null;
     		String path = null;
+    		String destDir = null; // comes in as directory URL or absent
     		ArrayList<String> files = new ArrayList<String>();
     		String gp_user_id = null;
     		String gp_session_id = null;
@@ -75,7 +76,8 @@ public class GlobusTransferInServlet extends HttpServlet {
     		try {
     		    endpointId = request.getParameter("endpoint_id");
     		    path = request.getParameter("path");
-    		    
+    		    destDir = request.getParameter("destDir");
+                 
     		    Enumeration<String> e = request.getParameterNames();
                 
                 while (e.hasMoreElements()){
@@ -128,7 +130,7 @@ public class GlobusTransferInServlet extends HttpServlet {
     		
      		try {
      		    for (int i=0; i<files.size();i++){
-     		       globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i));
+     		       globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir);
                 }
                 
                 // a new thread is automatically started to poll for completion

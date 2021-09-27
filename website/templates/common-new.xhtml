@@ -48,6 +48,7 @@
                 var adminServerAllowed = #{authorizationBean.adminServerAllowed};
                 var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
                 var username = "${requestScope.userID}";
+                var gpBaseUrl="#{uiBean.baseURL}";
                 console.log("Username set just now to "+ username);
             </script>
             
@@ -387,6 +388,21 @@
                             <div class="current-job-status">
                                 <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
+                            
+                             <h:outputText rendered="#{loginBean.globusEnabled}">
+                            	<button id="glb-login" onclick="browseGlobusIfLoginValid();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+					            	<img src="/gp/images/globusLogo.png" alt="Globus" height="14px" title="Transfer files to GenePattern from a Globus endpoint" />
+					        	</button>
+	        				</h:outputText>
+	        				<h:outputText rendered="#{! loginBean.globusEnabled}">
+	        				    <h:outputLink value="#{facesContext.externalContext.requestContextPath}/oauthglobus">
+                            	    <button id="glb-login" onclick="" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+					            	    <img src="/gp/images/globusLogo.png" alt="Globus" height="14px" title="Transfer files to GenePattern from a Globus endpoint" />
+					            	</button>
+					        	</h:outputLink>
+	        				</h:outputText>
+	        				
+	        			
                             <button id="left-nav-files-refresh" onclick="refreshUploadTree();"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                         </div>
                         <ui:include src="/pages/uploads/uploadedFiles.xhtml" />

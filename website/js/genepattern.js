@@ -2154,10 +2154,24 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": [],
                 "callAfterItemCreation": function(item){
                 	// open the file dialog when clicked
-                	resumableUploader.assignBrowse(item);
+                	//resumableUploader.assignBrowse(item);
                 }
 
             });
+            
+            data.push({
+                "lsid": "",
+                "name": "Transfer Files from Globus",
+                "description": "Transfer files in from a Globus endpoint to this directory.",
+                "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "callAfterItemCreation": function(item){
+                	// open the file dialog when clicked
+                	//resumableUploader.assignBrowse(item);
+                	//alert("Globus Browse " + item);
+                }
+
+            });
+            
             if (diskInfo.externalDirectDownloadsEnabled != true ) {
             	// not zipping directories left on S3, gotta grab them one by one for now
 	            data.push({
@@ -2261,6 +2275,7 @@ function createFileWidget(linkElement, appendTo) {
                     var uploadAction = actionClicked.indexOf("Upload") === 0;
                     var pipelineAction = actionClicked.indexOf("Create Pipeline") === 0;
                     var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") === 0;
+                    var globusAction = actionClicked.indexOf("Transfer Files from Globus") === 0;
                     var renameAction = actionClicked.indexOf("Rename") === 0;
                     var jobCopyAction = actionClicked.indexOf("Copy to Files") === 0;
                     var moveAction = actionClicked.indexOf("Move") === 0;
@@ -2577,6 +2592,16 @@ function createFileWidget(linkElement, appendTo) {
                         });
 
                         $(".search-widget:visible").searchslider("hide");
+                    }
+                    else if (globusAction) {
+                    	//close the slider menu
+                        $(".search-widget:visible").searchslider("hide");
+                        var wid = $(event.target).closest(".file-widget");
+                    	var directory = wid.attr("name");
+                    	alert(directory);
+                    	browseGlobusIfLoginValid(directory);
+                    	
+                    	
                     }
 
                     else if (uploadAction) {
@@ -4425,7 +4450,64 @@ function userBoxClick() {
     }, 1);
 }
 
+function browseGlobusIfLoginValid(destinationDirectory){
+	$.ajax({
+        cache: false,
+        type: "GET",
+        url: "/gp/rest/v1/globus/verifyGlobusLogin",
+        dataType: "json",
+        success: function(data) {
+        	if (data.loginValid == true) {
+        		glb_browse(destinationDirectory);
+        	} else {
+        		var okLogin = confirm("To transfer files from Globus you must first login to Globus and grant GenePattern access to your files.");
+  				if (okLogin){
+        			window.location = "/gp/oauthglobus";
+  				} else {
+  					// do nothing
+  				}
+        	}
+        	
+        },
+        error: function(err) {
+        	alert("Error verifying Globus login. ")
+        }
+        
+	});   	
+}
 
+function glb_browse(destinationDirectory) {
+    // Post the form to globus and post to it 
+    //
+   
+    var w = window.open('', 'form-target', 'width=800, height=800');
+    
+    window.globusCallbackFunction = function(){
+	    	globusTransferInitiated();
+		setTimeout( getGlobusTransferStatus , 10000 );
+    }
+    
+    // add our session ID to be able to recognize the return
+    $("#glbBrowseForm").target="form-target";
+  
+    var sessionId = getCookie("JSESSIONID");
+    
+    //$("#glbBrowseForm").append('<input type="hidden" name="gp_session_id" value="'+getCookie("JSESSIONID")+'" />');
+    // should call back to /gp/GlobusTransferInServlet
+    var baseAction = gpBaseUrl + "/GlobusTransferInServlet";
+   	var populatedAction = baseAction + "?gp_session_id="+ sessionId+"&gp_username="+username;
+    if (destinationDirectory != null){
+    	populatedAction += "&destDir="+ encodeURIComponent(destinationDirectory);
+    }
+    $("#globusAction")[0].value = populatedAction;
+   	
+    $("#glbBrowseForm").submit();
+    console.log($("#glbBrowseForm").serialize);
+    
+	// Update the UI
+    globusTransferInitiated();
+    return false;
+}
 
 
 

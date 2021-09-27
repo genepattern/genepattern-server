@@ -317,7 +317,7 @@ public class GlobusClient {
         return submissionResponse.getAsJsonObject().get("value").getAsString();
     }
 
-    public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+    public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
     
         
@@ -358,7 +358,6 @@ public class GlobusClient {
         transferItem.addProperty("DATA_TYPE", "transfer_item");
         transferItem.addProperty("recursive", false);
         transferItem.addProperty("source_path", path + file);
-        // TBD - set GenePatternLocal (shared credentials root) in config file
         transferItem.addProperty("destination_path", "/~/GenePatternLocal/"+ userId +"/globus/"+file);
        
         JsonArray transferItems = new JsonArray();
@@ -391,7 +390,7 @@ public class GlobusClient {
         
         // spawn a new thread to wait for completion
        
-        GlobusTransferMonitor.getInstance().addWaitingUser(userId, taskId, this, file, context);
+        GlobusTransferMonitor.getInstance().addWaitingUser(userId, taskId, this, file, context, destDir);
         return taskId;
     }
     
@@ -480,11 +479,12 @@ public class GlobusClient {
             tokenDetails = getTokenDetails(userAccessToken);
             userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
         } catch (Exception e){
-            e.printStackTrace();
+            
             try {
                 tokenDetails = getTokenDetails(token);
                 userUUID = tokenDetails.getAsJsonObject().get("sub").getAsString();
             } catch (Exception e2){
+                e.printStackTrace();
                 e2.printStackTrace();
             }
         }
@@ -528,7 +528,7 @@ public class GlobusClient {
                 JsonElement jerr = getJsonError(con);
                 String code = jerr.getAsJsonObject().get("code").getAsString();
                 if ("Exists".equalsIgnoreCase(code)){
-                    String ruleId = getUserACLId( userAccessToken);
+                    //String ruleId = getUserACLId( userAccessToken);
                     //System.out.println("GLOBUS access rule already existed "+ ruleId);
                 } else {
                     realError = true;

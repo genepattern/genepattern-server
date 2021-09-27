@@ -225,6 +225,20 @@
                 
              
             </div>
+            
+            <h:outputText rendered="#{loginBean.globusEnabled}">
+	        <div id="glb-form" style="display:none" >
+	        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" name="globusTransferForm" target="form-target">
+	        		<input type="text" value="POST" name="method" />
+	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="cancelurl" />
+	        		<input id="globusAction" type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="action" />
+	        		<input type="text" value="0" name="folderlimit" />
+	        		<input type="text" value="1" name="filelimit" />
+	        		<input type="text" value="To GenePattern" name="label" />
+	        	</form>
+	        </div>
+        </h:outputText>
+            
         </h:outputText>
         <script type="text/javascript">
             $(document).ready(function() {

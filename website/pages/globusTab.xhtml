@@ -38,56 +38,10 @@
             }
 
            
-            function browseGlobusIfLoginValid(){
-            	$.ajax({
-                    cache: false,
-                    type: "GET",
-                    url: "/gp/rest/v1/globus/verifyGlobusLogin",
-                    dataType: "json",
-                    success: function(data) {
-                    	if (data.loginValid == true) {
-                    		glb_browse();
-                    	} else {
-                    		alert("Your Globus login is incorrect or expired.  Please logout and login again  ")
-                    	}
-                    	
-                    },
-                    error: function(err) {
-                    	alert("Error verifying Globus login. ")
-                    }
-                    
-            	});   	
-            }
+          
             
-            function glb_browse() {
-                // Post the form to globus and post to it 
-                //
-                
-                var w = window.open('', 'form-target', 'width=800, height=800');
-			    
-			    window.globusCallbackFunction = function(){
-		  	    	globusTransferInitiated();
-		    		setTimeout( getGlobusTransferStatus , 10000 );
-		        }
-			    
-			    // add our session ID to be able to recognize the return
-			    $("#glbBrowseForm").target="form-target";
-			  
-			    var sessionId = getCookie("JSESSIONID");
-			    
-			    //$("#glbBrowseForm").append('<input type="hidden" name="gp_session_id" value="'+getCookie("JSESSIONID")+'" />');
-			    var oldAction = $("#globusAction")[0].value;
-			    if (oldAction.indexOf("gp_session_id") <1){
-			    	$("#globusAction")[0].value = oldAction + "?gp_session_id="+ sessionId+"&gp_username="+username;
-			    }
-			    
-                $("#glbBrowseForm").submit();
-                console.log($("#glbBrowseForm").serialize);
-                
-				// Update the UI
-                globusTransferInitiated();
-			    return false;
-            }
+              
+			 
 
             function clearGlobusTransfers(){
             	$.ajax({
@@ -270,132 +224,7 @@
 
             /* ]]> */
         </script>
-        <style type="text/css">
-            #left-nav-globus {
-                display: block;
-                padding: 0;
-                bottom: 85px;
-                overflow-x: hidden;
-                position: absolute;
-                bottom: 0px;
-                top: 33px;
-                width: 373px;
-                background-color: #F1F2F2 !important;
-            }
-
-            #glb-header {
-                margin-bottom: 10px;
-                display: inline-block;
-                position: relative;
-                top: 2px;
-            }
-
-            #glb-header img {
-                filter: drop-shadow(2px 2px 2px #445e7e);
-            }
-			#glb-clear {
-                float: left;
-            	color: #555555;
-            	background-color: #EFEFEF;
-            	border-color: #999999;
-            	color: #555555;
-            
-            }
-			#glb-clear > span {
-               background-color: #EFEFEF;
-            }
-            #glb-clear > .ui-button-text {
-                font-size: 0.9em;
-                color: #555555;
-            }
-            
-            #glb-clear:disabled {
-            	background-color: #EFEFEF;
-            	border-color: #AAAAAA;
-            	color: #777777;
-            }
-            #glb-clear:disabled > .ui-button-text {
-                color: #999999;
-            }
-            
-            #glb-login {
-                float: right;
-            }
-
-            #glb-login > .ui-button-text {
-                font-size: 0.9em;
-            }
-
-            .glb-catalog {
-                padding: 10px;
-            }
-
-            #globus-browse .module-name,
-            #globus-search .module-list-title,
-            #glb-public .module-name {
-                text-transform: capitalize;
-            }
-
-            #glb-public .module-listing {
-                height: 17px;
-            }
-            
-            
-            .globusTransferTitle {
-            	
-            	margin-top: 10px;
-            }
-            .globusTransferStatus_SUCCEEDED {
-            	background-image: url('../images/complete.gif');
-           		background-repeat: no-repeat;
-           		background-attachement: fixed;
-           		background-position: right;
-            }
-            .globusTransferStatus_ACTIVE {
-           		 background-image: url('../images/run.gif');
-           		 background-repeat: no-repeat;
-           		 background-attachement: fixed;
-           		 background-position: right;
-            }
-            .globusTransferStatus_ERROR {
-            	 background-image: url('../images/error.gif');
-           		 background-repeat: no-repeat;
-           		 background-attachement: fixed;
-           		 background-position: right;
-            }
-            
-            .globusTransferListing {
-			    margin-top: 10px;
-			    border-style: solid;
-			    border-width: 1px;
-			    border-color: #BBBBEE;
-			    padding: 2px;
-			    cursor: pointer;
-			    height: 51px;
-			    overflow: hidden;
-			    z-index: 100;
-			    background-color: #FDFDFD;
-			    border-radius: 5px;
-			}
-            #glbMain {
-			    margin: 10px;
-			    padding: 5px;
-			    font-size: 1.1em;
-			    line-height: 1.3em;
-			}
-            
-            #glbInfo {
-            	position: fixed;
-            	bottom: 32px;
-            	width: 340px;
-            	height:52px;
-            }
-            
-            .glbRight {
-            	display: inline;
-            }
-            
-        </style>
+        
     </ui:define>
 
     <div class="left-nav-top">
@@ -408,22 +237,6 @@
 	            Clear completed
 	        </button>
 	        
-	        <button id="glb-login" onclick="browseGlobusIfLoginValid();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-	            Browse <img src="/gp/images/globusLogo.png" alt="Globus" height="12px" /> ›
-	        </button>
-	        <div id="glb-form" style="display:none" >
-	        	<form action="https://app.globus.org/file-manager" method="GET" id="glbBrowseForm" name="globusTransferForm" target="form-target">
-	        		<input type="text" value="POST" name="method" />
-	        		<input type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="cancelurl" />
-	        		<input id="globusAction" type="text" value="#{uiBean.baseURL}/GlobusTransferInServlet" name="action" />
-	        		<input type="text" value="0" name="folderlimit" />
-	        		<input type="text" value="1" name="filelimit" />
-	        		<input type="text" value="To GenePattern" name="label" />
-	        		
-	        	
-	        	</form>
-	        
-	        </div>
         </t:div>
         
     </div>

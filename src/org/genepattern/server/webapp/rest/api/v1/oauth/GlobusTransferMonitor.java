@@ -46,8 +46,8 @@ public class GlobusTransferMonitor {
         }
     }
     
-    public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext) {
-        TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext);
+    public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir) {
+        TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext, destDir);
         threads.add(twt);
         twt.start();
         
@@ -133,6 +133,7 @@ class TransferWaitThread extends Thread {
     String error = null;
     String file;
     String awsFileDetails;
+    String destDir = null;
     
     GpContext userContext;
     private static Logger log = Logger.getLogger(TransferWaitThread.class);
@@ -143,12 +144,13 @@ class TransferWaitThread extends Thread {
 
     boolean stopQuietly = false;
 
-    public TransferWaitThread(String user, String taskId, GlobusClient client, String file, GpContext userContext) {
+    public TransferWaitThread(String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest) {
         this.user = user;
         this.taskId = taskId;
         this.globusClient = client;
         this.file = file;
         this.userContext = userContext;
+        this.destDir = dest;
     }
 
     public void quietStop() {
@@ -272,7 +274,7 @@ class TransferWaitThread extends Thread {
         File newFile = new File(myEndpointRoot + user +"/globus/"+file);
         if (newFile.exists()) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+newFile.getName(), (LSID)null);
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
             newFile.renameTo(uploadFilePath.getServerFile());
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
             
@@ -284,6 +286,24 @@ class TransferWaitThread extends Thread {
         }
     }
     
+    private String getFinalFilePath(String file){
+        String dirPath = "/";
+        if (destDir !=null){
+            String userDir = "/gp/users/"+user;
+            int idx = destDir.indexOf(userDir);
+            if (idx > 0){
+                // we have a valid looking destination
+                dirPath = destDir.substring(idx + userDir.length());
+                System.out.println("Dest=" + destDir + "  --> " + dirPath);
+                
+            }
+        }
+        System.out.println("/gp/users/"+user+ dirPath + file);
+        
+        return "/gp/users/"+user+ dirPath + file;
+        
+    }
+    
     private void finalizeS3FileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
         String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
         ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
@@ -291,7 +311,10 @@ class TransferWaitThread extends Thread {
        
         if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/gp/users/"+user+"/"+file, (LSID)null);
+            // need to look at desired destDir
+            
+            
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
       
             // move the file within S3 to the desired location   
             s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());

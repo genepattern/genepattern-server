@@ -1222,6 +1222,130 @@ strong.filtered-number {
 .zindex10000 { z-index: 10000 !important ;}
 
 
+#left-nav-globus  {
+	display: block;
+	padding: 0;
+	bottom: 85px;
+	overflow-x: hidden;
+	position: absolute;
+	bottom: 0px;
+	top: 33px;
+	width: 373px;
+	background-color: #F1F2F2 !important;
+}
 
+#glb-header {
+	margin-bottom: 10px;
+	display: inline-block;
+	position: relative;
+	top: 2px;
+}
 
+#glb-header img {
+	filter: drop-shadow(2px 2px 2px #445e7e);
+}
 
+#glb-clear {
+	float: left;
+	color: #555555;
+	background-color: #EFEFEF;
+	border-color: #999999;
+	color: #555555;
+}
+
+#glb-clear>span {
+	background-color: #EFEFEF;
+}
+
+#glb-clear>.ui-button-text {
+	font-size: 0.9em;
+	color: #555555;
+}
+
+#glb-clear:disabled {
+	background-color: #EFEFEF;
+	border-color: #AAAAAA;
+	color: #777777;
+}
+
+#glb-clear:disabled>.ui-button-text {
+	color: #999999;
+}
+
+#glb-login {
+	float: right;
+}
+
+#glb-login>.ui-button-text {
+	font-size: 0.9em;
+}
+
+.glb-catalog {
+	padding: 10px;
+}
+
+#globus-browse .module-name, #globus-search .module-list-title,
+	#glb-public .module-name {
+	text-transform: capitalize;
+}
+
+#glb-public .module-listing {
+	height: 17px;
+}
+
+.globusTransferTitle {
+	margin-top: 10px;
+}
+
+.globusTransferStatus_SUCCEEDED {
+	background-image: url('../images/complete.gif');
+	background-repeat: no-repeat;
+	background-attachement: fixed;
+	background-position: right;
+}
+
+.globusTransferStatus_ACTIVE {
+	background-image: url('../images/run.gif');
+	background-repeat: no-repeat;
+	background-attachement: fixed;
+	background-position: right;
+}
+
+.globusTransferStatus_ERROR {
+	background-image: url('../images/error.gif');
+	background-repeat: no-repeat;
+	background-attachement: fixed;
+	background-position: right;
+}
+
+.globusTransferListing {
+	margin-top: 10px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #BBBBEE;
+	padding: 2px;
+	cursor: pointer;
+	height: 51px;
+	overflow: hidden;
+	z-index: 100;
+	background-color: #FDFDFD;
+	border-radius: 5px;
+}
+
+#glbMain {
+	margin: 10px;
+	padding: 5px;
+	font-size: 1.1em;
+	line-height: 1.3em;
+}
+
+#glbInfo {
+	position: fixed;
+	bottom: 32px;
+	width: 340px;
+	height: 52px;
+}
+
+.glbRight {
+	display: inline;
+}
