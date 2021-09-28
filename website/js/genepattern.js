@@ -4450,6 +4450,9 @@ function userBoxClick() {
     }, 1);
 }
 
+
+
+
 function browseGlobusIfLoginValid(destinationDirectory){
 	$.ajax({
         cache: false,
@@ -4458,7 +4461,17 @@ function browseGlobusIfLoginValid(destinationDirectory){
         dataType: "json",
         success: function(data) {
         	if (data.loginValid == true) {
-        		glb_browse(destinationDirectory);
+        		if (destinationDirectory == null) {
+        			openUploadDirectoryDialog(null, function() {    
+        				destinationDirectory = $(uploadDirectorySelected).attr("href");
+        		    	glb_browse(destinationDirectory);
+        		 	 });
+        		} else {
+        			glb_browse(destinationDirectory);
+            			
+        		}
+        		
+        		
         	} else {
         		var okLogin = confirm("To transfer files from Globus you must first login to Globus and grant GenePattern access to your files.");
   				if (okLogin){
