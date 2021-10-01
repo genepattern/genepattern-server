@@ -1274,6 +1274,7 @@ strong.filtered-number {
 
 #glb-login {
 	float: right;
+	margin-left:10px;
 }
 
 #glb-login>.ui-button-text {

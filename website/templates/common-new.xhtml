@@ -49,6 +49,8 @@
                 var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
                 var username = "${requestScope.userID}";
                 var gpBaseUrl="#{uiBean.baseURL}";
+                var globus_enabled = #{loginBean.globusEnabled};
+                
                 console.log("Username set just now to "+ username);
             </script>
             

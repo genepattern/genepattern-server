@@ -25,6 +25,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.LSID;
@@ -58,39 +59,32 @@ public class GlobusTransferInServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.getWriter().append("Served at: ").append(request.getContextPath());
 		GlobusClient globusClient = new GlobusClient();
-		 
+		ArrayList<String> files = new ArrayList<String>();
+		String destDir = null; // comes in as directory URL or absent
+        String taskId = null;
 		try {
 			// per https://docs.globus.org/api/helper-pages/browse-endpoint/#response
     		// we should receive endpoint_id, path, folder[0..n] rel to path, file[0..n] rel to path, label
     		// for now it should be a single file
-    		
-            
     		String endpointId = null;
     		String path = null;
-    		String destDir = null; // comes in as directory URL or absent
-    		ArrayList<String> files = new ArrayList<String>();
     		String gp_user_id = null;
     		String gp_session_id = null;
-    		
     		
     		try {
     		    endpointId = request.getParameter("endpoint_id");
     		    path = request.getParameter("path");
     		    destDir = request.getParameter("destDir");
                  
-    		    Enumeration<String> e = request.getParameterNames();
+    		    Enumeration<String> e = (Enumeration<String>)request.getParameterNames();
                 
                 while (e.hasMoreElements()){
                     String key = (String)e.nextElement();
                     String val = request.getParameter(key);
                     if (key.startsWith("file[")){
-                        
                         files.add(val);
                     }
-                    System.out.println("==> " + key + " = " + val);
                 }
-    		    
-    		    
     		    gp_user_id = request.getParameter("gp_username");
     		    gp_session_id = request.getParameter("gp_session_id");
     		} catch (Exception ex){
@@ -114,6 +108,8 @@ public class GlobusTransferInServlet extends HttpServlet {
         		    request.getSession().getServletContext().setAttribute("globus_session_id_"+gp_user_id, request.getSession().getId());
                     
                 }
+    		} else {
+    		    throw new Exception("Could not establish the GenePattern user session for this Globus file transfer.");
     		}
     		
     		
@@ -130,7 +126,7 @@ public class GlobusTransferInServlet extends HttpServlet {
     		
      		try {
      		    for (int i=0; i<files.size();i++){
-     		       globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir);
+     		       taskId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir);
                 }
                 
                 // a new thread is automatically started to poll for completion
@@ -153,7 +149,14 @@ public class GlobusTransferInServlet extends HttpServlet {
 		
 		// redirect to a page to close the popup and call the parent window to tell it to look
 		// for the new file to appear in the user's files tab
-		response.sendRedirect("/gp/GlobusTransferComplete.html");
+		if (files.size() > 0){
+		    
+		    System.out.println("/gp/GlobusTransferComplete.html?taskId="+taskId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir));
+		    
+		    response.sendRedirect("/gp/GlobusTransferComplete.html?taskId="+taskId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir));
+		} else {
+		    response.sendRedirect("/gp/GlobusTransferComplete.html");
+		}
 	}
 
  

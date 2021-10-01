@@ -328,7 +328,6 @@ public class GlobusClient {
         
         final GpContext context =  GpContext.getContextForUser(userId);
              
-        //refreshToken(request, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
         refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
         
         // Get the token for making the transfer call
@@ -338,6 +337,10 @@ public class GlobusClient {
         // add an ACL to allow this user to write to a drop dir for the transfer
         setupOpenACLForTransfer(request);
         
+        
+        // get the file details from which we can retrieve the size
+        JsonObject fileDetails = getGlobusFileDetails(request, sourceEndpointId, path, file);
+        long fileSize = fileDetails.get("size").getAsLong();
         
         //  TBD need to call to endpoint to set ACL for this user on our shared endpoint
         // - use GP client token to set ACL via transfer service call, need Globus user ID (not just email)
@@ -390,8 +393,57 @@ public class GlobusClient {
         
         // spawn a new thread to wait for completion
        
-        GlobusTransferMonitor.getInstance().addWaitingUser(userId, taskId, this, file, context, destDir);
+        GlobusTransferMonitor.getInstance().addWaitingUser(userId, taskId, this, file, context, destDir, fileSize);
         return taskId;
+    }
+    
+    public JsonObject getGlobusFileDetails(HttpServletRequest request, String sourceEndpointId, String path, String file) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+    
+        //refreshToken(request, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
+        refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        
+        // Get the token for making the transfer call
+        String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        String user_id = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY);
+           
+        URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+file);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
+        connection.setRequestMethod("GET");
+        
+        // only need users token here as long as the user permissions were set earlier (using the GenePattern client token)
+        connection.setRequestProperty("Authorization","Bearer "+ transferToken);
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        
+        connection.setDoOutput(true);
+        
+        
+        JsonElement jsonResponse = null;
+        
+        jsonResponse =  getJsonResponse(connection);
+        
+        return jsonResponse.getAsJsonObject().get("DATA").getAsJsonArray().get(0).getAsJsonObject();
+        
+        
+       
+    }
+    
+    public JsonObject cancelTransfer(String user, JsonObject statusObject) throws IOException{
+        String taskId = statusObject.get("task_id").getAsString();
+        
+        String token = getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        URL url = new URL(transferAPIBaseUrl+"/task/"+taskId+"/cancel");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("Authorization","Bearer "+ token);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setReadTimeout(20000);
+        JsonElement jsonResponse = null;
+        
+        jsonResponse =  getJsonResponse(connection);
+        System.out.println(jsonResponse.toString());
+        return jsonResponse.getAsJsonObject();
     }
     
     public String checkTransferStatus(JsonObject statusObject){

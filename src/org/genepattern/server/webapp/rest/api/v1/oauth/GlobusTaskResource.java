@@ -94,6 +94,34 @@ public class GlobusTaskResource {
         return Response.status(200).build();
     }
     
+    @GET
+    @Path("/cancelTask")
+    public Response cancelTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("taskID") String taskID) throws IOException {
+        String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
+         
+        JsonObject ret = GlobusTransferMonitor.getInstance().removeWaitingUser(userId, taskID);;
+        return Response.status(200).entity(ret.toString()).build();
+    }
+    
+    
+    /**
+     * CancelTask removes the task and kills it with globus.  This happens when the user hits cancel.  Clear task just removes
+     * a completed task from the list of completed tasks so that we don't display it again the next time the file upload toaster appears
+     * 
+     * @param request
+     * @param response
+     * @param taskID
+     * @return
+     * @throws IOException
+     */
+    @GET
+    @Path("/clearCompletedTask")
+    public Response clearTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("taskID") String taskID) throws IOException {
+        String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
+         
+        GlobusTransferMonitor.getInstance().clearCompletedTask(userId, taskID);;
+        return Response.status(200).build();
+    }
     
     @GET
     @Path("/verifyGlobusLogin")

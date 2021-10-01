@@ -5,10 +5,23 @@
 <title>Globus transfer complete</title>
 <script>
 
+function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 function onLoad(){
 	
 	try {
-		opener.globusCallbackFunction();  
+		var file = getParameterByName("file");
+		var destDir = getParameterByName("destDir");
+		var taskId = getParameterByName("taskId");
+		
+		opener.globusCallbackFunction(file, destDir, taskId);  
 		
 	} catch (e){
 		// failed but its not truly necessary and better to close the window than leave it hanging
@@ -25,6 +38,6 @@ function onLoad(){
 
 </head>
 <body onload="onLoad()">
-here we are
+Globus transfer initiated.  This window should close automatically.
 </body>
 </html>

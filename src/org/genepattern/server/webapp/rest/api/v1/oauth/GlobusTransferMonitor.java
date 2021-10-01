@@ -41,26 +41,53 @@ public class GlobusTransferMonitor {
     
     protected void threadFinished(TransferWaitThread t){
         threads.remove(t);
+        JsonObject finishedTransferJson = t.getAsJson();
+        String user = finishedTransferJson.get("user").getAsString();
+        String fileName = finishedTransferJson.get("file").getAsString();
         synchronized(this.finishedTransfers){
-            finishedTransfers.add(t.getAsJson());
+            // if a user has a finished transfer with the same filename, drop it from the list, last one wins
+            for (int i=0; i<finishedTransfers.size();i++){
+                JsonObject transfer = finishedTransfers.get(i);
+                if (user.equals(transfer.get("user").getAsString())){
+                    if (fileName.equals(transfer.get("file").getAsString())){
+                        finishedTransfers.remove(transfer);
+                    } 
+                    else {
+                        // also remove anything for this user that is over 60 minutes old
+                        // since the list will grow infinitely otherwise and if they left
+                        // the page while it was running it would not be cleared using 
+                        // the usual mechanisms...
+                        long lastTimeStamp = transfer.get("timestamp").getAsLong();
+                        long timeNow = System.currentTimeMillis();
+                        
+                        if ((timeNow - lastTimeStamp) > (10*60*1000)){
+                            finishedTransfers.remove(transfer);
+                        }
+                    }
+                }
+                
+            }
+            
+            finishedTransfers.add(finishedTransferJson);
         }
     }
     
-    public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir) {
-        TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext, destDir);
+    public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize) {
+        TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext, destDir, fileSize);
         threads.add(twt);
         twt.start();
         
     }
     
-    public void removeWaitingUser(String user, String taskID) {
+    public JsonObject removeWaitingUser(String user, String taskID) {
         for (TransferWaitThread twt: threads){
             if (twt.matchTaskAndUser(user, taskID)) {
-                twt.quietStop();
+                JsonObject ret = twt.quietStop();
                 threads.remove(twt);
-                return;
+                return  ret;
             }
         }
+        return null;
     }
     
     public JsonObject getStatus(String user, String taskID) {
@@ -118,6 +145,19 @@ public class GlobusTransferMonitor {
        }
     }
     
+    public void clearCompletedTask(String user, String taskId) {
+        // loop in reverse since we add at the end
+         synchronized(this.finishedTransfers){
+            for (int i=0; i<finishedTransfers.size();i++){
+                JsonObject transfer = finishedTransfers.get(i);
+                if (user.equals(transfer.get("user").getAsString()) 
+                        && taskId.equals(transfer.get("id").getAsString())){
+                    finishedTransfers.remove(transfer);
+                }
+            }
+        }
+     }
+    
 }
 
 
@@ -134,27 +174,43 @@ class TransferWaitThread extends Thread {
     String file;
     String awsFileDetails;
     String destDir = null;
+    long fileSize = 0L;
     
     GpContext userContext;
     private static Logger log = Logger.getLogger(TransferWaitThread.class);
     
-    int initialSleep = 60000;  // one minute
+    // XXX 6 sec for test
+    int initialSleep = 6000;  // one minute
 
     int maxTries = 2880;  // two days in minutes
 
     boolean stopQuietly = false;
 
-    public TransferWaitThread(String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest) {
+    public TransferWaitThread(String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest, long size) {
         this.user = user;
         this.taskId = taskId;
         this.globusClient = client;
         this.file = file;
         this.userContext = userContext;
         this.destDir = dest;
+        this.fileSize = size;
     }
 
-    public void quietStop() {
+    public JsonObject quietStop() {
         stopQuietly = true;
+        
+        try {
+        
+        if (statusObject.get("status").getAsString().equals("ACTIVE"))
+            return globusClient.cancelTransfer(user, statusObject);
+        } catch (Exception e){
+            e.printStackTrace();
+            JsonObject err = new JsonObject();
+            
+            err.addProperty("error", e.getMessage());
+            return err;
+        }
+        return null;
     }
 
     public JsonObject getAsJson(){
@@ -167,6 +223,9 @@ class TransferWaitThread extends Thread {
         transferObject.addProperty("lastStatusCheckTime", this.lastStatusCheckTime);
         transferObject.addProperty("file", this.file);
         transferObject.add("statusObject", this.statusObject);
+        transferObject.addProperty("destDir", this.destDir);
+        transferObject.addProperty("size", this.fileSize);
+        transferObject.addProperty("timestamp", System.currentTimeMillis());
         
         
         return transferObject;
@@ -294,11 +353,8 @@ class TransferWaitThread extends Thread {
             if (idx > 0){
                 // we have a valid looking destination
                 dirPath = destDir.substring(idx + userDir.length());
-                System.out.println("Dest=" + destDir + "  --> " + dirPath);
-                
             }
         }
-        System.out.println("/gp/users/"+user+ dirPath + file);
         
         return "/gp/users/"+user+ dirPath + file;
         
@@ -408,7 +464,6 @@ class TransferWaitThread extends Thread {
                     stdOut = new BufferedReader(new  InputStreamReader(proc.getInputStream()));
                     int lineNumber = 0;
                     while ((s = stdOut.readLine()) != null) {
-                        System.out.println(s);
                         if (lineNumber == 1){
                             // this is the line containing size etc we will need for the finalize step
                             awsFileDetails = s;
