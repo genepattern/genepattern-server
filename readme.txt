@@ -1,5 +1,5 @@
 GenePattern: A platform for reproducible bioinformatics
 
-See: http://genepattern.org/
+See: https://genepattern.org/
 
 This is the source code repository for the GenePattern Server platform.
