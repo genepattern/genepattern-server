@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -71,6 +72,28 @@ public class GlobusTransferMonitor {
             finishedTransfers.add(finishedTransferJson);
         }
     }
+    
+    public void addFailedTransferStart(String user, String file, String destDir, String error){
+        JsonObject failedTransferStart = new JsonObject();
+        UUID uuid = UUID.randomUUID();
+        
+        failedTransferStart.addProperty("id", uuid.toString());
+        failedTransferStart.addProperty("user", user);
+        failedTransferStart.addProperty("error", error);
+        failedTransferStart.addProperty("status", "ERROR");
+        failedTransferStart.addProperty("file", file);
+        failedTransferStart.addProperty("destDir", destDir);
+        failedTransferStart.addProperty("size", -1);
+        failedTransferStart.addProperty("timestamp", System.currentTimeMillis());
+        
+        //  mimic a globus error status object that the UI expects to be able to display
+        JsonObject statusObj = new JsonObject();
+        statusObj.addProperty("is_ok", false);
+        statusObj.addProperty("nice_status_short_description", error);
+        finishedTransfers.add(failedTransferStart);
+        
+    }
+    
     
     public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize) {
         TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext, destDir, fileSize);
