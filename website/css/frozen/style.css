@@ -1222,17 +1222,7 @@ strong.filtered-number {
 .zindex10000 { z-index: 10000 !important ;}
 
 
-#left-nav-globus  {
-	display: block;
-	padding: 0;
-	bottom: 85px;
-	overflow-x: hidden;
-	position: absolute;
-	bottom: 0px;
-	top: 33px;
-	width: 373px;
-	background-color: #F1F2F2 !important;
-}
+
 
 #glb-header {
 	margin-bottom: 10px;

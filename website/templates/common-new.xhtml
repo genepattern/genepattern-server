@@ -335,11 +335,8 @@
                         <h:outputText rendered="#{notebookBean.notebookEnabled}">
                             <li id="left-nav-notebook-tab"><a href="#left-nav-notebook">Notebook</a></li>
                         </h:outputText>
-                        <h:outputText rendered="#{loginBean.globusEnabled}">
-                            <li id="left-nav-globus-tab"><a href="#left-nav-globus">Globus</a></li>
-                        </h:outputText>
-                      
                     </ul>
+                     
                     <div id="left-nav-modules" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div id="module-search-block">
@@ -412,11 +409,6 @@
                     <h:outputText rendered="#{notebookBean.notebookEnabled}">
                         <div id="left-nav-notebook" class="left-nav-tab">
                             <ui:include src="/pages/notebookTab.xhtml" />
-                        </div>
-                    </h:outputText>
-                    <h:outputText rendered="#{loginBean.globusEnabled}">
-                        <div id="left-nav-globus" class="left-nav-tab">
-                            <ui:include src="/pages/globusTab.xhtml" />
                         </div>
                     </h:outputText>
                 </div>

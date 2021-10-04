@@ -183,7 +183,7 @@
     z-index: 1;
     top: 0px;
     bottom: 0px;
-    left: 371px;
+    left: 351px;
     background-color: #FCFCFC;
     /*height: 100%;*/
     width: 50%;
@@ -315,7 +315,7 @@ body {
     /*position: absolute;*/
     color: #333366;
     background-color: #F1F2F2;
-    width: 398px;
+    width: 348px;
     /*top: 0px;*/
     bottom: 0px;
     padding: 0px;
@@ -337,7 +337,7 @@ body {
     position: absolute;
     bottom: 0px;
     top: 33px;
-    width: 373px;
+    width: 348px;
     background-color: #F1F2F2 !important;
     display: none;
 }
@@ -386,7 +386,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 353px;
+    width: 329px;
 }
 
 #genomeSpaceFileTree {
@@ -715,7 +715,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 353px;
+    width: 328px;
 }
 
 #left-nav-modules-list {
@@ -724,7 +724,7 @@ body {
     bottom: 0px;
     overflow-y: auto;
     overflow-x: hidden;
-    width: 353px;
+    width: 349px;
 }
 
 .job-status-icon {

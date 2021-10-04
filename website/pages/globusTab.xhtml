@@ -9,153 +9,18 @@
         <script type="text/javascript" language="javascript">
             /* <![CDATA[ */
 
-            var globus_enabled = #{loginBean.globusEnabled};
-           
-            
-            
-            window.globus_tab_init = false;
-            function init_globus_tab() {
-                if (window.globus_tab_init) return;
-       
-               // $("#glbBrowseForm").append('<input type="text" name="gp_session_id" value="'+getCookie("JSESSIONID")+'" />');
-                try { 
-                var oldAction = $("#globusAction")[0].value;
-                var sessionId = getCookie("JSESSIONID");
-               
-                
-			    if (oldAction.indexOf("gp_session_id") <1){
-			    	$("#globusAction")[0].value = oldAction + "?gp_session_id="+ sessionId+"&gp_username="+username;
-			    }
-
-                window.globus_tab_init = true;
-                
-                // check for any transfers upon startup
-                getGlobusTransferStatus();
-                } catch (error){
-                	console.log("globus init failed.  not logged into globus?");
-                	
-                }
-            }
-
-           
-          
             
               
 			 
 
-            function clearGlobusTransfers(){
-            	$.ajax({
-                    cache: false,
-                    type: "GET",
-                    url: "/gp/rest/v1/globus/clearCompletedTasks",
-                    dataType: "json",
-                    success: function(data) {
-                    	// clear things out
-                    	$("#glb-transfer-list").html("");
-                    	// go get any still running
-                    	getGlobusTransferStatus();
-                    
-                    },
-                    error: function(data){
-                    	console.log("FAIL");
-                    }
-            	});
-            	
-            }
             
             
            
             
      
-            
-            function createTransferTaskDiv(task) {
-            	var timeCheck = new Date(Number(task.lastStatusCheckTime));
-            	var taskDiv;
-            	var titleDiv;
-            	var wrapperDiv;
-            	var oldTask = $("#transfer_wrapper_"+task.id)[0];
-            	
-            	// XXX
-            	
-            	if (oldTask != null){
-            		taskDiv = $("#transfer_"+task.id);
-            		titleDiv = $("#transfer_title_"+task.id);
-                	$(titleDiv).removeClass(); // remove all classes
-            		
-            	} else {
-            		titleDiv = $("<div id='transfer_title_"+task.id+"' >  "+task.file+"</div>");
-               		var titleOpenImg = $("<img id='transfer_open_"+task.id+"' src='../images/triangle_black_run.gif'/>");
-               		var titleClosedImg = $("<img id='transfer_closed_"+task.id+"' src='../images/triangle_black.gif' style='display:none' />");
-               		$(titleDiv).prepend(titleOpenImg);
-               		$(titleDiv).prepend(titleClosedImg);
-               		
-               		
-               		
-               		taskDiv = $("<div id='transfer_"+task.id+"'></div>");
-               		
-    				$(titleDiv).click(function(e){
-    					$("#transfer_"+task.id).toggle();
-    					$("#transfer_open_"+task.id).toggle();
-    					$("#transfer_closed_"+task.id).toggle();
-    					});
-    				wrapperDiv = $("<div id='transfer_wrapper_"+task.id+"'></div>");
-               		$(taskDiv).addClass("globusTransferListing");
-               		wrapperDiv.append(titleDiv);
-               		wrapperDiv.append(taskDiv);
-               		$("#glb-transfer-list").prepend(wrapperDiv);
-            	}
-            	
-            	// update the status section and class for the title
-              	$(titleDiv).addClass("globusTransferStatus_"+ task.status);
-              	$(titleDiv).addClass("globusTransferTitle");
-              	// clear the task div
-              	$(taskDiv).html("");
-              	
-           		//$(taskDiv).append("<span>ID: "+task.id+"</span><br/>");
-           		$(taskDiv).append("<span>STATUS: "+ task.status+"</span><br/>");
-           		if (task.error != null){
-           			$(taskDiv).append("<span>ERROR: "+ task.error +"</span><br/>");
-           		}
-           		if (task.statusObject != null){
-           			var nBytes = task.statusObject.bytes_transferred;
-           			if (nBytes == null) {
-           				nBytes = "0";
-           			} else {
-           				nBytes = formatBytes(nBytes);
-           			}
-           			
-           			var timeString = "";
-           			if (task.statusObject.completion_time != null){
-	           			timeCheck =  new Date(task.statusObject.completion_time) ;
-	           		} 	
-           			timeString = "\nas of "+ timeCheck.toLocaleString();
-	           		
-           			
-           			if (task.error != null){
-           			  // put the details in the hover
-                   		$(titleDiv).attr('title', "ERROR:" + task.error + "\n" +nBytes+" transferred" + timeString);
-               		} else {
-               		  // put the details in the hover
-                   		$(titleDiv).attr('title', task.status + "\n" +nBytes+" transferred "+ timeString);
-               		}
-           		  
-               		
-           			
-	           		$(taskDiv).append("<span>bytes transferred:"+nBytes+"</span><br/>");
-	           		
-	           		
-           		}
-           		$(taskDiv).append("<span>as of "+timeCheck.toLocaleString()+"</span><br/>");
+          
+             
            		
-           		
-           		
-           		return wrapperDiv;
-            }
-            
-           
-            
-            // Load the notebooks tab
-            $(document).ready(init_globus_tab);
 
             /* ]]> */
         </script>

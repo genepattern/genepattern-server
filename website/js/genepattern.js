@@ -4664,25 +4664,6 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 
 
 
-function clearGlobusTransfers(){
-	$.ajax({
-        cache: false,
-        type: "GET",
-        url: "/gp/rest/v1/globus/clearCompletedTasks",
-        dataType: "json",
-        success: function(data) {
-        	// clear things out
-        	$("#glb-transfer-list").html("");
-        	// go get any still running
-        	getGlobusTransferStatus();
-        
-        },
-        error: function(data){
-        	console.log("FAIL");
-        }
-	});
-	
-}
 
 
 function formatBytes(bytes,decimals) {
