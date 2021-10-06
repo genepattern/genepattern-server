@@ -508,7 +508,7 @@ class TransferWaitThread extends Thread {
         return success;
     }
     
-    private void logStderr(Process proc, String action) throws IOException {
+    private static void logStderr(Process proc, String action) throws IOException {
         String s;
         BufferedReader stdError = null;
         try {
@@ -521,7 +521,7 @@ class TransferWaitThread extends Thread {
             if (stdError != null) stdError.close();
         }
     }
-    private void logStdout(Process proc, String action) throws IOException {
+    private static void logStdout(Process proc, String action) throws IOException {
         String s;
         BufferedReader stdOut = null;
         try {
@@ -535,7 +535,7 @@ class TransferWaitThread extends Thread {
         }
     }
     
-    public boolean s3CopyFile(GpContext userContext, String fromFileS3Url, File toFile) throws IOException {
+    public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, File toFile) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String bucket = getBucketName(gpConfig, userContext);

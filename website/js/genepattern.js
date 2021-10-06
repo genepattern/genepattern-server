@@ -2198,6 +2198,14 @@ function createFileWidget(linkElement, appendTo) {
                 "description": "Will either open the file for viewing or prompt you to save the file.",
                 "version": "<span class='glyphicon glyphicon-eye-open' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
+            
+            data.push({
+                "lsid": "",
+                "name": "Transfer File to Globus",
+                "description": "Transfer File to a Globus endpoint.",
+                "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
+            });
+            
         }
 
         if (!isPartialFile && isUpload) {
@@ -2276,6 +2284,8 @@ function createFileWidget(linkElement, appendTo) {
                     var pipelineAction = actionClicked.indexOf("Create Pipeline") === 0;
                     var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") === 0;
                     var globusAction = actionClicked.indexOf("Transfer Files from Globus") === 0;
+                    var sendToGlobusAction = actionClicked.indexOf("Transfer File to Globus") === 0;
+                    
                     var renameAction = actionClicked.indexOf("Rename") === 0;
                     var jobCopyAction = actionClicked.indexOf("Copy to Files") === 0;
                     var moveAction = actionClicked.indexOf("Move") === 0;
@@ -2600,8 +2610,12 @@ function createFileWidget(linkElement, appendTo) {
                     	var directory = wid.attr("name");
                     	
                     	browseGlobusIfLoginValid(directory);
+                    }  else if (sendToGlobusAction ) {
+                    	
+                    	$(".search-widget:visible").searchslider("hide");
+                    	
+                    	sendToGlobusIfLoginValid(url);
                     }
-
                     else if (uploadAction) {
                         //close the slider menu
                         $(".search-widget:visible").searchslider("hide");
@@ -3102,9 +3116,6 @@ function initRecentJobs() {
         type: "GET",
         url: "/gp/rest/v1/jobs/recent",
         dataType: "json",
-        beforeSend: function(a,b,c){
-        	console.log("before send");
-        },
         success: function(data) {
             // Clear away the old rendering of the tab
             $("#loading-jobs").hide();
@@ -4449,7 +4460,31 @@ function userBoxClick() {
 }
 
 
-
+function sendToGlobusIfLoginValid(filePath){
+	$.ajax({
+        cache: false,
+        type: "GET",
+        url: "/gp/rest/v1/globus/verifyGlobusLogin",
+        dataType: "json",
+        success: function(data) {
+        	if (data.loginValid == true) {
+        		glb_send_to(filePath);
+        	} else {
+        		var okLogin = confirm("To transfer files to Globus you must first login to Globus and grant GenePattern access to your files.");
+  				if (okLogin){
+        			window.location = "/gp/oauthglobus";
+  				} else {
+  					// do nothing
+  				}
+        	}
+        	
+        },
+        error: function(err) {
+        	alert("Error verifying Globus login. ")
+        }
+        
+	});   	
+}
 
 function browseGlobusIfLoginValid(destinationDirectory){
 	$.ajax({
@@ -4489,6 +4524,36 @@ function browseGlobusIfLoginValid(destinationDirectory){
 
 var globusTransferInitiated = false;
 
+function glb_send_to(filePath) {
+    // Post the form to globus and post to it 
+    //
+    var w = window.open('', 'form-target', 'width=800, height=800');
+    
+    window.globusCallbackFunction = function(filename, destDir, taskId){
+    	var openGlobus = confirm("You can monitor the transfer status within the Globus File Manager. Open Globus File Manager?");
+    	if (openGlobus){
+    		window.open("https://app.globus.org/activity");
+    	}
+    }
+    
+    // add our session ID to be able to recognize the return
+    $("#glbBrowseForm").target="form-target";
+  
+    var sessionId = getCookie("JSESSIONID");
+    
+    var baseAction = gpBaseUrl + "/GlobusTransferInServlet";
+   	var populatedAction = baseAction + "?gp_action=sendToGlobus&gp_session_id="+ sessionId+"&gp_username="+username+"&gp_file="+encodeURIComponent(filePath);
+    $("#globusAction")[0].value = populatedAction;
+    $("#globusFolderLimit")[0].value = 1;
+    $("#globusFileLimit")[0].value = 0;
+    $("#globusTag")[0].value = "From GenePattern";	
+    $("#glbBrowseForm").submit();
+    
+    return false;
+}
+
+
+
 function glb_browse(destinationDirectory) {
     // Post the form to globus and post to it 
     //
@@ -4521,10 +4586,11 @@ function glb_browse(destinationDirectory) {
     	populatedAction += "&destDir="+ encodeURIComponent(destinationDirectory);
     }
     $("#globusAction")[0].value = populatedAction;
-   	
-    $("#glbBrowseForm").submit();
-    console.log($("#glbBrowseForm").serialize);
+    $("#globusFolderLimit")[0].value = 0;
+    $("#globusFileLimit")[0].value = 5;
     
+    
+    $("#glbBrowseForm").submit();
 	// Update the UI
     globusTransferInitiated= true;
     return false;

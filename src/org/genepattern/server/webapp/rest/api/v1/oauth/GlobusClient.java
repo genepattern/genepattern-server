@@ -2,6 +2,7 @@ package org.genepattern.server.webapp.rest.api.v1.oauth;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -11,6 +12,10 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
+
 
 import java.util.HashMap;
 
@@ -31,10 +36,13 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -316,6 +324,121 @@ public class GlobusClient {
         
         return submissionResponse.getAsJsonObject().get("value").getAsString();
     }
+    
+    /**
+     * Send a file from the GenePattern server to an external Globus endpoint
+     * @param request
+     * @param sourceEndpointId
+     * @param path
+     * @param file
+     * @param destDir
+     * @return
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws ProtocolException
+     * @throws InterruptedException
+     */
+    public String transferFileToGlobus(HttpServletRequest request, String destEndpointId, String path, String fileToTransfer) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
+       
+     
+        
+        try {
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, fileToTransfer, (LSID)null);
+            String fileName = uploadFilePath.getName();
+            
+             if (userId == null) {
+                userId = request.getParameter("gp_user_id");
+            }
+            
+            final GpContext context =  GpContext.getContextForUser(userId);
+               
+            // make a copy of the GP file on GenePattern's globus endpoint so that it can be transferred
+            String myEndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+            File newFile = new File(myEndpointRoot + userId +"/globus/"+fileName);
+            String myEndpointType = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
+            
+            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+                Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                
+            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+                // need to tell the externalFileManager to copy it for us
+                String fromFileS3Url = "s3://"+getBucketName(gpConfig, context)+ "/"+getBucketRoot(gpConfig, context)+uploadFilePath.getServerFile().getAbsolutePath();
+                String myS3EndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+                String toS3Url = myS3EndpointRoot + userId +"/globus/"+fileName;
+                
+                s3CopyFile(context, fromFileS3Url,  toS3Url);
+            }
+            
+            refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+            
+            // Get the token for making the transfer call
+            String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+            String user_id = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY);
+               
+            // add an ACL to allow this user to write to a drop dir for the transfer
+            setupOpenACLForTransfer(request);
+            
+            // so to transfer in we need to know our endpoint ID
+            String myEndpointId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
+            String submissionId = getSubmissionId(transferToken);
+    
+            JsonObject transferObject = new JsonObject();
+            transferObject.addProperty("DATA_TYPE", "transfer");
+            transferObject.addProperty("submission_id", submissionId);
+            transferObject.addProperty("source_endpoint", myEndpointId);
+            transferObject.addProperty("destination_endpoint", destEndpointId);
+            transferObject.addProperty("verify_checksum", true);
+            
+            JsonObject transferItem = new JsonObject();
+            transferItem.addProperty("DATA_TYPE", "transfer_item");
+            transferItem.addProperty("recursive", false);
+            transferItem.addProperty("destination_path", path + fileName);
+            transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ userId +"/globus/"+fileName);
+           
+            // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
+            
+            JsonArray transferItems = new JsonArray();
+            transferItems.add(transferItem);
+            
+            transferObject.add("DATA", transferItems);
+            
+            //System.out.println("     "+transferObject);
+            URL url = new URL(transferAPIBaseUrl+"/transfer");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
+            connection.setRequestMethod("POST");
+            
+            // only need users token here as long as the user permissions were set earlier (using the GenePattern client token)
+            connection.setRequestProperty("Authorization","Bearer "+ transferToken);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            
+            connection.setDoOutput(true);
+            
+            try(OutputStream os = connection.getOutputStream()) {
+                byte[] input = transferObject.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);           
+            }
+            
+            String taskId = null;
+            JsonElement transferResponse = null;
+            
+            transferResponse =  getJsonResponse(connection);
+            taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
+            
+            
+            return taskId;
+        }  catch (IOException ioe){
+            throw ioe;
+        } catch (Exception e){
+
+            return null;
+        } 
+       
+    }
+    
+    
 
     public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -690,6 +813,60 @@ public class GlobusClient {
         
     }
     
-    
+  
+  
+  
+  public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url) throws IOException {
+      // For S3 file downloads, we want to generate a presigned URL to redirect to
+      final GpConfig gpConfig=ServerConfigurationFactory.instance();
+      String bucket = getBucketName(gpConfig, userContext);
+      String bucketRoot = getBucketRoot(gpConfig, userContext);
+      String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+      String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
+       
+      String execArgs[];
+      
+      execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};             
+      
+      
+      boolean success = false;
+      Process proc = Runtime.getRuntime().exec(execArgs);
+      try {
+          // proc.waitFor(3, TimeUnit.MINUTES);
+          proc.waitFor();
+          success = (proc.exitValue() == 0);
+          if (!success){
+              //logStdout(proc, "copy s3 file"); 
+              //logStderr(proc, "copy s3 file"); 
+          }
+          
+      } catch (Exception e){
+         // log.debug(e);
+          e.printStackTrace();
+          return false;
+          
+      } finally {
+          proc.destroy();
+      }
+      return success;
+  
+  }
+  static String getBucketName(final GpConfig gpConfig, GpContext userContext) {
+      String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+      
+      // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
+      int endIdx = aws_s3_root.indexOf("/", 5);
+      return aws_s3_root.substring(5,endIdx);
+  }
+   static String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
+      String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+     
+      // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
+      int endIdx = aws_s3_root.indexOf("/", 5);
+      return aws_s3_root.substring(endIdx+1);
+  }
+  
+  
+  
     
 }
