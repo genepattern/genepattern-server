@@ -19,9 +19,10 @@ function onLoad(){
 	try {
 		var file = getParameterByName("file");
 		var destDir = getParameterByName("destDir");
-		var taskId = getParameterByName("taskId");
+		var taskId = getParameterByName("submissionId");
+		var direction = getParameterByName("direction");
 		
-		opener.globusCallbackFunction(file, destDir, taskId);  
+		opener.globusCallbackFunction(file, destDir, taskId, direction);  
 		
 	} catch (e){
 		// failed but its not truly necessary and better to close the window than leave it hanging

@@ -819,7 +819,7 @@ body {
 
 /* Upload Toaster */
 
-.upload-toaster-file-name {
+.upload-toaster-file-name, .globus-toaster-file-name {
     display: inline-block;
     width: 300px;
     overflow: hidden;
@@ -829,7 +829,7 @@ body {
     vertical-align: bottom;
 }
 
-.upload-toaster-file-progress {
+.upload-toaster-file-progress, .globus-toaster-file-progress {
     width: 150px;
     text-align: center;
     margin-right: 10px;
@@ -839,7 +839,7 @@ body {
     top: 9px;
 }
 
-.upload-toaster-file-progress-label {
+.upload-toaster-file-progress-label, .globus-toaster-file-progress-label {
     position: absolute;
     top: 5px;
     width: 150px;
@@ -847,7 +847,7 @@ body {
     text-shadow: 1px 1px 0 #fff;
 }
 
-.upload-toaster-file-cancel {
+.upload-toaster-file-cancel, .globus-toaster-file-cancel {
     width: 70px;
 }
 
@@ -856,6 +856,24 @@ body {
     width: 343px;
     top: -68px;
     left: -1px;
+}
+
+#dialog-extend-fixed-container .globus-dialog {
+    position: absolute;
+    width: 387px;
+    top: -88px;
+    left: -11px;
+}
+
+img.globus-directional-image {
+	margin-right: 10px;
+	vertical-align: middle;
+	height: 15px;
+}
+
+.globus-toaster-view-transfers-button {
+	
+	
 }
 
 /* Glyphicon stuff */

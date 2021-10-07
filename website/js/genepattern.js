@@ -2161,7 +2161,7 @@ function createFileWidget(linkElement, appendTo) {
             
             data.push({
                 "lsid": "",
-                "name": "Transfer Files from Globus",
+                "name": "Transfer from Globus Endpoint",
                 "description": "Transfer files in from a Globus endpoint to this directory.",
                 "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
                 "callAfterItemCreation": function(item){
@@ -2201,7 +2201,7 @@ function createFileWidget(linkElement, appendTo) {
             
             data.push({
                 "lsid": "",
-                "name": "Transfer File to Globus",
+                "name": "Transfer File to Globus Endpoint",
                 "description": "Transfer File to a Globus endpoint.",
                 "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
             });
@@ -4525,31 +4525,47 @@ function browseGlobusIfLoginValid(destinationDirectory){
 var globusTransferInitiated = false;
 
 function glb_send_to(filePath) {
-    // Post the form to globus and post to it 
-    //
-    var w = window.open('', 'form-target', 'width=800, height=800');
-    
-    window.globusCallbackFunction = function(filename, destDir, submissionID){
-    	var openGlobus = confirm("You can monitor the transfer status within the Globus File Manager. Open Globus File Manager?");
-    	if (openGlobus){
-    		window.open("https://app.globus.org/activity");
-    	}
-    }
-    
-    // add our session ID to be able to recognize the return
-    $("#glbBrowseForm").target="form-target";
-  
-    var sessionId = getCookie("JSESSIONID");
-    
-    var baseAction = gpBaseUrl + "/GlobusTransferInServlet";
-   	var populatedAction = baseAction + "?gp_action=sendToGlobus&gp_session_id="+ sessionId+"&gp_username="+username+"&gp_file="+encodeURIComponent(filePath);
-    $("#globusAction")[0].value = populatedAction;
-    $("#globusFolderLimit")[0].value = 1;
-    $("#globusFileLimit")[0].value = 0;
-    $("#globusTag")[0].value = "From GenePattern";	
-    $("#glbBrowseForm").submit();
-    
-    return false;
+	// Post the form to globus and post to it 
+	//
+	var w = window.open('', 'form-target', 'width=800, height=800');
+
+//	window.globusCallbackFunction = function(filename, destDir, submissionID){
+//	var openGlobus = confirm("You can monitor the transfer status within the Globus File Manager. Open Globus File Manager?");
+//	if (openGlobus){
+//	window.open("https://app.globus.org/activity");
+//	}
+//	}
+	window.globusCallbackFunction = function(filename, destDir, submissionID, direction){
+		globusTransferInitiated= true;
+		if ((filename != null) && (destDir != null)){
+			// open the toaster on the file
+			var file = new Object();
+			file.name=filename;
+			file.fileName = filename;
+			file.id = submissionID;
+			file.direction = direction;
+			globusAddToOrUpdateToaster(file, destDir)
+		}
+		setTimeout( getGlobusTransferStatus , 10000 );
+	}
+
+
+
+
+	// add our session ID to be able to recognize the return
+	$("#glbBrowseForm").target="form-target";
+
+	var sessionId = getCookie("JSESSIONID");
+
+	var baseAction = gpBaseUrl + "/GlobusTransferInServlet";
+	var populatedAction = baseAction + "?gp_action=sendToGlobus&gp_session_id="+ sessionId+"&gp_username="+username+"&gp_file="+encodeURIComponent(filePath);
+	$("#globusAction")[0].value = populatedAction;
+	$("#globusFolderLimit")[0].value = 1;
+	$("#globusFileLimit")[0].value = 0;
+	$("#globusTag")[0].value = "From GenePattern";	
+	$("#glbBrowseForm").submit();
+
+	return false;
 }
 
 
@@ -4560,7 +4576,7 @@ function glb_browse(destinationDirectory) {
    
     var w = window.open('', 'form-target', 'width=800, height=800');
     
-    window.globusCallbackFunction = function(filename, destDir, submissionID){
+    window.globusCallbackFunction = function(filename, destDir, submissionID, direction){
 	    	globusTransferInitiated= true;
 	    	if ((filename != null) && (destDir != null)){
 	    		// open the toaster on the file
@@ -4568,6 +4584,7 @@ function glb_browse(destinationDirectory) {
 	    		file.name=filename;
 	    		file.fileName = filename;
 	    		file.id = submissionID;
+	    		file.direction = direction;
 	    		globusAddToOrUpdateToaster(file, destDir)
 	    	}
 		setTimeout( getGlobusTransferStatus , 10000 );
@@ -4609,19 +4626,20 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 	var alreadyOpen = false;
 	// if the dialog is not already created then the dialog('isOpen') call throws an exception
 	try {
-		alreadyOpen = ($('#upload-toaster').dialog('isOpen'));
+		alreadyOpen = ($('#globus-toaster').dialog('isOpen'));
+		
 	} catch (e){
 		//ignore
 		alreadyOpen = false;
 	}
 	
-	var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-	var progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	var globusToasterFile = $(".globus-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	var progressbar = globusToasterFile.find(".globus-toaster-file-progress");
 	var firstTime = false;
 	
 	if (alreadyOpen === true){
-		if (uploadToasterFile.size() == 0){
-			appendToUploadToaster(file);
+		if (globusToasterFile.size() == 0){
+			appendToGlobusToaster(file);
 			firstTime = true;
 		}
 		
@@ -4630,30 +4648,30 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 		// Dont open it if its closed and any files are actually finished
 		if (globusTransferInitiated || file.statusObject == null || file.statusObject.status == "ACTIVE"){
 			var filelist = [file];
-			initUploadToaster(filelist, directory);
+			initGlobusToaster(filelist, directory);
 		    firstTime = true;
 		}
 	}
 	
 
-	var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-	var initComplete = uploadToasterFile.prop('globusFileInitComplete');
+	var globusToasterFile = $(".globus-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	var initComplete = globusToasterFile.prop('globusFileInitComplete');
 	
 	if (initComplete != true){
-		progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+		progressbar = globusToasterFile.find(".globus-toaster-file-progress");
 		progressbar.attr("title", "Globus transfers only update twice per minute and will continue if you leave this page.");
 	    progressbar.tooltip();
-	    uploadToasterFile.find(".upload-toaster-file-cancel").button("disable");	
-		var cancelButton =  uploadToasterFile.find(".upload-toaster-file-cancel");
+	    globusToasterFile.find(".globus-toaster-file-cancel").button("disable");	
+		var cancelButton =  globusToasterFile.find(".globus-toaster-file-cancel");
 		cancelButton.button("enable");
 		cancelButton.unbind("click").click(function() {
 			var transferId = file.id;
-			uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-			progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-			$(this).parent().find(".upload-toaster-file-cancel").button("disable");
+			globusToasterFile = $(".globus-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+			progressbar = globusToasterFile.find(".globus-toaster-file-progress");
+			$(this).parent().find(".globus-toaster-file-cancel").button("disable");
 	
 			progressbar .find(".ui-progressbar-value") .css("background", "#FCF1F3");
-			progressbar .find(".upload-toaster-file-progress-label")	 .text("Canceled!");
+			progressbar .find(".globus-toaster-file-progress-label")	 .text("Canceled!");
 	
 			$.ajax({
 				cache: false,
@@ -4678,9 +4696,9 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 				 }
 			});
 	
-			cleanUploadToaster(); 
+			cleanGlobusToaster(); 
 		}); 
-		uploadToasterFile.prop('globusFileInitComplete', true);
+		globusToasterFile.prop('globusFileInitComplete', true);
 	}
 	
 	if (file.statusObject != null){
@@ -4690,7 +4708,7 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 		
 		progressbar.progressbar("value", percent);
 		if (percent == 100) {
-			cleanUploadToaster(); 
+			cleanGlobusToaster(); 
 			$.ajax({
 	             cache: false,
 	             type: "GET",
@@ -4706,7 +4724,7 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 		// status response is not so useful for this
 		if ((file.statusObject.is_ok == false) || ("FAILED" === file.status)){
 			//var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-			uploadToasterFile.find(".upload-toaster-file-cancel").button("disable");
+			globusToasterFile.find(".globus-toaster-file-cancel").button("disable");
 	         
 			var errorString = "Error from Globus";
 			 if (file.error != null) errorString += (": " + file.error);
@@ -4720,8 +4738,10 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 	             .find(".ui-progressbar-value")
 	             .css("background", "#FCF1F3");
 	         progressbar
-	             .find(".upload-toaster-file-progress-label")
+	             .find(".globus-toaster-file-progress-label")
 	             .text("Transfer Failed!");
+	         
+	         cleanGlobusToaster();
 	         
 	         $.ajax({
 	             cache: false,
@@ -4750,6 +4770,8 @@ function formatBytes(bytes,decimals) {
 	   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 	}
 
+var globusTransfersInProgress = 0;
+
 function getGlobusTransferStatus(){
 	$.ajax({
         cache: false,
@@ -4763,7 +4785,7 @@ function getGlobusTransferStatus(){
         	$('#glb-clear').prop("disabled",true);
         	$('#glb-clear').hide();
         	
-        	var anyRunning = false;
+        	globusTransfersInProgress = 0;
         	//$("#glb-transfer-list").empty();
         	if (data.length > 0){
             	for (var i=0; i < data.length; i++){
@@ -4773,9 +4795,9 @@ function getGlobusTransferStatus(){
             		task.name = task.file;
              		globusAddToOrUpdateToaster( task, task.destDir);
              		
-                    if (task.status == "ACTIVE"){
+                    if ((task.status == "ACTIVE") && (task.status.is_ok != false)){
                     	globusTransferInitiated = false;
-                    	anyRunning = true;
+                    	globusTransfersInProgress = globusTransfersInProgress + 1;
                     }
 	                  
             	}
@@ -4783,7 +4805,7 @@ function getGlobusTransferStatus(){
          	} 
         	
         	// check back once every 30s if any are still running
-        	if (anyRunning || globusTransferInitiated){
+        	if ((globusTransfersInProgress > 0 ) || globusTransferInitiated){
         		setTimeout( function(){ 
         		    getGlobusTransferStatus();
         		  }  , 30000 );
@@ -4811,11 +4833,13 @@ function appendToGlobusToaster(file){
     // after a cancel it might already be there
     existing = $(".globus-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
   	if (existing.length > 0 ) return;
-    
+  	var glbImage = "/gp/images/globusToGenePattern.png";
+    if (file.direction === "outbound") glbImage = "/gp/images/genepatternToGlobus.png"
     
     $("<div></div>")
         .addClass("globus-toaster-file")
         .attr("name", file.name)
+        .append($("<img src='"+glbImage+"' height='15px' class='globus-directional-image' alt='"+file.direction+"'></img>"))
         .append(
         $("<span></span>")
             .addClass("globus-toaster-file-name")
@@ -4847,7 +4871,7 @@ function appendToGlobusToaster(file){
     )
         .appendTo(toaster);
     var uploadDialog = $(".globus-dialog");
-    uploadDialog.find(".ui-dialog-titlebar-close").hide();
+    uploadDialog.find(".ui-dialog-titlebar-close").show();
     uploadDialog.find(".ui-dialog-titlebar-minimize").show();
 }
 
@@ -4857,7 +4881,8 @@ function initGlobusToaster(filelist) {
     //$("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
 
     // Create the dialog contents
-    
+	globusTransfersInProgress = filelist.length;
+	
     var toaster = $('#globus-toaster');
     if (toaster.length == 0){
     	
@@ -4870,9 +4895,13 @@ function initGlobusToaster(filelist) {
     // toaster = $("<div></div>").addClass("upload-toaster-list").attr("id", "upload-toaster");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
+     	var glbImage = "/gp/images/globusToGenePattern.png";
+        if (file.direction === "outbound") glbImage = "/gp/images/genepatternToGlobus.png"
+        
         $("<div></div>")
             .addClass("globus-toaster-file")
             .attr("name", file.name)
+            .append($("<img src='"+glbImage+"' height='15px' class='globus-directional-image' alt='"+file.direction+"'></img>"))
             .append(
             $("<span></span>")
                 .addClass("globus-toaster-file-name")
@@ -4905,14 +4934,30 @@ function initGlobusToaster(filelist) {
             .appendTo(toaster);
     }
 
+    
+    
     // Create the dialog
     toaster
         .dialog({
             "title" : "GenePattern-Globus Transfers",
-            "width": 585,
+            "width": 629,
             "height": 250,
             "buttons" : {},
-            "dialogClass": "globus-dialog"
+            "dialogClass": "globus-dialog",
+            buttons: [
+                {
+                  text: "View on Globus",
+                  click: function() {
+                    window.open( "https://app.globus.org/activity" );
+                  }
+                },
+                {
+                    text: "Close",
+                    click: function() {
+                      $( this ).dialog( "close" );
+                    }
+                  }
+              ]
         })
         .dialogExtend({
             "closable" : true,
@@ -4921,7 +4966,7 @@ function initGlobusToaster(filelist) {
             "collapsable" : false,
             "minimizeLocation" : "left",
             "load" : function() {
-                $(".globus-dialog").find(".ui-dialog-titlebar-close").hide();
+                $(".globus-dialog").find(".ui-dialog-titlebar-close").show();
             },
             "minimize" : function() {
             	 var head = document.getElementsByTagName('head')[0];
@@ -4967,7 +5012,7 @@ function cleanGlobusToaster() {
     // Disable minimize button and enable close if not minimized
     var uploadDialog = $(".globus-dialog");
    
-    if (resumableloadsInProgress == 0){
+    if (globusTransfersInProgress == 0){
 
     	uploadDialog.find(".ui-dialog-titlebar-close").show();
     	uploadDialog.find(".ui-dialog-titlebar-minimize").hide();
@@ -4975,6 +5020,14 @@ function cleanGlobusToaster() {
     	uploadDialog.find(".ui-dialog-titlebar-close").hide();
     	uploadDialog.find(".ui-dialog-titlebar-minimize").show();
     }
+    
+    // clear out the server side
+//    $.ajax({
+//        cache: false,
+//        type: "GET",
+//        url: "/gp/rest/v1/globus/clearCompletedTasks",
+//        dataType: "json"
+//	});
     
     // Refresh the tree
     refreshUploadTree();
