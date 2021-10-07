@@ -4,7 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
@@ -25,7 +31,10 @@ import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.util.LSID;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class GlobusTransferMonitor {
     private static GlobusTransferMonitor instance = null;
@@ -73,11 +82,11 @@ public class GlobusTransferMonitor {
         }
     }
     
-    public void addFailedTransferStart(String user, String file, String destDir, String error){
+    public void addFailedTransferStart(String submissionId, String user, String file, String destDir, String error){
         JsonObject failedTransferStart = new JsonObject();
         UUID uuid = UUID.randomUUID();
         
-        failedTransferStart.addProperty("id", uuid.toString());
+        failedTransferStart.addProperty("submissionid", submissionId);
         failedTransferStart.addProperty("user", user);
         failedTransferStart.addProperty("error", error);
         failedTransferStart.addProperty("status", "ERROR");
@@ -94,17 +103,24 @@ public class GlobusTransferMonitor {
         
     }
     
-    
-    public void addWaitingUser(String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize) {
-        TransferWaitThread twt = new TransferWaitThread(user, taskID, cl, file, userContext, destDir, fileSize);
+    public void addWaitingOutbound(String submissionId, String user, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, String destEndpointId) {
+        TransferOutWaitThread twt = new TransferOutWaitThread(submissionId, user, cl, file, userContext, destDir, fileSize, destEndpointId);
         threads.add(twt);
         twt.start();
         
     }
     
-    public JsonObject removeWaitingUser(String user, String taskID) {
+    
+    public void addWaitingInbound(String submissionId, String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize) {
+        TransferInWaitThread twt = new TransferInWaitThread(submissionId, user, taskID, cl, file, userContext, destDir, fileSize);
+        threads.add(twt);
+        twt.start();
+        
+    }
+    
+    public JsonObject removeWaitingUser(String user, String submissionId) {
         for (TransferWaitThread twt: threads){
-            if (twt.matchTaskAndUser(user, taskID)) {
+            if (twt.matchTaskAndUser(user, submissionId)) {
                 JsonObject ret = twt.quietStop();
                 threads.remove(twt);
                 return  ret;
@@ -113,9 +129,9 @@ public class GlobusTransferMonitor {
         return null;
     }
     
-    public JsonObject getStatus(String user, String taskID) {
+    public JsonObject getStatus(String user, String submissionId) {
         for (TransferWaitThread twt: threads){
-            if (twt.matchTaskAndUser(user, taskID)) {
+            if (twt.matchTaskAndUser(user, submissionId)) {
                
                 return twt.getAsJson();
             }
@@ -168,13 +184,13 @@ public class GlobusTransferMonitor {
        }
     }
     
-    public void clearCompletedTask(String user, String taskId) {
+    public void clearCompletedTask(String user, String submissionId) {
         // loop in reverse since we add at the end
          synchronized(this.finishedTransfers){
             for (int i=0; i<finishedTransfers.size();i++){
                 JsonObject transfer = finishedTransfers.get(i);
                 if (user.equals(transfer.get("user").getAsString()) 
-                        && taskId.equals(transfer.get("id").getAsString())){
+                        && submissionId.equals(transfer.get("submissionid").getAsString())){
                     finishedTransfers.remove(transfer);
                 }
             }
@@ -184,8 +200,8 @@ public class GlobusTransferMonitor {
 }
 
 
-
 class TransferWaitThread extends Thread {
+    String submissionId;
     String user = null;
     String taskId = null;
     GlobusClient globusClient = null;
@@ -198,9 +214,10 @@ class TransferWaitThread extends Thread {
     String awsFileDetails;
     String destDir = null;
     long fileSize = 0L;
+    String direction = null;
     
     GpContext userContext;
-    private static Logger log = Logger.getLogger(TransferWaitThread.class);
+    protected static Logger log = Logger.getLogger(TransferInWaitThread.class);
     
     // XXX 6 sec for test
     int initialSleep = 6000;  // one minute
@@ -208,17 +225,7 @@ class TransferWaitThread extends Thread {
     int maxTries = 2880;  // two days in minutes
 
     boolean stopQuietly = false;
-
-    public TransferWaitThread(String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest, long size) {
-        this.user = user;
-        this.taskId = taskId;
-        this.globusClient = client;
-        this.file = file;
-        this.userContext = userContext;
-        this.destDir = dest;
-        this.fileSize = size;
-    }
-
+    
     public JsonObject quietStop() {
         stopQuietly = true;
         
@@ -238,7 +245,8 @@ class TransferWaitThread extends Thread {
 
     public JsonObject getAsJson(){
         JsonObject transferObject = new JsonObject();
-        transferObject.addProperty("id", this.taskId);
+        transferObject.addProperty("taskid", this.taskId);
+        transferObject.addProperty("submissionid", this.submissionId);
         transferObject.addProperty("user", this.user);
         transferObject.addProperty("error", this.error);
         transferObject.addProperty("status", this.status);
@@ -249,98 +257,12 @@ class TransferWaitThread extends Thread {
         transferObject.addProperty("destDir", this.destDir);
         transferObject.addProperty("size", this.fileSize);
         transferObject.addProperty("timestamp", System.currentTimeMillis());
-        
+        transferObject.addProperty("direction", direction);
         
         return transferObject;
     }
     
-    public void run() {
-    try {
-         this.status = "Undetermined";
-        this.prevStatus = "Undetermined";
-       
-        int count = 0;
-        int sleep = initialSleep; // wouldn't be here if it was fast
-        
-        sleep = 1000; // for debugging
-        
-        while ((status.equalsIgnoreCase("ACTIVE") || (status.equalsIgnoreCase("Undetermined")))  && !stopQuietly) {
-            count++;
-            try {
-                Thread.sleep(sleep);
-            } catch (InterruptedException ie) {
-            }
-            prevStatus = status;
-            
-            try {
-                // TODO should we refresh the token before each use?
-                String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-                statusObject = globusClient.getTransferDetails(taskId, token);
-                
-                //System.out.println("\tTRANSFER TOKEN (get status):"+token );
-                //String appAccessToken = globusClient.getApplicationCredentials() ;
-                //statusObject = globusClient.getTransferDetails(taskId, appAccessToken);
-                
-                status = globusClient.checkTransferStatus(statusObject);
-                
-                lastStatusCheckTime = System.currentTimeMillis();
-            } catch (Exception e){
-                error = e.getMessage();
-            }
-            
-            sleep = incrementSleep(initialSleep, maxTries, count);
-            if (count > maxTries){
-                status = "TIMED OUT";
-                break;
-            }
-            
-        }
-        // this transfer is all done. Move the file to the user's directory      
-        if (this.status.equals("SUCCEEDED")) {
-            this.finalizeTransfer();
-        } else {
-            this.error = "Transfer failed.  Final status was " + this.status;
-        }
-        
-        
-    } catch (Exception e) {
-        // problem getting status. Send an email indicating this and
-        // end the thread
-        e.printStackTrace();
-
-        GlobusTransferMonitor em = GlobusTransferMonitor.getInstance();
-        
-    } finally {
-        GlobusTransferMonitor.getInstance().threadFinished(this);
-        cleanUpACL(); // get rid of the ACL if no transfers are in progress
-    }
-    }
-
-    public void finalizeTransfer() {
-        HibernateSessionManager hib =  HibernateUtil.instance();
-        try {
-            GpConfig gpConfig=ServerConfigurationFactory.instance();
-            String myEndpointType = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
-            
-            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
-                finalizeLocalFileTransfer(hib, gpConfig);
-            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
-                finalizeS3FileTransfer(hib, gpConfig);
-            }
-            
-           
-            
-        } catch (Exception e){
-            log.error(e);
-            e.printStackTrace();
-            this.error = "Error after transfer completed" + e.getMessage();
-            this.status = "ERROR";
-        } finally {
-            if (hib.isInTransaction()) hib.rollbackTransaction();
-        }
-    }
-
-    private void cleanUpACL() {
+    protected void cleanUpACL() {
         ArrayList<TransferWaitThread> running = GlobusTransferMonitor.getInstance().getRunningForUser(this.user);
         if (running.size() == 0){
         String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
@@ -350,72 +272,6 @@ class TransferWaitThread extends Thread {
             }
         }
     }
-
-    private void finalizeLocalFileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
-        String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
-        File newFile = new File(myEndpointRoot + user +"/globus/"+file);
-        if (newFile.exists()) {
-            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
-            newFile.renameTo(uploadFilePath.getServerFile());
-            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
-            
-            hib.beginTransaction();
-            fileUtil.updateUploadsDb(hib, uploadFilePath);
-            hib.commitTransaction();
-        } else {
-            throw new Exception("File from Globus is missing.  Not at " + newFile.getAbsolutePath());
-        }
-    }
-    
-    private String getFinalFilePath(String file){
-        String dirPath = "/";
-        if (destDir !=null){
-            String userDir = "/gp/users/"+user;
-            int idx = destDir.indexOf(userDir);
-            if (idx > 0){
-                // we have a valid looking destination
-                dirPath = destDir.substring(idx + userDir.length());
-            }
-        }
-        
-        return "/gp/users/"+user+ dirPath + file;
-        
-    }
-    
-    private void finalizeS3FileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
-        String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
-        ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
-        
-       
-        if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
-            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
-            // need to look at desired destDir
-            
-            
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
-      
-            // move the file within S3 to the desired location   
-            s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
-            
-            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
-            BigInteger size = statusObject.get("bytes_transferred").getAsBigInteger();
-            
-            uploadFilePath.setFileLength(new Long(size.longValue()));
-            uploadFilePath.setLastModified(new Date());
-            hib.beginTransaction();
-            fileUtil.updateUploadsDb(hib, uploadFilePath);
-            hib.commitTransaction();
-            
-            // now we use the details in the globus status object to get the size and we need to set ther date
-            
-            
-        } else {
-            throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);
-        }
-    }
-    
-    
 
     public String getUser() {
         return user;
@@ -433,7 +289,7 @@ class TransferWaitThread extends Thread {
      *                Description of the Parameter
      * @return Description of the Return Value
      */
-    private static int incrementSleep(int init, int maxTries, int count) {
+    protected static int incrementSleep(int init, int maxTries, int count) {
     if (count < (maxTries * 0.2)) {
         return init;
     }
@@ -449,10 +305,10 @@ class TransferWaitThread extends Thread {
     return init * 16;
     }
 
-    public boolean matchTaskAndUser(String user, String taskId) {
+    public boolean matchTaskAndUser(String user, String submissionId) {
         if (!user.equals(this.user))  return false;
         try {
-            return (this.taskId.equals(taskId));
+            return (this.submissionId.equals(submissionId));
         } catch (Exception e) {
             return false;
         }
@@ -584,3 +440,361 @@ class TransferWaitThread extends Thread {
         return aws_s3_root.substring(endIdx+1);
     }
 }
+
+class TransferInWaitThread extends TransferWaitThread {
+  
+    public TransferInWaitThread(String submissionId, String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest, long size) {
+        this.submissionId = submissionId;
+        this.user = user;
+        this.taskId = taskId;
+        this.globusClient = client;
+        this.file = file;
+        this.userContext = userContext;
+        this.destDir = dest;
+        this.fileSize = size;
+        this.direction = "inbound";
+    }
+
+   
+    
+    public void run() {
+    try {
+         this.status = "Undetermined";
+        this.prevStatus = "Undetermined";
+       
+        int count = 0;
+        int sleep = initialSleep; // wouldn't be here if it was fast
+        
+        sleep = 10000; // for debugging
+        
+        while ((status.equalsIgnoreCase("ACTIVE") || (status.equalsIgnoreCase("Undetermined")))  && !stopQuietly) {
+            count++;
+            try {
+                Thread.sleep(sleep);
+            } catch (InterruptedException ie) {
+            }
+            prevStatus = status;
+            
+            try {
+                // TODO should we refresh the token before each use?
+                String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+                statusObject = globusClient.getTransferDetails(taskId, token);
+                
+                status = globusClient.checkTransferStatus(statusObject);
+                lastStatusCheckTime = System.currentTimeMillis();
+            } catch (Exception e){
+                error = e.getMessage();
+            }
+            
+            sleep = incrementSleep(initialSleep, maxTries, count);
+            if (count > maxTries){
+                status = "TIMED OUT";
+                break;
+            }
+            
+        }
+        // this transfer is all done. Move the file to the user's directory      
+        if (this.status.equals("SUCCEEDED")) {
+            this.finalizeTransfer();
+        } else {
+            this.error = "Transfer failed.  Final status was " + this.status;
+        }
+        
+        
+    } catch (Exception e) {
+        // problem getting status. Send an email indicating this and
+        // end the thread
+        e.printStackTrace();
+
+        GlobusTransferMonitor em = GlobusTransferMonitor.getInstance();
+        
+    } finally {
+        GlobusTransferMonitor.getInstance().threadFinished(this);
+        cleanUpACL(); // get rid of the ACL if no transfers are in progress
+    }
+    }
+
+    public void finalizeTransfer() {
+        HibernateSessionManager hib =  HibernateUtil.instance();
+        try {
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            String myEndpointType = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
+            
+            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+                finalizeLocalFileTransfer(hib, gpConfig);
+            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+                finalizeS3FileTransfer(hib, gpConfig);
+            }
+            
+           
+            
+        } catch (Exception e){
+            log.error(e);
+            e.printStackTrace();
+            this.error = "Error after transfer completed" + e.getMessage();
+            this.status = "ERROR";
+        } finally {
+            if (hib.isInTransaction()) hib.rollbackTransaction();
+        }
+    }
+
+   
+    private void finalizeLocalFileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
+        String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+        File newFile = new File(myEndpointRoot + user +"/globus/"+file);
+        if (newFile.exists()) {
+            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
+            newFile.renameTo(uploadFilePath.getServerFile());
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
+            
+            hib.beginTransaction();
+            fileUtil.updateUploadsDb(hib, uploadFilePath);
+            hib.commitTransaction();
+        } else {
+            throw new Exception("File from Globus is missing.  Not at " + newFile.getAbsolutePath());
+        }
+    }
+    
+    private String getFinalFilePath(String file){
+        String dirPath = "/";
+        if (destDir !=null){
+            String userDir = "/gp/users/"+user;
+            int idx = destDir.indexOf(userDir);
+            if (idx > 0){
+                // we have a valid looking destination
+                dirPath = destDir.substring(idx + userDir.length());
+            }
+        }
+        
+        return "/gp/users/"+user+ dirPath + file;
+        
+    }
+    
+    private void finalizeS3FileTransfer(HibernateSessionManager hib, GpConfig gpConfig) throws Exception, GpFilePathException, DbException {
+        String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+        ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
+        
+       
+        if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
+            // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
+            // need to look at desired destDir
+            
+            
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
+      
+            // move the file within S3 to the desired location   
+            s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
+            
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
+            BigInteger size = statusObject.get("bytes_transferred").getAsBigInteger();
+            
+            uploadFilePath.setFileLength(new Long(size.longValue()));
+            uploadFilePath.setLastModified(new Date());
+            hib.beginTransaction();
+            fileUtil.updateUploadsDb(hib, uploadFilePath);
+            hib.commitTransaction();
+            
+            // now we use the details in the globus status object to get the size and we need to set ther date
+            
+            
+        } else {
+            throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);
+        }
+    }
+    
+    
+
+   
+}
+
+/**
+ * variant of the TransferInWaitThread that is modified for outbound transfers.  In this case we start without a taskId and have
+ * to copy the file to the endpoint and start the transfer
+ * 
+ * @author liefeld
+ *
+ */
+class TransferOutWaitThread extends TransferWaitThread{
+    String destinationEndpointId = null;
+    String fileUrl = null;
+    public TransferOutWaitThread(String submissionId, String user,  GlobusClient client, String file, GpContext userContext, String dest, long size, String destEndpointId) {
+        this.fileUrl = file;
+        try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, file, (LSID)null);
+            // String fileName = uploadFilePath.getName();
+            this.file = uploadFilePath.getRelativePath();
+        } catch (Exception e){
+            this.error = e.getMessage();
+            this.file = file;
+        }
+        this.submissionId = submissionId;
+        this.user = user;
+        this.taskId = null;
+        this.globusClient = client;
+        
+        this.userContext = userContext;
+        this.destDir = dest;
+        this.fileSize = size;
+        this.destinationEndpointId = destEndpointId;
+        this.direction = "outbound";
+    }
+    
+    public void run() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        // first copy the files and start the transfer.  Then loop and check status like the transfer in version
+        
+        try {
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, this.fileUrl, (LSID)null);
+            String fileName = uploadFilePath.getName();
+            
+                 
+            // make a copy of the GP file on GenePattern's globus endpoint so that it can be transferred
+            String myEndpointRoot = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+            File newFile = new File(myEndpointRoot + user +"/globus/"+fileName);
+            String myEndpointType = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
+            
+            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+                Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                
+            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+                // need to tell the externalFileManager to copy it for us
+                String fromFileS3Url = "s3://"+getBucketName(gpConfig, userContext)+ "/"+getBucketRoot(gpConfig, userContext)+uploadFilePath.getServerFile().getAbsolutePath();
+                String myS3EndpointRoot = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+                String toS3Url = myS3EndpointRoot + user +"/globus/"+fileName;
+                
+                globusClient.s3CopyFile(userContext, fromFileS3Url,  toS3Url);
+            }
+            
+            String transferToken = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+            
+            // so to transfer in we need to know our endpoint ID
+            String myEndpointId = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
+            
+    
+            JsonObject transferObject = new JsonObject();
+            transferObject.addProperty("DATA_TYPE", "transfer");
+            transferObject.addProperty("submission_id", submissionId);
+            transferObject.addProperty("source_endpoint", myEndpointId);
+            transferObject.addProperty("destination_endpoint", destinationEndpointId);
+            transferObject.addProperty("verify_checksum", true);
+            
+            JsonObject transferItem = new JsonObject();
+            transferItem.addProperty("DATA_TYPE", "transfer_item");
+            transferItem.addProperty("recursive", false);
+            transferItem.addProperty("destination_path", destDir + fileName);
+            transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ user +"/globus/"+fileName);
+           
+            // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
+            
+            JsonArray transferItems = new JsonArray();
+            transferItems.add(transferItem);
+            
+            transferObject.add("DATA", transferItems);
+            
+            //System.out.println("     "+transferObject);
+            URL url = new URL(globusClient.transferAPIBaseUrl+"/transfer");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
+            connection.setRequestMethod("POST");
+            
+            // only need users token here as long as the user permissions were set earlier (using the GenePattern client token)
+            connection.setRequestProperty("Authorization","Bearer "+ transferToken);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            
+            connection.setDoOutput(true);
+            
+            try(OutputStream os = connection.getOutputStream()) {
+                byte[] input = transferObject.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);           
+            }
+            
+            String taskId = null;
+            JsonElement transferResponse = null;
+            
+            transferResponse =  getJsonResponse(connection);
+            this.taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
+            
+       
+        } catch (Exception e){
+
+           e.printStackTrace();
+        } 
+        
+        
+        
+        
+        
+        try {
+             this.status = "Undetermined";
+            this.prevStatus = "Undetermined";
+           
+            int count = 0;
+            int sleep = initialSleep; // wouldn't be here if it was fast
+            
+            sleep = 10000; // for debugging
+            
+            while ((status.equalsIgnoreCase("ACTIVE") || (status.equalsIgnoreCase("Undetermined")))  && !stopQuietly) {
+                count++;
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException ie) {
+                }
+                prevStatus = status;
+                
+                try {
+                    // TODO should we refresh the token before each use?
+                    String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+                    statusObject = globusClient.getTransferDetails(taskId, token);
+                    
+                    status = globusClient.checkTransferStatus(statusObject);
+                    lastStatusCheckTime = System.currentTimeMillis();
+                } catch (Exception e){
+                    error = e.getMessage();
+                }
+                
+                sleep = incrementSleep(initialSleep, maxTries, count);
+                if (count > maxTries){
+                    status = "TIMED OUT";
+                    break;
+                }
+                
+            }
+            // this transfer is all done. Move the file to the user's directory      
+            if (this.status.equals("SUCCEEDED")) {
+                // nothing to do but shut down.  For transfers out the extra work is at the beginning
+                // not at the end
+            } else {
+                this.error = "Transfer failed.  Final status was " + this.status;
+            }
+            
+            
+        } catch (Exception e) {
+            // problem getting status. Send an email indicating this and
+            // end the thread
+            e.printStackTrace();
+
+            GlobusTransferMonitor em = GlobusTransferMonitor.getInstance();
+            
+        } finally {
+            GlobusTransferMonitor.getInstance().threadFinished(this);
+            cleanUpACL(); // get rid of the ACL if no transfers are in progress
+        }
+    }
+
+    public JsonElement getJsonResponse(HttpURLConnection con) throws UnsupportedEncodingException, IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+        StringBuilder response = new StringBuilder();
+        String responseLine = null;
+        while ((responseLine = br.readLine()) != null) {
+              response.append(responseLine.trim());
+        }
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(response.toString());
+        return je;
+    }
+    
+    
+}
+

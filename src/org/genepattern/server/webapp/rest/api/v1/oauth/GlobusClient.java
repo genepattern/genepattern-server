@@ -18,6 +18,7 @@ import java.nio.file.StandardCopyOption;
 
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
@@ -341,101 +342,110 @@ public class GlobusClient {
     public String transferFileToGlobus(HttpServletRequest request, String destEndpointId, String path, String fileToTransfer) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
-       
-     
+        refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
         
+        // Get the token for making the transfer call
+        String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        final GpContext userContext =  GpContext.getContextForUser(userId);
+        // add an ACL to allow this user to write to a drop dir for the transfer
+        setupOpenACLForTransfer(request);
+        String submissionId = this.getSubmissionId(transferToken);
+        long fileSize = 0L;
         try {
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, fileToTransfer, (LSID)null);
-            String fileName = uploadFilePath.getName();
-            
-             if (userId == null) {
-                userId = request.getParameter("gp_user_id");
-            }
-            
-            final GpContext context =  GpContext.getContextForUser(userId);
-               
-            // make a copy of the GP file on GenePattern's globus endpoint so that it can be transferred
-            String myEndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
-            File newFile = new File(myEndpointRoot + userId +"/globus/"+fileName);
-            String myEndpointType = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
-            
-            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
-                Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                
-            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
-                // need to tell the externalFileManager to copy it for us
-                String fromFileS3Url = "s3://"+getBucketName(gpConfig, context)+ "/"+getBucketRoot(gpConfig, context)+uploadFilePath.getServerFile().getAbsolutePath();
-                String myS3EndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
-                String toS3Url = myS3EndpointRoot + userId +"/globus/"+fileName;
-                
-                s3CopyFile(context, fromFileS3Url,  toS3Url);
-            }
-            
-            refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-            
-            // Get the token for making the transfer call
-            String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-            String user_id = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY);
-               
-            // add an ACL to allow this user to write to a drop dir for the transfer
-            setupOpenACLForTransfer(request);
-            
-            // so to transfer in we need to know our endpoint ID
-            String myEndpointId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
-            String submissionId = getSubmissionId(transferToken);
-    
-            JsonObject transferObject = new JsonObject();
-            transferObject.addProperty("DATA_TYPE", "transfer");
-            transferObject.addProperty("submission_id", submissionId);
-            transferObject.addProperty("source_endpoint", myEndpointId);
-            transferObject.addProperty("destination_endpoint", destEndpointId);
-            transferObject.addProperty("verify_checksum", true);
-            
-            JsonObject transferItem = new JsonObject();
-            transferItem.addProperty("DATA_TYPE", "transfer_item");
-            transferItem.addProperty("recursive", false);
-            transferItem.addProperty("destination_path", path + fileName);
-            transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ userId +"/globus/"+fileName);
-           
-            // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
-            
-            JsonArray transferItems = new JsonArray();
-            transferItems.add(transferItem);
-            
-            transferObject.add("DATA", transferItems);
-            
-            //System.out.println("     "+transferObject);
-            URL url = new URL(transferAPIBaseUrl+"/transfer");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
-            connection.setRequestMethod("POST");
-            
-            // only need users token here as long as the user permissions were set earlier (using the GenePattern client token)
-            connection.setRequestProperty("Authorization","Bearer "+ transferToken);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-            
-            connection.setDoOutput(true);
-            
-            try(OutputStream os = connection.getOutputStream()) {
-                byte[] input = transferObject.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);           
-            }
-            
-            String taskId = null;
-            JsonElement transferResponse = null;
-            
-            transferResponse =  getJsonResponse(connection);
-            taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
-            
-            
-            return taskId;
-        }  catch (IOException ioe){
-            throw ioe;
+            fileSize = uploadFilePath.getFileLength();
         } catch (Exception e){
-
+            GlobusTransferMonitor.getInstance().addFailedTransferStart(submissionId, userId, fileToTransfer, path, e.getMessage());
             return null;
-        } 
+        }
+        
+        GlobusTransferMonitor.getInstance().addWaitingOutbound( submissionId,  userId, this,  fileToTransfer, userContext, path, fileSize,  destEndpointId);
+            
+//        try {
+//            
+//            String fileName = uploadFilePath.getName();
+//            
+//             if (userId == null) {
+//                userId = request.getParameter("gp_user_id");
+//            }
+//            
+//            
+//               
+//            // make a copy of the GP file on GenePattern's globus endpoint so that it can be transferred
+//            String myEndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+//            File newFile = new File(myEndpointRoot + userId +"/globus/"+fileName);
+//            String myEndpointType = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
+//            
+//            if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+//                Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//                
+//            } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+//                // need to tell the externalFileManager to copy it for us
+//                String fromFileS3Url = "s3://"+getBucketName(gpConfig, context)+ "/"+getBucketRoot(gpConfig, context)+uploadFilePath.getServerFile().getAbsolutePath();
+//                String myS3EndpointRoot = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+//                String toS3Url = myS3EndpointRoot + userId +"/globus/"+fileName;
+//                
+//                s3CopyFile(context, fromFileS3Url,  toS3Url);
+//            }
+//            
+//           
+//            
+//            // so to transfer in we need to know our endpoint ID
+//            String myEndpointId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
+//            
+//            JsonObject transferObject = new JsonObject();
+//            transferObject.addProperty("DATA_TYPE", "transfer");
+//            transferObject.addProperty("submission_id", submissionId);
+//            transferObject.addProperty("source_endpoint", myEndpointId);
+//            transferObject.addProperty("destination_endpoint", destEndpointId);
+//            transferObject.addProperty("verify_checksum", true);
+//            
+//            JsonObject transferItem = new JsonObject();
+//            transferItem.addProperty("DATA_TYPE", "transfer_item");
+//            transferItem.addProperty("recursive", false);
+//            transferItem.addProperty("destination_path", path + fileName);
+//            transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ userId +"/globus/"+fileName);
+//           
+//            // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
+//            
+//            JsonArray transferItems = new JsonArray();
+//            transferItems.add(transferItem);
+//            
+//            transferObject.add("DATA", transferItems);
+//            
+//            //System.out.println("     "+transferObject);
+//            URL url = new URL(transferAPIBaseUrl+"/transfer");
+//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
+//            connection.setRequestMethod("POST");
+//            
+//            // only need users token here as long as the user permissions were set earlier (using the GenePattern client token)
+//            connection.setRequestProperty("Authorization","Bearer "+ transferToken);
+//            connection.setRequestProperty("Content-Type", "application/json");
+//            connection.setRequestProperty("Accept", "application/json");
+//            
+//            connection.setDoOutput(true);
+//            
+//            try(OutputStream os = connection.getOutputStream()) {
+//                byte[] input = transferObject.toString().getBytes("utf-8");
+//                os.write(input, 0, input.length);           
+//            }
+//            
+//            String taskId = null;
+//            JsonElement transferResponse = null;
+//            
+//            transferResponse =  getJsonResponse(connection);
+//            taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
+//            
+//            
+//            return submissionId;
+//        }  catch (IOException ioe){
+//            throw ioe;
+//        } catch (Exception e){
+//
+//            return null;
+//        } 
        
+        return submissionId;
     }
     
     
@@ -443,7 +453,7 @@ public class GlobusClient {
     public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
-        
+        String submissionId = null;
         try {
         
              if (userId == null) {
@@ -456,8 +466,7 @@ public class GlobusClient {
             
             // Get the token for making the transfer call
             String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-            String user_id = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY);
-               
+                
             // add an ACL to allow this user to write to a drop dir for the transfer
             setupOpenACLForTransfer(request);
             
@@ -477,7 +486,7 @@ public class GlobusClient {
             
             // so to transfer in we need to know our endpoint ID
             String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
-            String submissionId = getSubmissionId(transferToken);
+            submissionId = getSubmissionId(transferToken);
     
             JsonObject transferObject = new JsonObject();
             transferObject.addProperty("DATA_TYPE", "transfer");
@@ -522,12 +531,12 @@ public class GlobusClient {
             
             // spawn a new thread to wait for completion
            
-            GlobusTransferMonitor.getInstance().addWaitingUser(userId, taskId, this, file, context, destDir, fileSize);
-            return taskId;
+            GlobusTransferMonitor.getInstance().addWaitingInbound(submissionId, userId, taskId, this, file, context, destDir, fileSize);
+            return submissionId;
         } catch (Exception e){
-            
-            GlobusTransferMonitor.getInstance().addFailedTransferStart(userId, file, destDir, e.getMessage());
-            throw e;
+            if (submissionId == null) submissionId = UUID.randomUUID().toString();
+            GlobusTransferMonitor.getInstance().addFailedTransferStart(submissionId, userId, file, destDir, e.getMessage());
+            return submissionId;
         }
        
     }
@@ -540,7 +549,6 @@ public class GlobusClient {
         
         // Get the token for making the transfer call
         String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
-        String user_id = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_ATTR_KEY);
            
         URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+file);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
@@ -599,7 +607,6 @@ public class GlobusClient {
        // to monitor the transfer progress.  This is because transfer tokens are only good for 2 hours
        // or else refresh the token
       
-       String status = "ACTIVE";
        URL url = new URL(transferAPIBaseUrl+"/task/"+taskId);
        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
        connection.setRequestProperty("Authorization","Bearer "+ transferToken);

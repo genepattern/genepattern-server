@@ -96,10 +96,10 @@ public class GlobusTaskResource {
     
     @GET
     @Path("/cancelTask")
-    public Response cancelTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("taskID") String taskID) throws IOException {
+    public Response cancelTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("submissionID") String submissionID) throws IOException {
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
          
-        JsonObject ret = GlobusTransferMonitor.getInstance().removeWaitingUser(userId, taskID);;
+        JsonObject ret = GlobusTransferMonitor.getInstance().removeWaitingUser(userId, submissionID);;
         return Response.status(200).entity(ret.toString()).build();
     }
     
@@ -116,10 +116,10 @@ public class GlobusTaskResource {
      */
     @GET
     @Path("/clearCompletedTask")
-    public Response clearTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("taskID") String taskID) throws IOException {
+    public Response clearTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("submissionID") String submissionID) throws IOException {
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
          
-        GlobusTransferMonitor.getInstance().clearCompletedTask(userId, taskID);;
+        GlobusTransferMonitor.getInstance().clearCompletedTask(userId, submissionID);;
         return Response.status(200).build();
     }
     
