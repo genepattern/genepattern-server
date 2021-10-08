@@ -3255,6 +3255,8 @@ function renderJob(jobJson, tab) {
     }
 }
 
+
+
 function openJobWidget(link) {
     var id = $(link).attr("data-jobid");
 
@@ -4544,7 +4546,7 @@ function glb_send_to(filePath) {
 			file.fileName = filename;
 			file.id = submissionID;
 			file.direction = direction;
-			globusAddToOrUpdateToaster(file, destDir)
+			globusAddToOrUpdateToaster(file, destDir, true)
 		}
 		setTimeout( getGlobusTransferStatus , 10000 );
 	}
@@ -4585,7 +4587,7 @@ function glb_browse(destinationDirectory) {
 	    		file.fileName = filename;
 	    		file.id = submissionID;
 	    		file.direction = direction;
-	    		globusAddToOrUpdateToaster(file, destDir)
+	    		globusAddToOrUpdateToaster(file, destDir, true)
 	    	}
 		setTimeout( getGlobusTransferStatus , 10000 );
     }
@@ -4616,7 +4618,7 @@ function glb_browse(destinationDirectory) {
 
 
 
-function globusAddToOrUpdateToaster(file, directoryUrl){
+function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty){
 	var split = window.location.origin.length;
 	var directory = directoryUrl.substring(split);
 	
@@ -4646,7 +4648,7 @@ function globusAddToOrUpdateToaster(file, directoryUrl){
 	} else {
 		
 		// Dont open it if its closed and any files are actually finished
-		if (globusTransferInitiated || file.statusObject == null || file.statusObject.status == "ACTIVE"){
+		if (openEvenIfEmpty || globusTransferInitiated || file.statusObject == null || file.statusObject.status == "ACTIVE"){
 			var filelist = [file];
 			initGlobusToaster(filelist, directory);
 		    firstTime = true;
@@ -4772,28 +4774,32 @@ function formatBytes(bytes,decimals) {
 
 var globusTransfersInProgress = 0;
 
-function getGlobusTransferStatus(){
+function getGlobusTransferStatus(openEvenIfEmpty){
 	$.ajax({
         cache: false,
         type: "GET",
         url: "/gp/rest/v1/globus/currentTasks",
         dataType: "json",
         success: function(data) {
-        
-        	$("#glb-transfer-initiated").hide();
-        	
-        	$('#glb-clear').prop("disabled",true);
-        	$('#glb-clear').hide();
+        	var alreadyOpen = false;
+        	// if the dialog is not already created then the dialog('isOpen') call throws an exception
+        	try {
+        		alreadyOpen = ($('#globus-toaster').dialog('isOpen'));
+        		
+        	} catch (e){
+        		//ignore
+        		alreadyOpen = false;
+        	}
+        	var updateToaster = alreadyOpen || openEvenIfEmpty;
         	
         	globusTransfersInProgress = 0;
-        	//$("#glb-transfer-list").empty();
         	if (data.length > 0){
             	for (var i=0; i < data.length; i++){
             		var task = data[i];
             		// keep compatibility with old uploaders who share the toaster
             		task.fileName = task.file;
             		task.name = task.file;
-             		globusAddToOrUpdateToaster( task, task.destDir);
+             		if (updateToaster) globusAddToOrUpdateToaster( task, task.destDir, openEvenIfEmpty);
              		
                     if ((task.status == "ACTIVE") && (task.status.is_ok != false)){
                     	globusTransferInitiated = false;
@@ -4802,20 +4808,16 @@ function getGlobusTransferStatus(){
 	                  
             	}
             	//$("#glb-transfer-list").show();
-         	} 
+         	} else if (openEvenIfEmpty == true){
+         		initGlobusToaster([], null);
+         	}
         	
         	// check back once every 30s if any are still running
         	if ((globusTransfersInProgress > 0 ) || globusTransferInitiated){
         		setTimeout( function(){ 
         		    getGlobusTransferStatus();
         		  }  , 30000 );
-        	} else {
-        		
-        		//setTimeout( function(){ 
-        		//    getGlobusTransferStatus();
-        		//  }  , 180000 );
-        		
-        	}
+        	} 
         	// finally refresh the files tab to make sure it shows any recent additions
         	refreshUploadTree();
         	
@@ -4871,15 +4873,12 @@ function appendToGlobusToaster(file){
     )
         .appendTo(toaster);
     var uploadDialog = $(".globus-dialog");
-    uploadDialog.find(".ui-dialog-titlebar-close").show();
-    uploadDialog.find(".ui-dialog-titlebar-minimize").show();
+   
 }
 
 
 function initGlobusToaster(filelist) {
-    // Hide the dropzone
-    //$("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
-
+ 
     // Create the dialog contents
 	globusTransfersInProgress = filelist.length;
 	
@@ -4945,6 +4944,24 @@ function initGlobusToaster(filelist) {
             "buttons" : {},
             "dialogClass": "globus-dialog",
             buttons: [
+            	{
+            		text: "Clear completed",
+            		click: function(){
+            			 $.ajax({
+            		        cache: false,
+            		        type: "GET",
+            		        url: "/gp/rest/v1/globus/clearCompletedTasks",
+            		        dataType: "json",
+            		        success: function(){
+            		        	// we cleared the completed, so now lets redraw
+            		        	// the toaster with anything still running
+            		        	getGlobusTransferStatus();
+            		        }
+            			});
+            		}
+            		
+            	},
+            	
                 {
                   text: "View on Globus",
                   click: function() {
@@ -4965,9 +4982,7 @@ function initGlobusToaster(filelist) {
             "minimizable" : true,
             "collapsable" : false,
             "minimizeLocation" : "left",
-            "load" : function() {
-                $(".globus-dialog").find(".ui-dialog-titlebar-close").show();
-            },
+            
             "minimize" : function() {
             	 var head = document.getElementsByTagName('head')[0];
 
@@ -4989,18 +5004,11 @@ function initGlobusToaster(filelist) {
                  $("#dialog-extend-fixed-container").find(".globus-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
                
              },
-            "beforeRestore" : function(evt) {  
-            	
-            	toaster.dialog('option', 'title', 'GenePattern-Globus Transfers');
-            	$("#dialog-extend-fixed-container").find(".globus-dialog").find(".ui-dialog-titlebar").removeClass("pulsingUpload");
-            	var oldImage = document.getElementById("myNewPulsingImage");
-        		$(oldImage).remove();
-            },
+            
             
             "icons" : {
                 "close" : "ui-icon-close",
-                "minimize" : "ui-icon-minus",
-                "restore" : "ui-icon-bullet"
+                
             }
         });
 }
@@ -5012,28 +5020,131 @@ function cleanGlobusToaster() {
     // Disable minimize button and enable close if not minimized
     var uploadDialog = $(".globus-dialog");
    
-    if (globusTransfersInProgress == 0){
-
-    	uploadDialog.find(".ui-dialog-titlebar-close").show();
-    	uploadDialog.find(".ui-dialog-titlebar-minimize").hide();
-    } else {
-    	uploadDialog.find(".ui-dialog-titlebar-close").hide();
-    	uploadDialog.find(".ui-dialog-titlebar-minimize").show();
-    }
     
-    // clear out the server side
-//    $.ajax({
-//        cache: false,
-//        type: "GET",
-//        url: "/gp/rest/v1/globus/clearCompletedTasks",
-//        dataType: "json"
-//	});
-    
+    uploadDialog.find(".ui-dialog-titlebar-close").show();
+   
+   
     // Refresh the tree
     refreshUploadTree();
 }
 
+function openGlobusWidget() {
+	   
+    // Create the job widget
+    var menuJobs = $("#menus-globus");
+    var widgetFound = menuJobs.find("[name='globus_slider']").length > 0;
+    if (!widgetFound) {
+        // Get the job JSON
+
+        createGlobusWidget();
+    }
+    
+    // hide the login if globus login is already present
+    $.ajax({
+        cache: false,
+        type: "GET",
+        url: "/gp/rest/v1/globus/verifyGlobusLogin",
+        dataType: "json",
+        success: function(data) {
+        	if (data.loginValid == true) {
+        		var menuItems = $("#menus-globus").find(".module-listing");
+        		$(menuItems[0]).addClass("ui-state-disabled");
+        		$(menuItems[0]).attr('title', 'You have already logged in to Globus and authorized GenePattern.');
+        		
+        		$(menuItems[1]).removeClass("ui-state-disabled");
+        		$(menuItems[2]).removeClass("ui-state-disabled");
+        		
+        		// Open the job slider
+        		//alert('logged in');
+        	}  else {
+        		var menuItems = $("#menus-globus").find(".module-listing");
+        		$(menuItems[0]).attr('title', 'Login to Globus');
+        		
+        		$(menuItems[0]).removeClass("ui-state-disabled");
+        		$(menuItems[1]).addClass("ui-state-disabled");
+        		$(menuItems[2]).addClass("ui-state-disabled");
+        		
+        	}
+        	menuJobs.find("[name='globus_slider']").searchslider("show");
+        }
+    });		
+        		
+    
+}
 
 
+function createGlobusWidget(){
+	
+    var actionData = [];
+    
+    actionData.push({
+        "lsid": "",
+        "name": "Login to Globus",
+        "description": "Login to Globus and authorize GenePattern to access endpoints on your behalf.",
+        "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+    actionData.push({
+        "lsid": "",
+        "name": "Transfer from Globus Endpoint",
+        "description": "Transfer data into GenePattern from a Globus Endpoint.",
+        "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+    actionData.push({
+        "lsid": "",
+        "name": "Globus Transfer Status",
+        "description": "View the status of any currently executing or recent transfers between Genepattern and Globus endpoints.",
+        "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+    actionData.push({
+        "lsid": "",
+        "name": "Open the Globus File Manager",
+        "description": "Open the Globus file manager in a new window.",
+        "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+    
+    
+    var actionList = $("<div></div>")
+        .attr("class", "job-widget-actions")
+        .modulelist({
+            title: "Globus File Transfers",
+            data: actionData,
+            droppable: false,
+            draggable: false,
+            click: function(event) {
+                var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Globus Transfer Status") === 0;
+                var transferAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Transfer from Globus Endpoint") === 0;
+                var loginAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Login to Globus") === 0;
+                var fileManagerAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open the Globus File Manager") === 0;
+           
+                if (statusAction) {
+                	getGlobusTransferStatus(true);
+                    $(".search-widget:visible").searchslider("hide");
+                } else if (transferAction) {
+                	
+                	browseGlobusIfLoginValid();
+                	$(".search-widget:visible").searchslider("hide");
+                } else if (loginAction){
+                	window.location = "/gp/oauthglobus"
+                } else if (fileManagerAction){
+                	window.open("https://app.globus.org/file-manager")
+                }
+                else {
+                    console.log("ERROR: Executing click function for globus slider ");
+                    $(".search-widget:visible").searchslider("hide");
+                }
+            }
+        });
 
+    var widget = $("<div></div>")
+        .attr("name", "globus_slider")
+        .attr("class", "search-widget file-widget")
+        .searchslider(
+        {
+            lists: [actionList],
+            relativeTo: "#left-nav"
+        }
+    );
+
+    $("#menus-globus").append(widget);
+}
 

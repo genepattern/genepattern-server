@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
@@ -95,6 +96,15 @@ public class UserPrefsBean {
         
         globusTransferTokenProp.setValue(null);
         globusTransferRefreshTokenProp.setValue(null);
+        
+        HttpServletRequest servletRequest = UIBeanHelper.getRequest();
+        
+        servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, null);
+        servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, null);
+        servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, null);
+        servletRequest.getSession().setAttribute(OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, null);
+        
+        
         
         UIBeanHelper.setInfoMessage("Globus association cleared.");
         return "my settings";

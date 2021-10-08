@@ -387,14 +387,16 @@
                             </div>
                             
                              <h:outputText rendered="#{loginBean.globusEnabled}">
-                            	<button id="glb-login" onclick="browseGlobusIfLoginValid();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-					            	<img src="/gp/images/globusLogo.png" alt="Globus" height="14px" title="Transfer files to GenePattern from a Globus endpoint" />
-					        	</button>
+                            	
+					        	<a onclick="openGlobusWidget();">
+					        	    <img src="/gp/images/i_logo-globus.png" alt="Globus" height="27px" style="margin-left:10px;float:right;cursor: pointer;" title="Transfer files to GenePattern from a Globus endpoint" />
+					        	</a>
+					        	
 	        				</h:outputText>
 	        				<h:outputText rendered="#{! loginBean.globusEnabled}">
 	        				    <h:outputLink value="#{facesContext.externalContext.requestContextPath}/oauthglobus">
                             	    <button id="glb-login" onclick="" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-					            	    <img src="/gp/images/globusLogo.png" alt="Globus" height="14px" title="Transfer files to GenePattern from a Globus endpoint" />
+					            	    <img src="/gp/images/i_logo-globus.png" alt="Globus" height="27px" style="margin-left:10px;float:right;cursor: pointer;" title="Transfer files to GenePattern from a Globus endpoint" />
 					            	</button>
 					        	</h:outputLink>
 	        				</h:outputText>
@@ -420,6 +422,7 @@
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>
+                <div id="menus-globus"></div>
                 <div id="menus-inputs"></div>
     
                 <div id="main-pane" class="ui-layout-center">
