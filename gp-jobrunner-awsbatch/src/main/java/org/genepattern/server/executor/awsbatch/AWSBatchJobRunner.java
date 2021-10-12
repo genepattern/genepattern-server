@@ -1329,7 +1329,10 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected static Executor initExecutorForJob(final DrmJobSubmission gpJob, ByteArrayOutputStream outputStream) throws ExecutionException, IOException {
-        File errfile = gpJob.getRelativeFile(gpJob.getStderrFile());
+        File metadataDir = getMetadataDir(gpJob.getWorkingDir());
+        String stdErrFileName = gpJob.getStderrFile().getName();
+        
+        File errfile = new File(metadataDir,stdErrFileName );
         final PumpStreamHandler pumpStreamHandler = new PumpStreamHandler( 
                     outputStream,
                 new FileOutputStream(errfile));
