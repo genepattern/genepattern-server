@@ -24,6 +24,15 @@ function onLoad(){
 		
 		opener.globusCallbackFunction(file, destDir, taskId, direction);  
 		
+		if (direction == null) direction = "inbound";
+		// http://127.0.0.1:8280/gp/rest/v1/usagelogging/log?logname=foo3&loglevel=trace&message=gup3&message=part2&message=third
+		// record usage logging
+		$.ajax({
+	        type: "GET",
+	        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(file)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
+	        cache: false
+	    });
+		
 	} catch (e){
 		// failed but its not truly necessary and better to close the window than leave it hanging
 		console.log(e);

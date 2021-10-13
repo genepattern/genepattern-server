@@ -4567,6 +4567,14 @@ function glb_send_to(filePath) {
 	$("#globusTag")[0].value = "From GenePattern";	
 	$("#glbBrowseForm").submit();
 
+	// log usage
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=BrowseGlobusOutbound&message="+encodeURIComponent(username),
+        cache: false
+    });
+    
+	
 	return false;
 }
 
@@ -4612,6 +4620,14 @@ function glb_browse(destinationDirectory) {
     $("#glbBrowseForm").submit();
 	// Update the UI
     globusTransferInitiated= true;
+    
+    // log usage
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=BrowseGlobusInbound&message="+encodeURIComponent(username),
+        cache: false
+    });
+    
     return false;
 }
 
