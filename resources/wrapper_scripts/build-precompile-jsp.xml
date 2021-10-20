@@ -22,7 +22,7 @@
     Prompt for 'tomcat.home' and 'webapp.path' paths
   -->
   <target name="init-tomcat.home">
-    <dirname property="tomcat.home.default" file="${precompile-jsp.basedir}/../../installer-2014/gpdist/Tomcat/common" />
+    <dirname property="tomcat.home.default" file="${precompile-jsp.basedir}/../../installer-2014-sp1/gpdist/Tomcat/common" />
     <input message="Enter 'tomcat.home': "
       addproperty="tomcat.home" 
       defaultvalue="${tomcat.home.default}" />
