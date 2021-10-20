@@ -12044,7 +12044,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="buildOutputLocation">
-								<string><![CDATA[/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014/server_Build_Output]]></string>
+								<string><![CDATA[/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014-sp1/server_Build_Output]]></string>
 							</property>
 							<property name="relatedProjectSettings">
 								<object class="com.zerog.ia.installer.RelatedProjectSettings" objectID="df4415c3bd75">

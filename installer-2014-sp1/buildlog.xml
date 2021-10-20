@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BuildLog created="8/12/14 5:14:50 PM">
-	<BuildInstance name="GenePattern" path="/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014/server.iap_xml">
+	<BuildInstance name="GenePattern" path="/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014-sp1/server.iap_xml">
 		<BuildBegin>8/12/14 5:15:04 PM</BuildBegin>
 		<BuildConfiguration Name="Migrated Configuration">
 			<BeginTime>8/12/14 5:15:04 PM</BeginTime>
