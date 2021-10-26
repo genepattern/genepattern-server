@@ -33,7 +33,7 @@ public class InitPipelineJson implements JobInfoVisitor {
     private final String gpUrl;
     private final String jobsResourcePath;
     private boolean includeSummary=false;
-    private final boolean includeInputFiles;
+    private final boolean includeInputParams;
     private final boolean includeOutputFiles;
     private final boolean includeComments;
     private final boolean includeTags;
@@ -43,12 +43,12 @@ public class InitPipelineJson implements JobInfoVisitor {
     private final List<GpFilePath> outputFiles=new ArrayList<GpFilePath>();
 
     public InitPipelineJson(final String gpUrl, final String jobsResourcePath,
-                            final JobInfo jobInfo, final boolean includeInputFiles, final boolean includeOutputFiles, final boolean includeComments,
+                            final JobInfo jobInfo, final boolean includeInputParams, final boolean includeOutputFiles, final boolean includeComments,
                             final boolean includeTags) {
         this.gpUrl=gpUrl;
         this.jobsResourcePath=jobsResourcePath;
         this.jobInfo=jobInfo;
-        this.includeInputFiles=includeInputFiles;
+        this.includeInputParams = includeInputParams;
         this.includeOutputFiles=includeOutputFiles;
         this.includeComments = includeComments;
         this.includeTags = includeTags;
@@ -94,7 +94,7 @@ public class InitPipelineJson implements JobInfoVisitor {
         }
         JSONObject jobJson=jobMap.get(jobInfo.getJobNumber());
         if (jobJson==null) {
-            jobJson=GetPipelineJobLegacy.initJsonObject(gpUrl, jobInfo, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+            jobJson=GetPipelineJobLegacy.initJsonObject(gpUrl, jobInfo, includeInputParams, includeOutputFiles, includeComments, includeTags);
             jobMap.put(jobInfo.getJobNumber(), jobJson);                
         }
         return jobJson;

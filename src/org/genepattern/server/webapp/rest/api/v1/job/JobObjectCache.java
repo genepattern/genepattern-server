@@ -77,9 +77,9 @@ public class JobObjectCache {
         return isEnabled;
     }
     
-    protected static final String initCompositeKey(final Integer jobId,final boolean includeChildren, final boolean includeInputFiles, final boolean includeOutputFiles, final boolean includeComments, final boolean includeTags) {
+    protected static final String initCompositeKey(final Integer jobId,final boolean includeChildren, final boolean includeInputParams, final boolean includeOutputFiles, final boolean includeComments, final boolean includeTags) {
         // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
-        final String composite_key = ""+jobId + includeChildren + includeInputFiles + includeOutputFiles + includeComments + includeTags;
+        final String composite_key = ""+jobId + includeChildren + includeInputParams + includeOutputFiles + includeComments + includeTags;
         return composite_key;
     }
     
@@ -94,11 +94,11 @@ public class JobObjectCache {
             return;
         }
         for(boolean includeChildren : flags) {
-            for(boolean includeInputFiles : flags) {
+            for(boolean includeInputParams : flags) {
                 for (boolean includeOutputFiles : flags) {
                     for (boolean includeComments : flags) {
                         for (boolean includeTags : flags) {
-                            final String key = initCompositeKey(jobId, includeChildren, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+                            final String key = initCompositeKey(jobId, includeChildren, includeInputParams, includeOutputFiles, includeComments, includeTags);
                             jobCache.invalidate(key);
                         }
                     }

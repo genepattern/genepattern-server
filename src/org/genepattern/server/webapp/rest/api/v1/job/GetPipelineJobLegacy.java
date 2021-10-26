@@ -109,30 +109,30 @@ public class GetPipelineJobLegacy implements GetJob {
     throws GetJobException
     {
         final boolean includeChildren=false; //legacy support
-        final boolean includeInputFiles=false;
+        final boolean includeInputParams=false;
         final boolean includeOutputFiles=true;
-        return getJob(userContext, jobId, includeChildren, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+        return getJob(userContext, jobId, includeChildren, includeInputParams, includeOutputFiles, includeComments, includeTags);
     }
 
     public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren,
-                             final boolean includeInputFiles, final boolean includeOutputFiles, boolean includeComments,
+                             final boolean includeInputParams, final boolean includeOutputFiles, boolean includeComments,
                              boolean includeTags) throws GetJobException {
         final JobInfo jobInfo=initJobInfo(userContext, jobId);
-        return getJob(userContext, jobInfo, includeChildren, includeInputFiles, includeOutputFiles, includePermissions, includeComments, includeTags);
+        return getJob(userContext, jobInfo, includeChildren, includeInputParams, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
     protected static JSONObject _getJob(final String gpUrl, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeChildren,
-            final boolean includeInputFiles, final boolean includeOutputFiles,
+            final boolean includeInputParams, final boolean includeOutputFiles,
             final boolean includeComments, final boolean includeTags) throws GetJobException {
         
         JSONObject job=null;
         if (!includeChildren) {
-            job = initJsonObject(gpUrl, jobInfo, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+            job = initJsonObject(gpUrl, jobInfo, includeInputParams, includeOutputFiles, includeComments, includeTags);
         }
         else {
             try {
                 InitPipelineJson walker=new InitPipelineJson(gpUrl, jobsResourcePath, jobInfo,
-                        includeInputFiles, includeOutputFiles, includeComments, includeTags);
+                        includeInputParams, includeOutputFiles, includeComments, includeTags);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
             }
@@ -148,7 +148,7 @@ public class GetPipelineJobLegacy implements GetJob {
     public JSONObject getJob(final GpContext userContext,
                              final JobInfo jobInfo,
                              final boolean includeChildren,
-                             final boolean includeInputFiles,
+                             final boolean includeInputParams,
                              final boolean includeOutputFiles,
                              final boolean includePermissions,
                              final boolean includeComments,
@@ -162,12 +162,12 @@ public class GetPipelineJobLegacy implements GetJob {
             final Callable<JSONObject> f = new Callable<JSONObject>() {
                 @Override
                 public JSONObject call() throws GetJobException {
-                    return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+                    return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeInputParams, includeOutputFiles, includeComments, includeTags);
                 }
             };
             if (JobObjectCache.isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
                 // with the cache
-                final String composite_key = JobObjectCache.initCompositeKey(jobInfo.getJobNumber(), includeChildren, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+                final String composite_key = JobObjectCache.initCompositeKey(jobInfo.getJobNumber(), includeChildren, includeInputParams, includeOutputFiles, includeComments, includeTags);
                 job = JobObjectCache.getJobJson(composite_key, f);
             }
             else {
@@ -240,7 +240,7 @@ public class GetPipelineJobLegacy implements GetJob {
      * @return
      */
     public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo,
-                                            final boolean includeInputFiles, final boolean includeOutputFiles,
+                                            final boolean includeInputParams, final boolean includeOutputFiles,
                                             final boolean includeComments, final boolean includeTags) throws GetJobException {
 
         TaskInfo taskInfo = null;
@@ -254,11 +254,11 @@ public class GetPipelineJobLegacy implements GetJob {
                     ", taskLsid="+jobInfo.getTaskLSID(), t);
         }
         final boolean includeJobRunnerStatus=true; // default value
-        return initJsonObject(gpUrl, jobInfo, taskInfo, includeInputFiles, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        return initJsonObject(gpUrl, jobInfo, taskInfo, includeInputParams, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
     }
 
     public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final TaskInfo taskInfo,
-                                            final boolean includeInputFiles, final boolean includeOutputFiles, final boolean includeComments,
+                                            final boolean includeInputParams, final boolean includeOutputFiles, final boolean includeComments,
                                             final boolean includeTags, final boolean includeJobRunnerStatus) throws GetJobException {
         JobRunnerJob jobStatusRecord=null;
         if (includeJobRunnerStatus) {
@@ -269,11 +269,11 @@ public class GetPipelineJobLegacy implements GetJob {
                 log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
             }
         }
-        return initJsonObject(gpUrl, jobInfo, taskInfo, jobStatusRecord, includeInputFiles, includeOutputFiles, includeComments, includeTags);
+        return initJsonObject(gpUrl, jobInfo, taskInfo, jobStatusRecord, includeInputParams, includeOutputFiles, includeComments, includeTags);
     }
 
     public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final TaskInfo taskInfo, final JobRunnerJob jobStatusRecord,
-                                            final boolean includeInputFiles, final boolean includeOutputFiles, final boolean includeComments,
+                                            final boolean includeInputParams, final boolean includeOutputFiles, final boolean includeComments,
                                             final boolean includeTags) throws GetJobException {
         final JSONObject job = new JSONObject();
         try {
@@ -302,17 +302,17 @@ public class GetPipelineJobLegacy implements GetJob {
                 log.error("Error getting launch Url: "+ e.getMessage());
             }
 
-            if (includeInputFiles) {
-                JSONArray inputFiles = new JSONArray();
+            if (includeInputParams) {
+                JSONArray inputParams = new JSONArray();
                 for (ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
                     String paramName = pinfo.getName();
                     if ("stderr.txt".equals(paramName) || "stdout.txt".equals(paramName) ||
                             "gp_execution_log.txt".equals(paramName)) continue; // Don't include logs
                     JSONObject param = new JSONObject();
                     param.put(pinfo.getName(), pinfo.getValue());
-                    inputFiles.put(param);
+                    inputParams.put(param);
                 }
-                job.put("inputFiles", inputFiles);
+                job.put("inputParams", inputParams);
             }
 
             //access permissions
