@@ -801,7 +801,7 @@ function loadModuleInfo(module) {
     // Display properties
     $(".properties-name").text(module["name"]);
     $(".properties-lsid").text(module["LSID"]);
-    $(".properties-description").text(module["description"]);
+    $(".properties-description").html(module["description"]);
     $(".properties-author").text(module["author"]);
     $(".properties-privacy").text(module["privacy"]);
     // GP-5890 show either license accepted is required, a link to the license or None
