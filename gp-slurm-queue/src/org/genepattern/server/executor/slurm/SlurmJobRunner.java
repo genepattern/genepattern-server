@@ -24,7 +24,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 /**
  * Implementation of the JobRunner interface for Slurm
  *
- * @author Thorin Tabor
+ * @author Thorin Tabor, modified by Ted Liefeld
  */
 public class SlurmJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(SlurmJobRunner.class);

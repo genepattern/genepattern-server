@@ -2154,7 +2154,7 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": [],
                 "callAfterItemCreation": function(item){
                 	// open the file dialog when clicked
-                	//resumableUploader.assignBrowse(item);
+                	resumableUploader.assignBrowse(item);
                 }
 
             });

@@ -1236,15 +1236,14 @@ public class AWSBatchJobRunner implements JobRunner {
                 // if its S3: then get the file with an aws s3 copy, otherwise use wget
                 if (urlfile[0].toLowerCase().startsWith("s3://")) {
                     
-                    int len = urlfile[0].length() - aFile.getName().length() ;
-                    String s3ParentDir = urlfile[0].substring(0, len);
+                    //  CANNOT USE SYNC HERE aws s3 sync --exclude "*" --include "all_aml_test.gct"  s3://datasets-genepattern-org/data/all_aml/ /local/path/to/dir
+                    //  aws s3 cp  s3://datasets-genepattern-org/data/all_aml/all_aml_test.gct /local/path/to/dir
+                    //
+                    // here we use cp instead of sync because a shared object on S3 might not be in a readable/shared (pseudo) directory
+                    bw.write("aws s3 cp ");
+                  
+                    bw.write(urlfile[0]);
                     
-                    //  aws s3 sync --exclude "*" --include "all_aml_test.gct"  s3://datasets-genepattern-org/data/all_aml/ /local/path/to/dir
-                    // 
-                    bw.write("aws s3 sync --exclude \"*\" --include \"");
-                    bw.write(aFile.getName());
-                    bw.write("\"  ");
-                    bw.write(s3ParentDir);
                     bw.write("  ");
                     bw.write(dest_prefix);
                     bw.write(parentDir);
