@@ -1227,9 +1227,10 @@ public class AWSBatchJobRunner implements JobRunner {
                 // first make sure the directory exists, wget won't make it
                 File aFile = new File(urlfile[1]);
                 String parentDir = aFile.getParentFile().getAbsolutePath();
-                bw.write("mkdir -p ");
+                bw.write("mkdir -p \"");
                 bw.write(dest_prefix);
                 bw.write(parentDir);
+                bw.write("\"");
                 bw.newLine();
                 bw.newLine();
                 
@@ -1250,12 +1251,12 @@ public class AWSBatchJobRunner implements JobRunner {
                     bw.write("  >> "+dest_prefix+""+script_dir+"/s3_downloads.log");
                 } else {
                  // now get the file with wget
-                    bw.write("wget -O ");
+                    bw.write("wget -O \"");
                     bw.write(dest_prefix);
                     bw.write(urlfile[1]);
-                    bw.write("  ");
+                    bw.write("\"  ");
                     bw.write(urlfile[0]);
-                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" 1> "+dest_prefix+""+script_dir+"/stderr.txt   2>&1");
                     
                     
                 }
