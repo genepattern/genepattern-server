@@ -685,7 +685,7 @@ the total number of choices is listed. For example:
 For file fields, you can create either a dynamic or static drop-down list. Creation of a static drop-down list is the same as
 for text fields but the command line values must be urls in ftp, http, or https format.
 <br>
-Dynamic drop-down lists are drop-down lists that are populated using files available on an ftp directory URL. For example:
+Dynamic drop-down lists are drop-down lists that are populated using files available on an ftp directory URL or S3 pseudo-directory URI. For example:
 <br>
 <p>
 FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
@@ -703,8 +703,11 @@ FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq
     </table>
 </form>
 <br>
-
-By default all files in the top level ftp directory will be included in the drop-down list. Optionally, you can filter items in the drop-down list by name or type.
+Similarly an S3 directory URI could be used.  HTTP URLs to S3 directories man NOT be used as it is not possible to easily retrieve 
+the directory contents that are to be used to form the list.<br/>
+<p>S3 Directory: s3://datasets-genepattern-org/data/</p>
+<br/>
+By default all files in the top level ftp/S3 directory will be included in the drop-down list. Optionally, you can filter items in the drop-down list by name or type.
 <br>
 An example of filtering by name using a case-sensitive glob pattern:
 <ol>

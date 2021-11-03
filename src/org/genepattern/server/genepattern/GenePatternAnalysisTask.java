@@ -751,18 +751,22 @@ public class GenePatternAnalysisTask {
                 final ChoiceInfo choiceInfo=initChoiceInfo(jobContext, pinfoRecord, pinfo);
                 final Choice selectedChoice= choiceInfo == null ? null : choiceInfo.getValue(pinfo.getValue());
                 final boolean isFileChoiceSelection=
-                        pinfoRecord.getFormal().isInputFile()
-                        &&
+                        pinfoRecord.getFormal().isInputFile()  &&
                         selectedChoice != null && 
                         selectedChoice.getValue() != null && 
                         selectedChoice.getValue().length() > 0;
                         
+                final boolean isS3FileChoice = pinfoRecord.getFormal().isInputFile() &&
+                        selectedChoice != null && 
+                        selectedChoice.getValue() != null && 
+                        selectedChoice.getValue().toLowerCase().startsWith("s3://");
+                
                 final boolean isCachedValue=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, jobType, pinfoRecord.getFormal(), pinfo.getValue());
                 if (isDirectoryInputParam) {
                     setPinfoValueForDirectoryInputParam(mgr, gpConfig, jobContext, pinfo, pinfoRecord); 
                 }
-                //special-case for File Choice parameters, cached values
-                else if (isFileChoiceSelection) {
+                //special-case for File Choice parameters, cached values but not cached if from S3
+                else if (isFileChoiceSelection && !isS3FileChoice) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
                     final GpFilePath cachedFile = FileCache.downloadCachedFile(mgr, gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();

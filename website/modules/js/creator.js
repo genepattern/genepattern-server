@@ -1178,7 +1178,7 @@ function changeParameterType(element) {
         editChoicesDialog.dialog({
             autoOpen: true,
             height: 620,
-            width: 600,
+            width: 630,
             title: title,
             create: function () {
                 var enterValuesDiv = $("<div class='hcontent'/>");
@@ -1377,10 +1377,10 @@ function changeParameterType(element) {
                     var choiceURLTable = $("<table/>");
                     choiceURLDiv.append(choiceURLTable);
                     var choiceURLTableTR = $("<tr/>");
-                    choiceURLTableTR.append("<td>Ftp directory:</td>");
+                    choiceURLTableTR.append("<td width=\"130px\">Ftp directory URL<br/>or S3 directory URI:</td>");
                     var choiceURL = $("<input name='choiceURL' type='text' size='45'/>");
                     choiceURL.val(element.parents(".parameter").find("input[name='choiceDir']").val());
-                    $("<td/>").append(choiceURL).append("<div class='shortDescription'>Enter the ftp directory " +
+                    $("<td/>").append(choiceURL).append("<div class='shortDescription'>Enter the ftp/S3 directory " +
                         "containing the files to use to populate the drop-down list</div>").appendTo(choiceURLTableTR);
                     choiceURLTable.append(choiceURLTableTR);
 

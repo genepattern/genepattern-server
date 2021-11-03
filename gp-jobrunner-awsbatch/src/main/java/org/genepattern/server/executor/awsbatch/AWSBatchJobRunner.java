@@ -1243,6 +1243,11 @@ public class AWSBatchJobRunner implements JobRunner {
                     // here we use cp instead of sync because a shared object on S3 might not be in a readable/shared (pseudo) directory
                     bw.write("aws s3 cp ");
                   
+                    // add --recursive flag if it is a directory, which in S3 means a trailing slash
+                    if (urlfile[0].endsWith("/")){
+                        bw.write("--recursive ");
+                    }
+                    
                     bw.write(urlfile[0]);
                     
                     bw.write("  ");
