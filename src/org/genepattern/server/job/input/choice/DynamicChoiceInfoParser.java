@@ -5,17 +5,13 @@ package org.genepattern.server.job.input.choice;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.executor.awsbatch.AWSBatchJobRunner;
+
 import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
@@ -216,7 +212,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "ls", s3DirURI};
             
             Process proc = Runtime.getRuntime().exec(execArgs);
-     
+            
             proc.waitFor();
             BufferedReader stdInput = new BufferedReader(new     InputStreamReader(proc.getInputStream()));
             
