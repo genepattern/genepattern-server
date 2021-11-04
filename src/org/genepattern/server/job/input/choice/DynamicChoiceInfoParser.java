@@ -217,7 +217,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             
             Process proc = Runtime.getRuntime().exec(execArgs);
      
-            proc.waitFor(3, TimeUnit.MINUTES);
+            proc.waitFor();
             BufferedReader stdInput = new BufferedReader(new     InputStreamReader(proc.getInputStream()));
             
             // each line will look like  "yyyy-MM-dd HH:mm:ss"
