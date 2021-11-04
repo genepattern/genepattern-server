@@ -44,7 +44,7 @@ public class TestStartupServlet {
     
     @Test
     public void initGpWorkingDir() throws IOException {
-        final File tomcatDir=new File("installer-2014/gpdist/Tomcat").getAbsoluteFile();
+        final File tomcatDir=new File("installer-2014-sp1/gpdist/Tomcat").getAbsoluteFile();
         when(servletConfig.getServletContext()).thenReturn(servletContext);
         when(servletContext.getRealPath("../../")).thenReturn(tomcatDir.getAbsolutePath());        
         File gpWorkingDir=StartupServlet.initGpWorkingDir(servletConfig, (File)null);
