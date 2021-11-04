@@ -47,7 +47,7 @@ public class TestCommandLineParser {
     public void resolveValue_antCmd_legacy() {
         //TODO: improve substitution for <java>, should not have to set this with addProperty
         final String java_val="java";
-        final String tomcatCommonLib=new File("installer-2014/gpdist/Tomcat/common/lib").getAbsoluteFile().toString();
+        final String tomcatCommonLib=new File("installer-2014-sp1/gpdist/Tomcat/common/lib").getAbsoluteFile().toString();
         final GpConfig gpConfig=new GpConfig.Builder()
             .resourcesDir(FileUtil.getResourcesDir())
             .webappDir(FileUtil.getWebappDir())

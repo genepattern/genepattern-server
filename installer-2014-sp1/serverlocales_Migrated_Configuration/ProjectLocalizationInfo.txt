@@ -19,7 +19,7 @@
 #     property to configure an object when working with the custom_xx files.
 #
 # Product Name: GenePattern
-# Project File: /xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014/server.iap_xml
+# Project File: /xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014-sp1/server.iap_xml
 # Generated:    Tue Aug 12 17:14:07 EDT 2014
 
 

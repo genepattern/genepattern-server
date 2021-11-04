@@ -61,7 +61,7 @@
     </target>
 
     <target name="copy-tomcat" depends="init, copy-base">
-        <copydir src="../installer-2014/gpdist/Tomcat" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat" />
+        <copydir src="../installer-2014-sp1/gpdist/Tomcat" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat" />
     </target>
 
     <target name="copy-resources" depends="init, copy-base">
