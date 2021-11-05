@@ -78,7 +78,7 @@ public class TestGetPipelineJobLegacy {
      */
     @Test
     public void testExecutionLog_v_3_8_1() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, true, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("status.executionLogLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONObject("status").get("executionLogLocation")
@@ -97,7 +97,7 @@ public class TestGetPipelineJobLegacy {
      */
     @Test
     public void testExecutionLog_v_3_8_2() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, true, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("logFiles[0].href",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONArray("logFiles")
@@ -125,7 +125,7 @@ public class TestGetPipelineJobLegacy {
     
     @Test
     public void testStderrLocation() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, true, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("status.stderrLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/stderr.txt",
                 jobObj.getJSONObject("status")

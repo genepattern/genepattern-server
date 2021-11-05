@@ -481,9 +481,17 @@ class TransferInWaitThread extends TransferWaitThread {
                 statusObject = globusClient.getTransferDetails(taskId, token);
                 
                 status = globusClient.checkTransferStatus(statusObject);
+                boolean isOk = statusObject.get("is_ok").getAsBoolean();
+                if (!isOk){
+                    // globus has many ways of returning errors
+                    status = "ERROR";
+                    error = statusObject.get("nice_status_short_description").getAsString();
+                }
+                
                 lastStatusCheckTime = System.currentTimeMillis();
             } catch (Exception e){
                 error = e.getMessage();
+                status = "ERROR";
             }
             
             sleep = incrementSleep(initialSleep, maxTries, count);
@@ -594,9 +602,6 @@ class TransferInWaitThread extends TransferWaitThread {
             hib.beginTransaction();
             fileUtil.updateUploadsDb(hib, uploadFilePath);
             hib.commitTransaction();
-            
-            // now we use the details in the globus status object to get the size and we need to set ther date
-            
             
         } else {
             throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);

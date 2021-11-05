@@ -4971,6 +4971,7 @@ function initGlobusToaster(filelist) {
             		        success: function(){
             		        	// we cleared the completed, so now lets redraw
             		        	// the toaster with anything still running
+            		        	initGlobusToaster([], null);
             		        	getGlobusTransferStatus();
             		        }
             			});
