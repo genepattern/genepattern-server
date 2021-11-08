@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.oauth;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,9 +33,17 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
 	    final GpConfig gpConfig=ServerConfigurationFactory.instance();
 	      
 	    GlobusClient globusClient = new GlobusClient();
-	    try {    
-            String urlTargetPostLogin = (String)servletRequest.getSession().getAttribute("origin");
-            if (urlTargetPostLogin == null){
+	    try {
+            // If the forward parameter is set, forward there
+            String urlTargetPostLogin = servletRequest.getParameter("forward");
+
+            // If not, forward to the origin
+            if (urlTargetPostLogin == null) {
+                urlTargetPostLogin = (String) servletRequest.getSession().getAttribute("origin");
+            }
+
+            // If that doesn't work, forward to the base GenePattern URL
+            if (urlTargetPostLogin == null) {
                 urlTargetPostLogin  = gpConfig.getGenePatternURL().toString();
             }
             // Login to globus.  Get an access_token.  Throws an exception if login fails for any reason

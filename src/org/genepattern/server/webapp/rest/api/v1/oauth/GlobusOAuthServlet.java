@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.rest.api.v1.oauth;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -39,8 +40,12 @@ public class GlobusOAuthServlet extends HttpServlet {
 	        String oAuthAuthorizeURL = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_AUTHORIZE_URL_KEY, "https://auth.globus.org/v2/oauth2/authorize");
 	        String oAuthClientId = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_CLIENT_ID_KEY, "f4951e9d-03a2-4ffd-a65f-61a7f9f73bde");
 	        String oAutScopes = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_AUTHORIZE_SCOPES_KEY, "urn:globus:auth:scope:auth.globus.org:view_identities openid profile email");
-            
-	        String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
+
+	        // Handle the optional forward query parameter
+			String forward = request.getParameter("forward");
+			forward = forward != null ? "?forward=" + URLEncoder.encode(forward, "UTF-8"): "";
+
+	        String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback" + forward;
 	        
     	    OAuthClientRequest authRequest = OAuthClientRequest
                     .authorizationLocation(oAuthAuthorizeURL)
