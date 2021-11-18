@@ -204,6 +204,10 @@ public class SlurmJobRunner implements JobRunner {
         String account =  config.getGPProperty(jobContext, "slurm.account", "WHO_PAYS_FOR_THIS");
         String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
         
+        String ntasksPerNode =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
+        
+        
+        
         File workingDirectory = new File(workDirPath);
         File jobScript = new File(workingDirectory, ".launchJob.sb");
         Memory memRequested = drmJobSubmission.getMemory();
@@ -213,12 +217,13 @@ public class SlurmJobRunner implements JobRunner {
         
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
+                            "#SBATCH --no-requeue \n" +
                             "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
                             "#SBATCH -D " + workDirPath  + "\n" +
                             "#SBATCH --output="+workDirPath+"/stdout.txt\n" +
                             "#SBATCH --error="+workDirPath+"/stderr.txt\n" +
                             "#SBATCH --nodes=1\n" +     // no parallel jobs here
-                            "#SBATCH --ntasks-per-node=1\n" +
+                            "#SBATCH --ntasks-per-node="+ntasksPerNode+"\n" +
                             "#SBATCH --mem="+ memFormatG(memRequested) + "\n" +
                             "#SBATCH --cpus-per-task="+ nCPU + "\n" +
                             "#SBATCH --time=" + maxTime + "\n" +
