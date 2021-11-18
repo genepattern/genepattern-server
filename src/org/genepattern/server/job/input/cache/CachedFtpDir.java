@@ -173,7 +173,7 @@ public class CachedFtpDir implements CachedFile {
 
     @Override
     public boolean isDownloaded() {
-        if (tmpDir.getServerFile().exists()) {
+         if (tmpDir.getServerFile().exists()) {
             final String[] files=tmpDir.getServerFile().list();
             if (files != null) {
                 for(final String file : files) {

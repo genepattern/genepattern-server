@@ -1227,36 +1227,41 @@ public class AWSBatchJobRunner implements JobRunner {
                 // first make sure the directory exists, wget won't make it
                 File aFile = new File(urlfile[1]);
                 String parentDir = aFile.getParentFile().getAbsolutePath();
-                bw.write("mkdir -p ");
+                bw.write("mkdir -p \"");
                 bw.write(dest_prefix);
                 bw.write(parentDir);
+                bw.write("\"");
                 bw.newLine();
                 bw.newLine();
                 
                 // if its S3: then get the file with an aws s3 copy, otherwise use wget
                 if (urlfile[0].toLowerCase().startsWith("s3://")) {
                     
-                    int len = urlfile[0].length() - aFile.getName().length() ;
-                    String s3ParentDir = urlfile[0].substring(0, len);
+                    //  CANNOT USE SYNC HERE aws s3 sync --exclude "*" --include "all_aml_test.gct"  s3://datasets-genepattern-org/data/all_aml/ /local/path/to/dir
+                    //  aws s3 cp  s3://datasets-genepattern-org/data/all_aml/all_aml_test.gct /local/path/to/dir
+                    //
+                    // here we use cp instead of sync because a shared object on S3 might not be in a readable/shared (pseudo) directory
+                    bw.write("aws s3 cp ");
+                  
+                    // add --recursive flag if it is a directory, which in S3 means a trailing slash
+                    if (urlfile[0].endsWith("/")){
+                        bw.write("--recursive ");
+                    }
                     
-                    //  aws s3 sync --exclude "*" --include "all_aml_test.gct"  s3://datasets-genepattern-org/data/all_aml/ /local/path/to/dir
-                    // 
-                    bw.write("aws s3 sync --exclude \"*\" --include \"");
-                    bw.write(aFile.getName());
-                    bw.write("\"  ");
-                    bw.write(s3ParentDir);
+                    bw.write(urlfile[0]);
+                    
                     bw.write("  ");
                     bw.write(dest_prefix);
                     bw.write(parentDir);
                     bw.write("  >> "+dest_prefix+""+script_dir+"/s3_downloads.log");
                 } else {
                  // now get the file with wget
-                    bw.write("wget -O ");
+                    bw.write("wget -O \"");
                     bw.write(dest_prefix);
                     bw.write(urlfile[1]);
-                    bw.write("  ");
+                    bw.write("\"  ");
                     bw.write(urlfile[0]);
-                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" >> "+dest_prefix+""+script_dir+"/stderr.txt");
+                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" 1> "+dest_prefix+""+script_dir+"/stderr.txt   2>&1");
                     
                     
                 }

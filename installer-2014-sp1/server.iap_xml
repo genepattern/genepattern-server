@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using InstallAnywhere 2014 Premier, Build 4783
+<!-- This script was automatically generated using InstallAnywhere 2014 SP1 Premier, Build 4860
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Fri Oct 03 09:57:51 EDT 2014 -->
-<InstallAnywhere_Deployment_Project increments="17624">
+     DATE:   Mon Nov 01 18:07:35 EDT 2021 -->
+<InstallAnywhere_Deployment_Project increments="17542">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="16" minor="0" revision="0"/>
-		<editionID>49,54,46,48,32,80,114,101,109,105,101,114,32,66,117,105,108,100,32,52,55,56,51</editionID>
+		<versionID major="16" minor="5" revision="0"/>
+		<editionID>49,54,46,53,32,80,114,101,109,105,101,114,32,66,117,105,108,100,32,52,56,54,48</editionID>
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
-		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,49,56,45,49,57,52,46,56,46,49,46,101,108,53,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,55,46,48,95,54,48,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,51,46,49,48,46,48,45,49,49,54,48,46,51,54,46,50,46,101,108,55,46,120,56,54,95,54,52,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,55,46,48,95,54,48,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,64,-41,75,96,112,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,3,12,125,38,8,1,0,0</authorizationID>
+		<authorizationID>1,0,0,112,-41,-119,32,0,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,12,4,123,45,12,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="777">
+	<installationObjects uniqueObjects="773">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="belongsToUninstallPhase">
 				<boolean>false</boolean>
@@ -10348,12 +10348,15 @@ and any path to a file to read from that file]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 													<property name="propertyValue">
-														<string><![CDATA[./temp]]></string>
+														<string><![CDATA[2750]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[java.io.tmpdir]]></string>
+														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+													</property>
+													<property name="propertyComment">
+														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 													</property>
 												</object>
 											</method>
@@ -10372,15 +10375,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 													<property name="propertyValue">
-														<string><![CDATA[2750]]></string>
+														<string><![CDATA[./temp]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-													</property>
-													<property name="propertyComment">
-														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+														<string><![CDATA[java.io.tmpdir]]></string>
 													</property>
 												</object>
 											</method>
@@ -12044,7 +12044,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="buildOutputLocation">
-								<string><![CDATA[/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014/server_Build_Output]]></string>
+								<string><![CDATA[/xchip/gpdev/users/genepatt/projects/gp-trunk/installer-2014-sp1/server_Build_Output]]></string>
 							</property>
 							<property name="relatedProjectSettings">
 								<object class="com.zerog.ia.installer.RelatedProjectSettings" objectID="df4415c3bd75">
@@ -13286,7 +13286,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e9ceab2c9733">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="f10c62c9841c">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13343,7 +13343,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e9ceab2f9733">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="f10c62cb841c">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13517,7 +13517,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[October 3, 2014 9:57:51 AM EDT]]></string>
+						<string><![CDATA[November 1, 2021 6:07:35 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -13784,7 +13784,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						</object>
 					</property>
 					<property name="productURL">
-						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
+						<string><![CDATA[https://genepattern.org]]></string>
 					</property>
 					<property name="productDescription">
 						<string><![CDATA[]]></string>
@@ -13813,7 +13813,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						</object>
 					</property>
 					<property name="supportURL">
-						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
+						<string><![CDATA[https://genepattern.org]]></string>
 					</property>
 					<property name="vendorName">
 						<string><![CDATA[Broad Institute, MIT]]></string>
@@ -13826,13 +13826,13 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						</object>
 					</property>
 					<property name="vendorURL">
-						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
+						<string><![CDATA[https://genepattern.org]]></string>
 					</property>
 					<property name="email">
-						<string><![CDATA[gp-help@broadinstitute.org]]></string>
+						<string><![CDATA[genepattern-team@broadinstitute.org]]></string>
 					</property>
 					<property name="copyright">
-						<string><![CDATA[2003-2014]]></string>
+						<string><![CDATA[2003-2021]]></string>
 					</property>
 					<property name="license">
 						<string><![CDATA[Commercial]]></string>
@@ -17465,16 +17465,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa8">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -17489,15 +17488,16 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa8">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -18707,15 +18707,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="97c64de19700">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar:$JAVAROOT/gp-full.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -18730,16 +18731,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="97c64de19700">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar:$JAVAROOT/gp-full.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -23994,16 +23994,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="e9cd0b1a9733">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar:$JAVAROOT/gp-full.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -24018,15 +24017,16 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="e9cd0b1a9733">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar:$JAVAROOT/gp-full.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>

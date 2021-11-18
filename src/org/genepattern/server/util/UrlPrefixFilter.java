@@ -189,6 +189,12 @@ public class UrlPrefixFilter {
             // ignore anything other than a standard job (e.g. visualizers, pipelines, IGV, and JS Viewer)
             return false;
         }
+        
+        if (paramValue.toLowerCase().startsWith("s3://")){
+            // s3 URIs are never to be cached because its the compute node that will retrieve them
+            return false;
+        }
+        
         if (formalParam._isUrlMode()) {
             // ignore passByReference parameters
             return false;

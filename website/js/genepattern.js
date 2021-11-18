@@ -2154,7 +2154,7 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": [],
                 "callAfterItemCreation": function(item){
                 	// open the file dialog when clicked
-                	//resumableUploader.assignBrowse(item);
+                	resumableUploader.assignBrowse(item);
                 }
 
             });
@@ -4971,6 +4971,7 @@ function initGlobusToaster(filelist) {
             		        success: function(){
             		        	// we cleared the completed, so now lets redraw
             		        	// the toaster with anything still running
+            		        	initGlobusToaster([], null);
             		        	getGlobusTransferStatus();
             		        }
             			});

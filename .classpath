@@ -72,8 +72,8 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/Jama-1.0.1.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-compiler.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-runtime.jar"/>
+	<classpathentry kind="lib" path="installer-2014-sp1/gpdist/Tomcat/common/lib/jasper-compiler.jar"/>
+	<classpathentry kind="lib" path="installer-2014-sp1/gpdist/Tomcat/common/lib/jasper-runtime.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-2.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-extensions-1.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
@@ -112,7 +112,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jettison-1.3.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="installer-2014-sp1/gpdist/Tomcat/common/lib/jsp-api.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.17.jar"/>

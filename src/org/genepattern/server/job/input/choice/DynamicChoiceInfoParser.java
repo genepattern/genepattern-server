@@ -3,12 +3,15 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+
 import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
@@ -56,7 +59,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             try {
                 final ChoiceInfo choiceInfoFromFtp;
                 if (initializeDynamicDropdown) {
-                    choiceInfoFromFtp = initChoicesFromFtp(param, choiceDir);
+                    choiceInfoFromFtp = initChoicesFromRemote(param, choiceDir);
                 }
                 else {
                     choiceInfoFromFtp = initChoicesMeta(param, choiceDir);
@@ -133,28 +136,33 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
      * @param ftpDir
      * @return
      */
-    protected ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
+    protected ChoiceInfo initChoicesFromRemote(final ParameterInfo param, final String remoteDir) throws ChoiceInfoException {
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
-        choiceInfo.setChoiceDir(ftpDir);
+        choiceInfo.setChoiceDir(remoteDir);
         final DirFilter dirFilter=new DirFilter(param);
         
         //special-case, local.choiceDir
-        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(gpConfig, jobContext, ftpDir, dirFilter);
+        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(gpConfig, jobContext, remoteDir, dirFilter);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);
             }
             if (choiceInfo.getChoices().size()==0) {
-                choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
+                choiceInfo.setStatus(Flag.WARNING, "No matching files in "+remoteDir);
             }
             else {
-                final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from local dir="+localChoice.getLocalChoiceDir()+", mapped to remote dir="+ftpDir;
+                final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from local dir="+localChoice.getLocalChoiceDir()+", mapped to remote dir="+remoteDir;
                 choiceInfo.setStatus(Flag.OK, statusMessage);
             }
             return choiceInfo;
         }
         
-        initChoiceInfoEntriesFromFtp(param, ftpDir, choiceInfo, dirFilter);
+        if (remoteDir.startsWith("ftp")) {
+            initChoiceInfoEntriesFromFtp(param, remoteDir, choiceInfo, dirFilter);
+        } else if (remoteDir.startsWith("s3")) {
+            initChoiceInfoEntriesFromS3(param, remoteDir, choiceInfo, dirFilter);
+        }
+        
         return choiceInfo;
     }
     
@@ -193,4 +201,68 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         } 
         return choiceInfo;
     }
+    
+    private ChoiceInfo initChoiceInfoEntriesFromS3(final ParameterInfo param, final String s3DirURI, final ChoiceInfo choiceInfo, final DirFilter dirFilter) {
+        
+       
+        try {
+            String awsfilepath = gpConfig.getGPProperty(GpContext.getServerContext(),"aws-batch-script-dir");
+            String awsfilename = gpConfig.getGPProperty(GpContext.getServerContext(), "aws-cli", "aws-cli.sh");
+             
+            String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "ls", s3DirURI};
+            
+            Process proc = Runtime.getRuntime().exec(execArgs);
+            
+            proc.waitFor();
+            BufferedReader stdInput = new BufferedReader(new     InputStreamReader(proc.getInputStream()));
+            
+            // each line will look like  "yyyy-MM-dd HH:mm:ss"
+            //         2020-12-01 13:19:01    4931101 tedslaptop/Users/liefeld/gp/users/739701.jpg
+            
+            String s = null;
+            while (( s = stdInput.readLine()) != null) {
+                String[] lineParts = s.split("\\s+");
+                boolean isDir = false;
+                String name = null;
+                if (lineParts.length == 4){
+                    name = lineParts[3];
+                } else if (lineParts.length == 3) {
+                    name = lineParts[2]; // directories
+                    isDir = true;
+                }
+                
+                
+                if (isDir) {
+                    // for dirs strip off the trailing space for the filter.  ftp does this automatically but in S3 the trailing
+                    // slash is part of the key and the only thing indicating it is a directory
+                    if (dirFilter.acceptName(name.substring(0,name.length()-1))){
+                        final Choice choice=new Choice(name, s3DirURI+name, isDir);
+                        choiceInfo.add(choice);
+                    }
+                } else {
+                    if (dirFilter.acceptName(name)){
+                        final Choice choice=new Choice(name, s3DirURI+name, isDir);
+                        choiceInfo.add(choice);
+                    }
+                }
+            }
+            
+            
+            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+s3DirURI+" on "+new Date();
+            choiceInfo.setStatus(Flag.OK, statusMessage);
+        } catch (Exception e) {
+            final String errorMessage="Error listing files from "+s3DirURI;
+            log.error(errorMessage);
+            choiceInfo.setStatus(Flag.ERROR, errorMessage);
+            return choiceInfo;
+        }
+
+        if (choiceInfo.getChoices().size()==0) {
+            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+s3DirURI);
+        } 
+        return choiceInfo;
+    }
+    
+    
+    
 }
