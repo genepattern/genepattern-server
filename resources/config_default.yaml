@@ -194,8 +194,8 @@ default.properties:
     #
     # GPARC integration
     #
-    gparcUploadURL: http://www.gparc.org/server_upload.php
-    gparcSubmitURL: http://www.gparc.org/uniqid
+    # gparcUploadURL: http://www.gparc.org/server_upload.php
+    # gparcSubmitURL: http://www.gparc.org/uniqid
 
     # Use Single Sign-On
     ssoAuthentication: false

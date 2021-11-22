@@ -43,7 +43,6 @@
 	             <li><a href="<%=aboutBean.getContactUs()%>">Contact Us</a></li>
                  <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                  <li><a href="JavaScript:Menu.go('https://www.genepattern.org/datasets/')">Public Datasets</a></li>
-                 <li><a href="JavaScript:Menu.go('http://www.gparc.org/')">GParc</a></li>
 	         </ul>
 	     </li>
 	     <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>

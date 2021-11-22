@@ -3800,12 +3800,12 @@ jQuery(document).ready(function() {
     	                    
     	                }
     	            },
-    	            "Submit to GParc": function(){
-    	                window.open("http://gparc.org");
-    	                if (module_editor.lsid !== null && module_editor.lsid.length > 0) {
-    	                    window.location.href = "/gp/makeZip.jsp?name=" + encodeURIComponent(module_editor.lsid);
-    	                }
-    	            },
+    	            // "Submit to GParc": function(){
+    	            //     window.open("http://gparc.org");
+    	            //     if (module_editor.lsid !== null && module_editor.lsid.length > 0) {
+    	            //         window.location.href = "/gp/makeZip.jsp?name=" + encodeURIComponent(module_editor.lsid);
+    	            //     }
+    	            // },
     	            "Cancel": function(){
     	            	$(this).dialog("close");  
     	            	
@@ -3848,14 +3848,14 @@ jQuery(document).ready(function() {
         }
     });
 
-    $('#whatIsGparc').click(function(event) {
-        showDialog("What is GParc?", '<a href="http://gparc.org"><img src="/gp/css/frozen/modules/styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
-            '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
-            '<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li>'+
-            '<li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GParc forum</ul>');
-        if (event.preventDefault) event.preventDefault();
-        if (event.stopPropagation) event.stopPropagation();
-    });
+    // $('#whatIsGparc').click(function(event) {
+    //     showDialog("What is GParc?", '<a href="http://gparc.org"><img src="/gp/css/frozen/modules/styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;"'+
+    //         '/></a><br /><strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.'+
+    //         '<br/><br/>Unregistered users can download modules and rate them.  Registered GParc users can:<ul><li>Submit modules</li>'+
+    //         '<li>Download modules</li><li>Rate modules</li><li>Comment on modules</li><li>Access the GParc forum</ul>');
+    //     if (event.preventDefault) event.preventDefault();
+    //     if (event.stopPropagation) event.stopPropagation();
+    // });
 
 
     $("select[name='c_type']").change(function()
