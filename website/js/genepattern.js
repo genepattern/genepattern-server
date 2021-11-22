@@ -2283,8 +2283,8 @@ function createFileWidget(linkElement, appendTo) {
                     var uploadAction = actionClicked.indexOf("Upload") === 0;
                     var pipelineAction = actionClicked.indexOf("Create Pipeline") === 0;
                     var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") === 0;
-                    var globusAction = actionClicked.indexOf("Transfer Files from Globus") === 0;
-                    var sendToGlobusAction = actionClicked.indexOf("Transfer File to Globus") === 0;
+                    var globusAction = actionClicked.indexOf("from Globus") != 0;
+                    var sendToGlobusAction = actionClicked.indexOf("to Globus") != 0;
                     
                     var renameAction = actionClicked.indexOf("Rename") === 0;
                     var jobCopyAction = actionClicked.indexOf("Copy to Files") === 0;

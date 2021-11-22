@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -481,7 +482,11 @@ class TransferInWaitThread extends TransferWaitThread {
                 statusObject = globusClient.getTransferDetails(taskId, token);
                 
                 status = globusClient.checkTransferStatus(statusObject);
-                boolean isOk = statusObject.get("is_ok").getAsBoolean();
+                //Boolean isOk = statusObject.get("is_ok").getAsBoolean();
+                Boolean isOkPresent = statusObject.get("is_ok") == null;
+                Boolean isOk = true;
+                if (isOkPresent) isOk = statusObject.get("is_ok").getAsBoolean();
+                
                 if (!isOk){
                     // globus has many ways of returning errors
                     status = "ERROR";
@@ -567,7 +572,8 @@ class TransferInWaitThread extends TransferWaitThread {
     private String getFinalFilePath(String file){
         String dirPath = "/";
         if (destDir !=null){
-            String userDir = "/gp/users/"+user;
+            String encodedUser = URLEncoder.encode(user);
+            String userDir = "/gp/users/"+encodedUser;
             int idx = destDir.indexOf(userDir);
             if (idx > 0){
                 // we have a valid looking destination
@@ -587,9 +593,13 @@ class TransferInWaitThread extends TransferWaitThread {
         if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
             // need to look at desired destDir
+            String encodedUser = URLEncoder.encode(user);
+            int idx = destDir.indexOf("/gp/users/"+encodedUser);
+            String dirPath = destDir.substring(idx);
+            dirPath.replace(encodedUser, user);
+            //destDir.substring(destDir.indexOf("/users/"+encodedUser) + encodedUser.length() + 7);
             
-            
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath( file), (LSID)null);
       
             // move the file within S3 to the desired location   
             s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
