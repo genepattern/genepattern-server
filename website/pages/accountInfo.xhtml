@@ -109,9 +109,11 @@
             <t:div rendered="#{mySettingsBean.currentMode == 'History'}">
                 <ui:include src="history.xhtml" />
             </t:div>
+             <h:outputText rendered="#{loginBean.globusEnabled}">
              <t:div rendered="#{mySettingsBean.currentMode == 'Globus Identity'}">
                 <ui:include src="globus.xhtml" />
             </t:div>
+            </h:outputText>
         </ui:define>
     </ui:composition>
 

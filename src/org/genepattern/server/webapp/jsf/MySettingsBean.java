@@ -23,8 +23,24 @@ public class MySettingsBean {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final boolean passwordRequired = 
             gpConfig.isPasswordRequired(GpContext.getServerContext());
-        modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory", "Globus Identity" }
-                : new String[] { "Change Email", "History", "Visualizer Memory" };
+        
+        boolean isGlobusEnabled = false;
+        
+        String authClass = gpConfig.getGPProperty(GpContext.getServerContext(), "authentication.class");
+        if (authClass == null) {
+            isGlobusEnabled = false;
+        } else {
+            // use just the class name to protect against package rearrangement in the future
+            isGlobusEnabled = (authClass.endsWith("GlobusAuthentication"));
+        }
+        if (isGlobusEnabled) {
+            modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory", "Globus Identity" }
+            : new String[] { "Change Email", "History", "Visualizer Memory" };
+        } else {
+            modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory" }
+            : new String[] { "Change Email", "History", "Visualizer Memory" };
+        }
+        
         currentMode = modes[0]; // Default
     }
 
