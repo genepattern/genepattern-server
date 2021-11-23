@@ -483,9 +483,14 @@ class TransferInWaitThread extends TransferWaitThread {
                 
                 status = globusClient.checkTransferStatus(statusObject);
                 //Boolean isOk = statusObject.get("is_ok").getAsBoolean();
-                Boolean isOkPresent = statusObject.get("is_ok") != null;
+               
                 Boolean isOk = true;
-                if (isOkPresent) isOk = statusObject.get("is_ok").getAsBoolean();
+                try {
+                    isOk = statusObject.get("is_ok").getAsBoolean();
+                } catch (Exception e){
+                    // do noting as is_ok = null in the json causes errors which is a PITA
+                    isOk = true;
+                }
                 
                 if (!isOk){
                     // globus has many ways of returning errors
@@ -766,10 +771,14 @@ class TransferOutWaitThread extends TransferWaitThread{
                     status = globusClient.checkTransferStatus(statusObject);
                     lastStatusCheckTime = System.currentTimeMillis();
                     
-                    Boolean isOkPresent = statusObject.get("is_ok") != null;
+                   
                     Boolean isOk = true;
-                    if (isOkPresent) isOk = statusObject.get("is_ok").getAsBoolean();
-                    
+                    try {
+                        isOk = statusObject.get("is_ok").getAsBoolean();
+                    } catch (Exception e){
+                        // when is_ok == nul gson gets discombobulated
+                        isOk = true;
+                    }
                     if (!isOk){
                         // globus has many ways of returning errors
                         status = "ERROR";
