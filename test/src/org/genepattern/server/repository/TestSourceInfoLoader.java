@@ -53,17 +53,18 @@ public class TestSourceInfoLoader {
         Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGPProd.getFullDescription());
     }
     
-    @Test
-    public void testFromGparc() {
-        final TaskInfo cmsTaskInfo=taskLoader.getTaskInfo(cmsLsid);
-        final SourceInfo fromGparc=sourceInfoLoader.getSourceInfo(cmsTaskInfo);
-        Assert.assertNotNull("expecting non-null sourceInfo", fromGparc);
-        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromGparc.getType());
-        Assert.assertEquals("sourceInfo.label", "GParc (GenePattern Archive)", fromGparc.getLabel());
-        Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromGparc.getIconImgSrc());
-        Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGparc.getBriefDescription());
-        Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGparc.getFullDescription());
-    }
+    // This test has been broken for years and we decommissioned and archived GParc in Dec 2021.
+    // @Test
+    // public void testFromGparc() {
+    //     final TaskInfo cmsTaskInfo=taskLoader.getTaskInfo(cmsLsid);
+    //     final SourceInfo fromGparc=sourceInfoLoader.getSourceInfo(cmsTaskInfo);
+    //     Assert.assertNotNull("expecting non-null sourceInfo", fromGparc);
+    //     Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromGparc.getType());
+    //     Assert.assertEquals("sourceInfo.label", "GParc (GenePattern Archive)", fromGparc.getLabel());
+    //     Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromGparc.getIconImgSrc());
+    //     Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGparc.getBriefDescription());
+    //     Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGparc.getFullDescription());
+    // }
     
     @Test
     public void testFromGPBeta() {

@@ -66,6 +66,10 @@ One of three terms that indicates the author&rsquo;s confidence in the robustnes
 Help URL (or file) that describes the module and provides instructions
 for its use.</p>
     <p>
+        <a name="Source_repo_brief"></a><strong>Source code repository</strong><br>
+Source repository URL - specific to the tag or release of the module version.
+    </p>
+    <p>
         <a name="DockerImage_brief"></a><strong>Docker Image</strong><br/>
 The docker image in which to run the module command line.
     <p>
@@ -247,6 +251,11 @@ included output (an execution log would suffice)</li>
 <li>version comments so that your users know what changed from version to version</li>
 </UL>
 <BR/>
+
+<a name="SourceRepository"></a><h4>Source Repository</h4>
+Provide a URL to the source code of your module, specific to the tag or release that corresponds to the module version.<br>
+For example - v0.13 of TCGA.SampleSelection has for its source repository <span class="example">https://github.com/genepattern/TCGA.SampleSelection/tree/v0.13</span>
+
 <a name="Author"></a><h4>Author</h4>
 Enter the author&apos;s name.  If you share this module
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,

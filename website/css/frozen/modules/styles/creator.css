@@ -349,6 +349,7 @@ div.editChoicesDialog
     padding: 0;
 }
 
+/* these can probably be removed */ 
 #gparcControls
 {
     float: right;
@@ -607,13 +608,14 @@ img.imgexpand {
     height: 120px;
 }
 
-#publishGParc {
+/* GParc VM was decommissioned in Dec 2021 and webapp has been archived - see GP org github
+/* #publishGParc {
 	background-image: url(images/export_gparc_btn.png);
 }
 
 #publishGParc:hover {
 	background-image: url(images/export_gparc_btn_over.png);
-}
+} */
 
 #modheader {
 	background-color: #cddcf1;

@@ -94,7 +94,7 @@ public class ModuleQueryServlet extends HttpServlet {
     public static final String UPLOAD = "/upload";
     public static final String SAVE = "/save";
     public static final String LOAD = "/load";
-    public static final String GPARC = "/gparc";
+    // public static final String GPARC = "/gparc";
 
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -112,10 +112,10 @@ public class ModuleQueryServlet extends HttpServlet {
         } else if (SAVE.equals(action)) {
             saveModule(request, response);
         } else if (UPLOAD.equals(action)) {
-            uploadFile(request, response);
-        } else if (GPARC.equals(action)) {
-            gparcSubmit(request, response);
-        } else {
+            uploadFile(request, response);}
+        // else if (GPARC.equals(action)) {
+        //     gparcSubmit(request, response);}
+        else {
             sendError(response, "Routing error for " + action);
         }
     }
@@ -162,54 +162,55 @@ public class ModuleQueryServlet extends HttpServlet {
         return zipTask.packageTask(taskInfo, username);
     }
 
-    @SuppressWarnings("deprecation")
-    public void gparcSubmit(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            // Set up the client
-            HttpClient client = new HttpClient();
-            client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+    // The GParc VM was decomissioned in Dec 2021 - features have been commented out for now - should be removed later.
+    // @SuppressWarnings("deprecation")
+    // public void gparcSubmit(HttpServletRequest request, HttpServletResponse response) {
+    //     try {
+    //         // Set up the client
+    //         HttpClient client = new HttpClient();
+    //         client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
-            // Set up the file post
-            File zipfile = getZipFile(request);
+    //         // Set up the file post
+    //         File zipfile = getZipFile(request);
 
-            // Get the URL to post to
-            GpContext context = GpContext.getContextForUser((String) request.getSession().getAttribute("userid"));
-            String gparcUploadURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcUploadURL", "http://www.gparc.org/server_upload.php");
+    //         // Get the URL to post to
+    //         GpContext context = GpContext.getContextForUser((String) request.getSession().getAttribute("userid"));
+    //         String gparcUploadURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcUploadURL", "http://www.gparc.org/server_upload.php");
 
-            // Set up the post method
-            MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
-            post.addRequestHeader("Content-type", "multipart/form-data");
-            post.addParameter("zipfilename", zipfile.getName(), zipfile);
+    //         // Set up the post method
+    //         MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
+    //         post.addRequestHeader("Content-type", "multipart/form-data");
+    //         post.addParameter("zipfilename", zipfile.getName(), zipfile);
 
-            // Execute
-            int status = client.executeMethod(post);
+    //         // Execute
+    //         int status = client.executeMethod(post);
 
-            // Get the token from the response
-            if (status == 200) {
-                String tokenJSON = post.getResponseBodyAsString();
-                JSONObject tokenObject = new JSONObject(tokenJSON);
-                String token = tokenObject.getString("token");
+    //         // Get the token from the response
+    //         if (status == 200) {
+    //             String tokenJSON = post.getResponseBodyAsString();
+    //             JSONObject tokenObject = new JSONObject(tokenJSON);
+    //             String token = tokenObject.getString("token");
 
-                String tokenURL = null;
-                if (token != null) {
-                    String gparcSubmitURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcSubmitURL", "http://www.gparc.org/uniqid");
-                    tokenURL = gparcSubmitURL + "?uniqid=" + token;
-                    tokenObject.put("token", tokenURL);
-                } else {
-                    tokenURL = "{'error': 'ERROR: No token sent, " + tokenObject.getString("error") + "'}";
-                }
+    //             String tokenURL = null;
+    //             if (token != null) {
+    //                 String gparcSubmitURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcSubmitURL", "http://www.gparc.org/uniqid");
+    //                 tokenURL = gparcSubmitURL + "?uniqid=" + token;
+    //                 tokenObject.put("token", tokenURL);
+    //             } else {
+    //                 tokenURL = "{'error': 'ERROR: No token sent, " + tokenObject.getString("error") + "'}";
+    //             }
 
-                // Write the token back to the UI
-                this.write(response, tokenObject);
-            } else {
-                this.write(response, "{'error': 'ERROR: Unknown response code " + status + "'}");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Error preparing submit to GParc: " + e.getMessage());
-            this.write(response, "ERROR: " + e.getMessage());
-        }
-    }
+    //             // Write the token back to the UI
+    //             this.write(response, tokenObject);
+    //         } else {
+    //             this.write(response, "{'error': 'ERROR: Unknown response code " + status + "'}");
+    //         }
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //         log.error("Error preparing submit to GParc: " + e.getMessage());
+    //         this.write(response, "ERROR: " + e.getMessage());
+    //     }
+    // }
 
     public SortedSet<String> getAllCategories(final GpConfig gpConfig, final GpContext userContext) {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
