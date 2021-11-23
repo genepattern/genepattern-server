@@ -483,7 +483,7 @@ class TransferInWaitThread extends TransferWaitThread {
                 
                 status = globusClient.checkTransferStatus(statusObject);
                 //Boolean isOk = statusObject.get("is_ok").getAsBoolean();
-                Boolean isOkPresent = statusObject.get("is_ok") == null;
+                Boolean isOkPresent = statusObject.get("is_ok") != null;
                 Boolean isOk = true;
                 if (isOkPresent) isOk = statusObject.get("is_ok").getAsBoolean();
                 
@@ -765,6 +765,18 @@ class TransferOutWaitThread extends TransferWaitThread{
                     
                     status = globusClient.checkTransferStatus(statusObject);
                     lastStatusCheckTime = System.currentTimeMillis();
+                    
+                    Boolean isOkPresent = statusObject.get("is_ok") != null;
+                    Boolean isOk = true;
+                    if (isOkPresent) isOk = statusObject.get("is_ok").getAsBoolean();
+                    
+                    if (!isOk){
+                        // globus has many ways of returning errors
+                        status = "ERROR";
+                        error = statusObject.get("nice_status_short_description").getAsString();
+                    }
+                    
+                    
                 } catch (Exception e){
                     error = e.getMessage();
                 }

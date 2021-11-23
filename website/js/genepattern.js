@@ -2283,8 +2283,8 @@ function createFileWidget(linkElement, appendTo) {
                     var uploadAction = actionClicked.indexOf("Upload") === 0;
                     var pipelineAction = actionClicked.indexOf("Create Pipeline") === 0;
                     var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") === 0;
-                    var globusAction = actionClicked.indexOf("from Globus") != 0;
-                    var sendToGlobusAction = actionClicked.indexOf("to Globus") != 0;
+                    var globusAction = actionClicked.indexOf("from Globus") > 0;
+                    var sendToGlobusAction = actionClicked.indexOf("to Globus") > 0;
                     
                     var renameAction = actionClicked.indexOf("Rename") === 0;
                     var jobCopyAction = actionClicked.indexOf("Copy to Files") === 0;
@@ -4639,6 +4639,12 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty){
 	var directory = directoryUrl.substring(split);
 	
 	var fileName = file.fileName;
+	if (file.fileName.indexOf("/") > 0){
+		// strip out dir path
+		fileName = file.fileName.substring(file.fileName.indexOf("/")+1);
+	}
+	
+	
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
 	var alreadyOpen = false;
