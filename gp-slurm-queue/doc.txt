@@ -1,0 +1,85 @@
+Basic doc for the SLURM Job Runner
+
+This job runner interfaces with the slurm job manager to submit jobs.  It works by creating a test file that has the slurm commands in it (they appear as comments starting with a '#') followed by shell commands to execute (in this case the GenePattern command line).
+
+It also supports having a prefix (remote.exec.prefix) to the 'sbatch' command (sbatch submits a job to slurm).  The prefix is to allow a server such as the genepattern.ucsd.edu server to prefix the sbatch with a command to ssh into a slurm submit node (since the GP server itself cannot submit jobs.
+
+To support multiple different queues (e.g. normal vs GPU queue) you need to define multiple job runners in your config file with the different settings.
+
+The configuration for one such is as follows;
+
+=====================================
+    SlurmJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.server.executor.slurm.SlurmJobRunner
+            jobRunnerName: SlurmJobRunner
+
+            # interval for polling for job status (in ms)
+            minDelay: 60000
+            useDynamicDelay: false
+
+
+        default.properties:
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"
+            java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
+            #
+            useDynamicDelay: false
+            minDelay: 60000
+            "remote.exec.prefix": "/expanse/projects/mesirovlab/genepattern/servers/ucsd.prod/resources/wrapper_scripts/run-on-expanse.sh  "
+            # for SLURM the queue maps to the partition in slurm-speak
+            "job.queue": "shared"
+            "job.commandPrefix": "<run-with-singularity>"
+            "job.docker.image.default": "genepattern/docker-java17:0.12"
+            # next line will be customized during installation
+
+            "run-with-singularity": "<wrapper-scripts>/run-with-singularity.sh -c <env-custom> \
+                -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+                -e SINGULARITY_CMD=<singularity> \
+                -e GP_JOB_WORKING_DIR=<job.workingDir> \
+                -e SINGULARITY_BIND_SRC=<job.singularity.bind_src> \
+                -e SINGULARITY_BIND_DST=<job.singularity.bind_dst> \
+                -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+                -u singularity"
+
+            "job.workingDir": "<jobs>/<job_id>"
+            "slurm.account": "ddp242"
+            "slurm.sbatch.prefix": ""
+            "slurm.additional.command": "module load singularitypro/3.5"
+            # the rodeo will be rewritten as stampede in the sbatch file
+            "path.to.replace": "/expanse/projects/mesirovlab/"
+            "path.replaced.with": "/expanse/projects/mesirovlab/"
+
+            "singularity": "singularity"
+            "job.singularity.bind_src": "/expanse/projects/mesirovlab/genepattern/servers/ucsd.prod/"
+            "job.singularity.bind_dst": "/expanse/projects/mesirovlab/genepattern/servers/ucsd.prod/"
+            "job.workingDir": "<jobs>/<job_id>"
+ 
+
+            ## default <java> substitution
+            java: "java"
+
+            ## default <perl> substitution
+            perl: "perl"
+
+            ## default <python_3.6> in substitution
+            python_3.6: "python3"
+
+============================
+
+The custom parameters used by the SLURM job runner are
+
+remote.exec.prefix --> a prefix before the sbatch command itself (eg to ssh into another server)
+slurm.sbatch.prefix --> a prefix to appear in the slurm batch file before the genepattern command line
+slurm.additional.command --> additional shell command to put at the beginning of the slurm batch file
+slurm.account --> the account to bill the job to in slurm
+slurm.ntasks.per.node --> num tasks per node.  Usually one but can be higher for GPU nodes
+job.queue --> the slurm queue to submit to
+path.to.replace --> replace all instances of this path with that defined in path.replaced.with
+path.replaced.with --> whay to substitute into the sbatch file commands for any appearance of path.to.replace
+
+
+
+
+
