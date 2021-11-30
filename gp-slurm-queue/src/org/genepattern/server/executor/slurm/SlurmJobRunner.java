@@ -29,6 +29,8 @@ import org.genepattern.server.executor.CommandExecutorException;
 public class SlurmJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(SlurmJobRunner.class);
 
+    private HashMap<Integer, DrmJobStatus> statusMap = new HashMap<Integer, DrmJobStatus>();
+    
     
     public String remotePrefix ;
     public boolean failIfStderr = false;
@@ -268,6 +270,16 @@ public class SlurmJobRunner implements JobRunner {
         return jobScript.getAbsolutePath();
     }
 
+    
+    protected DrmJobStatus initStatusSubmittedToSlurm(DrmJobSubmission gpJob) {
+        DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
+            .submitTime(new Date())
+        .build();
+        return status;
+    }
+    
+  
+    
     /**
      * Submit a Slurm job
      *
@@ -332,6 +344,7 @@ public class SlurmJobRunner implements JobRunner {
         
         try {
             output = commandRunner.runCmd(commandArray);
+            initStatusSubmittedToSlurm(drmJobSubmission);
         }
         catch (Throwable e) {
             log.error("Error submitting slurm job: " + e.getMessage());
@@ -456,6 +469,67 @@ public class SlurmJobRunner implements JobRunner {
      */
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
+        DrmJobStatus status = _getStatus(drmJobRecord);
+        
+        status = updateJobRunnerJobDetails(drmJobRecord, status);
+        
+        
+        return status;
+        
+    }
+    
+    public DrmJobStatus updateJobRunnerJobDetails(DrmJobRecord drmJobRecord, DrmJobStatus status){
+        DrmJobStatus finalStatus = status;
+        try {
+           
+            int gpJobNo = drmJobRecord.getGpJobNo();
+            DrmJobStatus oldStatus = statusMap.get(gpJobNo);
+            
+            // first time here
+            if ((oldStatus == null) && (!status.getJobState().equals(DrmJobState.TERMINATED))) {
+                statusMap.put(gpJobNo, status);
+            }
+            // nothing has changed so nothing to do
+            if (oldStatus.getJobState().equals(status.getJobState())){
+                return finalStatus;
+            }
+            
+            // job is done.  Make sure to remove it 
+            if (status.getJobState().equals(DrmJobState.TERMINATED)) {
+                statusMap.remove(gpJobNo);
+                status = initStatusFinishedOnSlurm(drmJobRecord, status.getJobState());
+            }
+            
+            // look for when it changes from pending to started so that we can record the 
+            // actual time spent running (roughly)
+            if (oldStatus.getJobState().equals(DrmJobState.QUEUED) 
+                    && status.getJobState().equals(DrmJobState.RUNNING)){
+                finalStatus = initStatusStartedOnSlurm(drmJobRecord, status.getJobState());
+            }
+        } catch (Exception e){
+            
+            log.error(e);
+        } finally {
+            return finalStatus;
+        }
+        
+    }
+    protected DrmJobStatus initStatusStartedOnSlurm(DrmJobRecord gpJob, DrmJobState state) {
+        DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), state)
+            .startTime(new Date())
+        .build();
+        return status;
+    }
+    protected DrmJobStatus initStatusFinishedOnSlurm(DrmJobRecord gpJob, DrmJobState state) {
+        DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), state)
+            .endTime(new Date())
+        .build();
+        return status;
+    }
+    
+    
+    public DrmJobStatus _getStatus(DrmJobRecord drmJobRecord) {
+            
         String extJobId = drmJobRecord.getExtJobId();
         File stderr = drmJobRecord.getStderrFile();
 
@@ -494,6 +568,7 @@ public class SlurmJobRunner implements JobRunner {
         try {
            
             return extractSlurmStatus(extJobId, stderr, output);
+          
         }
         catch (Exception e) {
             // It is likely that this job finished a long time ago, mark as failed
