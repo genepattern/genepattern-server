@@ -57,10 +57,12 @@ public class UserAccountManager {
      * <pre>
      *     # match all alphanumeric characters and the '@' symbol
      *     username.regex: "[A-Za-z0-9_@.\\- ]+"
+     *     
+     * update 11/30/2021  remove the space character    
      * </pre>
      */
     public static final String PROP_USERNAME_REGEX="username.regex";
-    public static final String DEFAULT_USERNAME_REGEX="[A-Za-z0-9_@.\\- ]+";
+    public static final String DEFAULT_USERNAME_REGEX="[A-Za-z0-9_@.\\-]+";
 
     /**
      * @return the singleton instance of the UserAccountManager.
