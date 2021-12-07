@@ -7,6 +7,7 @@ package org.genepattern.server.executor.slurm;
 import java.io.*;
 import java.util.*;
 
+import java.lang.StringBuffer;
 import com.google.common.base.Joiner;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
@@ -207,15 +208,22 @@ public class SlurmJobRunner implements JobRunner {
         String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
         
         String ntasksPerNode =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
-        
-        
+        Integer cpusPerTaskGPUOveride =  config.getGPIntegerProperty(jobContext, "slurm.cpus.per.task", null); // GPU uses 10
+        String gpuMemoryOveride =  config.getGPProperty(jobContext, "slurm.gpu.memory", null); // GPU uses 10
+        String nGPU = config.getGPProperty(jobContext, "slurm.ngpus", null);
+        String nNodes = config.getGPProperty(jobContext, "slurm.nnodes", null);
+         
         
         File workingDirectory = new File(workDirPath);
         File jobScript = new File(workingDirectory, ".launchJob.sb");
+        
         Memory memRequested = drmJobSubmission.getMemory();
         if (memRequested == null) memRequested =  Memory.fromString("2 Gb");
+        if (gpuMemoryOveride != null) memRequested = Memory.fromString(gpuMemoryOveride);
+        
         Integer nCPU = drmJobSubmission.getCpuCount();
         if (nCPU == null) nCPU = 1;
+        if (cpusPerTaskGPUOveride != null) nCPU=cpusPerTaskGPUOveride;
         
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
@@ -231,8 +239,12 @@ public class SlurmJobRunner implements JobRunner {
                             "#SBATCH --time=" + maxTime + "\n" +
                             "#SBATCH --account=" + account + "\n" +
                             "#\n" +
-                            "#SBATCH --partition " + partition + " \n" +
-                            " \n" +
+                            "#SBATCH --partition=" + partition + " \n";
+        
+        if (nGPU != null) scriptText += "#SBATCH --gpus="+nGPU + "\n";
+        if (nNodes != null) scriptText += "#SBATCH --nodes="+nNodes + "\n";
+        
+        scriptText +=       " \n" +
                             sbatchExtra + 
                             "\n\n" +
                             sbatchPrefix + " " + commandLine + "\n";
@@ -256,8 +268,18 @@ public class SlurmJobRunner implements JobRunner {
         }
         catch (Exception e) {
             log.error("Error writing launchJob.sh script for job: " + gpJobId);
-            throw new CommandExecutorException("Error writing launchJob.sh script for job: " + gpJobId);
+            throw new CommandExecutorException("Error writing .launchJob.sb script for job: " + gpJobId);
         }
+        
+        // DEBUGGING
+        File jobScript2 = new File("/home/genepattern/launchJob.sb."+drmJobSubmission.getGpJobNo());
+        try {
+            writeScript = new FileOutputStream(jobScript2);
+            writeScript.write(scriptText.getBytes());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        
         finally {
             try {
                 if (writeScript != null) writeScript.close();
@@ -292,22 +314,40 @@ public class SlurmJobRunner implements JobRunner {
         String gpJobId = drmJobSubmission.getGpJobNo().toString();
         String workDir = drmJobSubmission.getWorkingDir().getAbsolutePath();
         List<String> commandLineList = drmJobSubmission.getCommandLine();
-        String commandLine = Joiner.on(" ").join(commandLineList);
-
+        GpConfig config = drmJobSubmission.getGpConfig();
+        GpContext context = drmJobSubmission.getJobContext();
+        
+        String replacePath =  config.getGPProperty(context, "path.to.replace", null);
+        
+        StringBuffer cmdBuffer = new StringBuffer();
+        // String commandLine = Joiner.on(" ").join(commandLineList);
+        // try to put quotes around args with spaces
+        for (String s: commandLineList){
+            boolean needsQuotes = false;
+            
+            if (s.contains(" ")){
+                needsQuotes = true;
+            }
+            cmdBuffer.append(" ");
+            if (needsQuotes) cmdBuffer.append("\"");
+            cmdBuffer.append(s);
+            if (needsQuotes) cmdBuffer.append("\"");
+        }
+        String commandLine = cmdBuffer.toString();
+        
         log.error("SBatch working dir " + workDir);
         
         // Get configuration and context objects
-        GpConfig config = drmJobSubmission.getGpConfig();
-        GpContext context = drmJobSubmission.getJobContext();
+        config = drmJobSubmission.getGpConfig();
+        context = drmJobSubmission.getJobContext();
 
         
-        String replacePath =  config.getGPProperty(context, "path.to.replace", null);
         String replaceWithPath =  config.getGPProperty(context, "path.replaced.with", null);
           
         
-        if ((replacePath != null )&&(replaceWithPath != null ))
+        if ((replacePath != null )&&(replaceWithPath != null )){
             commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
-
+        }
         // Build the shell script for submitting the slurm job
         String scriptPath = buildSubmissionScript(drmJobSubmission, gpJobId, workDir, commandLine);
 
