@@ -497,14 +497,39 @@ function sendToMapToMenu() {
 }
 
 function sendToParamForMenu(paramList) {
+	
+	
     $(paramList).each(function (index, element) {
         var kind = $(element).attr("data-kind");
         var url = $(element).attr("data-url");
-        var params = run_task_info.sendTo[kind];
+        
+        // get all possible types for this file
+        // if we get a file called 'foo.fa.gz' we want to check all of (.fa.gz, fa.gz, .gz, gz)
+        var idx = url.lastIndexOf('/');
+        var fileName = url.substring(idx+1);    
+        var params = [];
+        var fileBits = (fileName).split(".");
+        var numBits = fileBits.length;
+        var prevType =  ""      
+        for (var j= 1; j < numBits; j++ ) {
+        	var fileType = fileBits[fileBits.length -j] + prevType;
+        	var rawTypes = run_task_info.sendTo[fileType];
+        	params = params.concat(rawTypes);
+        	fileType = "."+fileType;
+        	var dotTypes = run_task_info.sendTo[fileType];
+        	params = params.concat(dotTypes);
+        	console.log(params);
+        	prevType = fileType;
+        }
+        // done assembling all possible types, get rid of null and duplicates
+        var uniqueNonNullParams = [];
+        params = [... new Set(params)];
+       
         if (params) {
             for (var i = 0; i < params.length; i++) {
                 var param = params[i];
-
+                if (param == null) continue;
+                
                 $("<div></div>")
                     .attr("class", "send-to-param")
                     .attr("name", param)
@@ -3426,6 +3451,69 @@ function checkFileSizes(files) {
     }
 }
 
+function checkForValidFileExtension(fileName, paramName, run_task_info){
+    ////////////////////// JTL 082520 
+    
+    var fileBits = (fileName).split(".");
+    var numBits = fileBits.length;
+    
+    var possibleFileTypes = [];
+    allParamsForThisFile = new Array();
+    var prevType =  ""
+    	
+    // if we get a file called 'foo.fa.gz' we want to check all of (.fa.gz, fa.gz, .gz, gz)
+    for (var j= 1; j < numBits; j++ ) {
+    	var fileType = fileBits[fileBits.length -j] + prevType;
+    	var okParamsForThisFile = run_task_info.sendTo[fileType];
+    	possibleFileTypes.push(fileType);
+    	allParamsForThisFile.push(okParamsForThisFile);
+        fileType = "." + fileType; 
+        okParamsForThisFile = run_task_info.sendTo[fileType];
+    	possibleFileTypes.push(fileType);
+    	allParamsForThisFile.push(okParamsForThisFile);
+    	prevType = fileType;
+    }
+   
+    var aMatchIsMade = false;
+    // if file types are specified and they do not contain this parameterName
+    // then there is a mismatch
+    
+    if (allParamsForThisFile.length > 0) {
+    	for (var aType in possibleFileTypes){
+    		var list = run_task_info.sendTo[aType]
+    		if (list != null){
+    			aMatchIsMade =  aMatchIsMade | list.includes(paramName);
+    		}
+    		if (aMatchIsMade) break;
+    	}
+    } 
+    
+    var fileTypesForParam = []
+    if (!aMatchIsMade){
+        
+        // but now we have to check if there were types specified for this parameter, reversing the sendTo
+        for (var aFileType in run_task_info.sendTo) {
+            // check if the property/key is defined in the object itself, not in parent
+        	if (run_task_info.sendTo.hasOwnProperty(aFileType) ) {           
+            	if (run_task_info.sendTo[aFileType].includes(paramName)){
+            		fileTypesForParam.push(aFileType);
+            	}
+            } 
+        }
+        
+        for (var k=0; k < fileTypesForParam.length; k++) {
+        	var allowedType = fileTypesForParam[k];
+        	aMatchIsMade =  aMatchIsMade | fileName.endsWith(allowedType);
+        	if (aMatchIsMade) break;
+        }
+    }
+    var retval = new Object();
+    retval.isValid = aMatchIsMade;
+    retval.fileTypesForParam = fileTypesForParam;
+    return retval;
+}
+
+
 function updateParamFileTable(paramName, fileDiv, groupId) {
     if (groupId === undefined || groupId === null) {
         if (fileDiv === undefined || fileDiv === null) {
@@ -3515,39 +3603,18 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
             if (files[i].name === null || files[i].name === "") {
                 continue;
             }
-
+             
             var fileRow = $("<tr/>");
             var fileTData = $("<td class='pfileAction'/>");
 
-            ////////////////////// JTL 082520 
-            var fileBits = (files[i].name).split(".");
-            var fileType = (fileBits[fileBits.length -1]).toLowerCase();
-            var okParamsForThisFile = run_task_info.sendTo[fileType];
-            var indicateMismatch = false;
-            // if file types are specified and they do not contain this parameterName
-            // then there is a mismatch
-            if (okParamsForThisFile != null) {
-          		indicateMismatch = ! run_task_info.sendTo[fileType].includes(paramName);
-            } 
-            var fileTypesForParam = []
-            // but now we have to check if there were types specified for this parameter, reversing the sendTo
-            for (var aFileType in run_task_info.sendTo) {
-                // check if the property/key is defined in the object itself, not in parent
-                if (run_task_info.sendTo.hasOwnProperty(aFileType) ) {           
-                	if (run_task_info.sendTo[aFileType].includes(paramName)){
-                		fileTypesForParam.push(aFileType);
-                	}
-                } 
-            }
-            if (fileTypesForParam.length > 0){
-            	indicateMismatch =  ! (fileTypesForParam.includes(fileType));
-            }
+            
+            var aMatchIsMade = checkForValidFileExtension(files[i].name, paramName, run_task_info);
             
             var mismatchDisplay="";
             var tdTitle="";
-            if (indicateMismatch){
+            if (!aMatchIsMade.isValid){
             	mismatchDisplay="<img src='../images/exclamation.png' height=10px />&nbsp;";
-                tdTitle="title='The file extension is not one of the expected types "+fileTypesForParam.toString() +".'";
+                tdTitle="title='The file extension is not one of the expected types "+aMatchIsMade.fileTypesForParam.toString() +".'";
             }
             
             ///////////////////// END JTL 082520
