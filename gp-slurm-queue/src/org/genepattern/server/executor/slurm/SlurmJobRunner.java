@@ -207,9 +207,8 @@ public class SlurmJobRunner implements JobRunner {
         String account =  config.getGPProperty(jobContext, "slurm.account", "WHO_PAYS_FOR_THIS");
         String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
         
-        String ntasksPerNode =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
         Integer cpusPerTaskGPUOveride =  config.getGPIntegerProperty(jobContext, "slurm.cpus.per.task", null); // GPU uses 10
-        String gpuMemoryOveride =  config.getGPProperty(jobContext, "slurm.gpu.memory", null); // GPU uses 10
+        String gpuMemoryOveride =  config.getGPProperty(jobContext, "slurm.gpu.memory", null); // GPU uses 186 GB
         String nGPU = config.getGPProperty(jobContext, "slurm.ngpus", null);
         String nNodes = config.getGPProperty(jobContext, "slurm.nnodes", null);
          
@@ -219,11 +218,31 @@ public class SlurmJobRunner implements JobRunner {
         
         Memory memRequested = drmJobSubmission.getMemory();
         if (memRequested == null) memRequested =  Memory.fromString("2 Gb");
-        if (gpuMemoryOveride != null) memRequested = Memory.fromString(gpuMemoryOveride);
         
+        // the value in the config file is a default and also a floor for gpu memory  
+        if (gpuMemoryOveride != null){
+            Memory gpuMinMem = Memory.fromString(gpuMemoryOveride);
+            if (memRequested.getNumBytes() < gpuMinMem.getNumBytes()) memRequested = gpuMinMem;
+        }
+        
+        // the value in the config file is a default and also a floor for nCPU
         Integer nCPU = drmJobSubmission.getCpuCount();
         if (nCPU == null) nCPU = 1;
-        if (cpusPerTaskGPUOveride != null) nCPU=cpusPerTaskGPUOveride;
+        if (cpusPerTaskGPUOveride != null) {
+            
+            if (cpusPerTaskGPUOveride > nCPU) nCPU=cpusPerTaskGPUOveride;
+        }
+        
+        // the value in the config file is a default and also a floor for nGPU
+        String nGPU_job = drmJobSubmission.getProperty("job.gpuCount");
+        if (nGPU != null){
+            Integer n_gpu = new Integer(nGPU);
+            Integer n_gpu_job = new Integer(nGPU_job);
+            if (n_gpu_job > n_gpu) nGPU = nGPU_job;
+        }
+        String ntasksPerNodeDefault =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
+        String ntasksPerNode = drmJobSubmission.getProperty("job.numTasksPerNode");
+        if (ntasksPerNode == null) ntasksPerNode =  ntasksPerNodeDefault;
         
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
@@ -521,7 +540,6 @@ public class SlurmJobRunner implements JobRunner {
     public DrmJobStatus updateJobRunnerJobDetails(DrmJobRecord drmJobRecord, DrmJobStatus status){
         DrmJobStatus finalStatus = status;
         try {
-           
             int gpJobNo = drmJobRecord.getGpJobNo();
             DrmJobStatus oldStatus = statusMap.get(gpJobNo);
             
@@ -545,7 +563,9 @@ public class SlurmJobRunner implements JobRunner {
             if (oldStatus.getJobState().equals(DrmJobState.QUEUED) 
                     && status.getJobState().equals(DrmJobState.RUNNING)){
                 finalStatus = initStatusStartedOnSlurm(drmJobRecord, status.getJobState());
+                statusMap.put(gpJobNo, status);
             }
+            
         } catch (Exception e){
             
             log.error(e);

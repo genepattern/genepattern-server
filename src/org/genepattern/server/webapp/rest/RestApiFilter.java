@@ -80,7 +80,7 @@ public class RestApiFilter implements Filter {
 
         // Don't return this error for CORS pre-flight requests
         if (gpUserId == null && !method.equals("options")) {
-            log.error("Expecting an AuthenticationException to be thrown");
+            log.debug("Expecting an AuthenticationException to be thrown");
             AuthenticationUtil.requestBasicAuth(req, resp);
             return;
         }
