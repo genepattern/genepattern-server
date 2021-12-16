@@ -552,6 +552,13 @@ public class SlurmJobRunner implements JobRunner {
                 return finalStatus;
             }
             
+            if (oldStatus.getJobState().equals(DrmJobState.GP_PENDING) 
+                                        && status.getJobState().equals(DrmJobState.GP_PROCESSING)){
+                    finalStatus = initStatusStartedOnSlurm(drmJobRecord, status.getJobState());
+                    statusMap.put(gpJobNo, status);
+            }
+
+            
             // job is done.  Make sure to remove it 
             if (status.getJobState().equals(DrmJobState.TERMINATED)) {
                 statusMap.remove(gpJobNo);
