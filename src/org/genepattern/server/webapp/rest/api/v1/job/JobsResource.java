@@ -354,6 +354,10 @@ public class JobsResource {
              */
             final @QueryParam("comment") String comment,
             /**
+             * optionally, filter all jobs by module name
+             */
+            final @QueryParam("module") String module,
+             /**
              * optionally, set the page number for paged job results, The first page is page 1.
              */
             final @DefaultValue("1") @QueryParam("page") Integer page,
@@ -407,6 +411,7 @@ public class JobsResource {
                     .batchId(batchId)
                     .tag(tag)
                     .comment(comment)
+                    .module(module)
                     .pageNum(page)
                     .pageSize(pageSize)
                     .orderBy(orderBy)
@@ -426,21 +431,6 @@ public class JobsResource {
                 //decorate with 'self'
                 final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
                 jobObject.put("self", self);
-
-                //check whether to include comments
-                /*if(includeComments)
-                {
-                    JobCommentsResource jcRes = new JobCommentsResource();
-                    jobObject.put("comments", jcRes.loadComments(userContext, jobInfo.getJobNumber()));
-                }
-
-                //check whether to include tags
-                if(includeTags)
-                {
-                    JobTagsResource jcRes = new JobTagsResource();
-                    jobObject.put("tags", jcRes.loadTags(userContext, jobInfo.getJobNumber()));
-                }*/
-
                 jobs.put(jobObject);
             }
 

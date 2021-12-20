@@ -3822,6 +3822,25 @@ function populateJobResultsTable(settings, callback) {
                 }
                 filter += "&tag=" + searchTerm;
             }
+            
+            if($("#jobSearchModule").is(":checked"))
+            {
+                //remove any existing userId query parameter
+                var startIndex = filter.indexOf("module");
+                if(startIndex != -1)
+                {
+                    var endIndex = filter.indexOf("&");
+                    if(endIndex != 1)
+                    {
+                        filter = filter.substring(startIndex, endIndex);
+                    }
+                    else
+                    {
+                        filter = filter.substring(startIndex);
+                    }
+                }
+                filter += "&module=" + searchTerm;
+            }
         }
 
         var sort = _columnToName(settings.order[0].column);
@@ -3986,6 +4005,10 @@ function buildJobResultsPage() {
         ))
         .append($("<label></label>")
             .append($("<input type='radio' name='jobSearch' checked='checked'/>")
+                .attr("id", "jobSearchModule"))
+            .append("Module Name"))
+        .append($("<label></label>")
+            .append($("<input type='radio' name='jobSearch' />")
                 .attr("id", "jobSearchTag"))
             .append("Tags"))
          .append($("<label></label>")
@@ -4239,6 +4262,13 @@ function buildJobResultsPage() {
                     {
                         $(this).highlight(searchTerm);
                     }
+                    
+                    var moduleSearch = $("#jobSearchModule").is(":checked");
+                    if(moduleSearch && myIndex != 0 && myIndex % 3 == 0) //column 3
+                    {
+                        $(this).highlight(searchTerm);
+                    }
+                    
                 })
             }
         },

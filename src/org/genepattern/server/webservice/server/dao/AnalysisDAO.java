@@ -5,6 +5,7 @@
 package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
@@ -53,11 +54,19 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
+import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.engine.LoadQueryInfluencers;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.impl.CriteriaImpl;
+import org.hibernate.impl.SessionImpl;
+import org.hibernate.loader.OuterJoinLoader;
+import org.hibernate.loader.criteria.CriteriaLoader;
+import org.hibernate.persister.entity.OuterJoinLoadable;
 
 /**
  * AnalysisDAO.java
@@ -429,6 +438,184 @@ public class AnalysisDAO extends BaseDAO {
         return jobInfos;
     }
 
+    
+    /**
+     * Get the list of jobs with a specific module name
+     *
+     * @return
+     */
+    public int getJobsWithModuleCount(final String module, final String userId, final String batchId, final Set<String> groupIds)
+    {
+       
+        mgr.beginTransaction();
+
+        int jobCount = 0;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select distinct a from " + AnalysisJob.class.getName() + "  where"
+                    + " a.taskName like lower('%" + module + "%') "
+                    + " and ((a.parent = null) OR (a.parent = -1)) "
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+          
+            Query query = mgr.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            
+            query.setString("batchId", batchId);
+
+            
+            jobCount = (int)query.uniqueResult();
+        }
+        else {
+        
+            System.out.println("MOD SEARCH m="+module + "  u="+userId);
+            
+            Criteria criteria = mgr.getSession().createCriteria(AnalysisJob.class)
+                    .add(Restrictions.like("taskName", module, MatchMode.ANYWHERE).ignoreCase());
+    
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("permissions", "permissions")
+                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("userId", userId));
+            }
+    
+            Disjunction objDisjunction = Restrictions.disjunction();
+            /* Add multiple condition separated by OR clause within brackets. */
+            objDisjunction.add(Restrictions.eq("parent", null));
+            objDisjunction.add(Restrictions.lt("parent", 0));
+            criteria.add(objDisjunction);
+            
+            //return count of distinct analysis jobs
+            ProjectionList projectionList=Projections.projectionList();
+            projectionList.add(Projections.countDistinct("jobNo"));
+            criteria.setProjection(projectionList);
+    
+            System.out.println(criteria.toString());
+            
+            showCriteriaSql(criteria);
+            
+            jobCount = getCount(criteria.uniqueResult());
+            System.out.println("   found "+ jobCount);
+        }
+        return jobCount;
+        
+    }
+
+    protected void showCriteriaSql(Criteria criteria){
+        try {
+            CriteriaImpl c = (CriteriaImpl) criteria;
+            SessionImpl s = (SessionImpl) c.getSession();
+            SessionFactoryImplementor factory = (SessionFactoryImplementor) s.getSessionFactory();
+            String[] implementors = factory.getImplementors(c.getEntityOrClassName());
+            LoadQueryInfluencers lqis = new LoadQueryInfluencers();
+            CriteriaLoader loader = new CriteriaLoader((OuterJoinLoadable) factory.getEntityPersister(implementors[0]), factory, c, implementors[0], lqis);
+            Field f = OuterJoinLoader.class.getDeclaredField("sql");
+            f.setAccessible(true);
+            String sql = (String) f.get(loader);
+            System.out.println(sql);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    
+    /**
+     * Get the list of jobs with a specific task name (module name)
+     *
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsWithModule(final String module, final String userId, final String batchId, final Set<String> groupIds, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder,
+                                             final boolean ascending)
+    {
+
+        int firstResult = (pageNum - 1) * pageSize;
+        int maxResults = pageSize;
+
+        mgr.beginTransaction();
+
+        List<JobInfo> jobInfos = null;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select distinct a from " + AnalysisJob.class.getName() + "  where"
+                    + " a.taskName like lower('%" + module + "%') "
+                    + " and ((a.parent = null) OR (a.parent = -1))"
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+            appendSortOrder(hql, jobSortOrder, ascending);
+
+            Query query = mgr.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            query.setFirstResult(firstResult);
+            query.setMaxResults(maxResults);
+            query.setString("batchId", batchId);
+
+            @SuppressWarnings("unchecked")
+            List<AnalysisJob> analysisJobs = query.list();
+
+            jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+            for (AnalysisJob analysisJob : analysisJobs)
+            {
+                JobInfo jobInfo = new JobInfo(analysisJob);
+                jobInfos.add(jobInfo);
+            }
+        }
+        else
+        {
+            Criteria criteria = mgr.getSession().createCriteria(AnalysisJob.class, "aj")
+                    .add(Restrictions.like("taskName", module, MatchMode.ANYWHERE).ignoreCase())
+                    .setFirstResult(firstResult).setMaxResults(maxResults);
+
+            SortOrder sortOrder = generateSortOrder(jobSortOrder, ascending, null);
+            if(sortOrder != null)
+            {
+                criteria.addOrder(sortOrder);
+            }
+
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("permissions", "permissions")
+                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("userId", userId));
+            }
+
+            Disjunction objDisjunction = Restrictions.disjunction();
+            /* Add multiple condition separated by OR clause within brackets. */
+            objDisjunction.add(Restrictions.eq("parent", null));
+            objDisjunction.add(Restrictions.lt("parent", 0));
+            criteria.add(objDisjunction);
+            
+            
+            @SuppressWarnings("unchecked")
+            List<AnalysisJob> analysisJobs = criteria.list();
+
+            jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+            for(AnalysisJob analysisJob : analysisJobs) {
+                JobInfo jobInfo = new JobInfo(analysisJob);
+                jobInfos.add(jobInfo);
+            }
+        }
+        return jobInfos;
+    }
+    
+    
+    
     /**
      * Get the list of jobs with a specific tag
      *
@@ -480,6 +667,10 @@ public class AnalysisDAO extends BaseDAO {
         return jobCount;
     }
 
+    
+   
+    
+    
 
     /**
      * Get the list of jobs which are in the given group, paged and sorted.

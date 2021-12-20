@@ -55,6 +55,7 @@ public class SearchQuery {
 
     final String tag;
     final String comment;
+    final String module;
 
     final int page;
     final int pageSize;
@@ -83,6 +84,7 @@ public class SearchQuery {
         this.orderFilesBy=in.orderFilesBy;
         this.tag=in.tag;
         this.comment=in.comment;
+        this.module = in.module;
     }
     
     public String getCurrentUser() {
@@ -114,7 +116,11 @@ public class SearchQuery {
     public String getComment() {
         return comment;
     }
+    public String getModule() {
+        return module;
+    }
 
+    
     public boolean isBatchFilter() {
         return !Strings.isNullOrEmpty(batchId);
     }
@@ -123,6 +129,9 @@ public class SearchQuery {
     }
     public boolean isCommentFilter() {
         return !Strings.isNullOrEmpty(comment);
+    }
+    public boolean isModuleFilter() {
+        return !Strings.isNullOrEmpty(module);
     }
     public boolean isGroupFilter() {
         return !Strings.isNullOrEmpty(groupId);
@@ -211,7 +220,8 @@ public class SearchQuery {
         private String orderFilesBy=null;
         private String tag = null;
         private String comment = null;
-
+        private String module = null;
+        
         private JobSortOrder jobSortOrder=JobSortOrder.JOB_NUMBER;
         private boolean ascending=false;
 
@@ -265,6 +275,10 @@ public class SearchQuery {
 
         public Builder comment(final String comment) {
             this.comment=comment;
+            return this;
+        }
+        public Builder module(final String module) {
+            this.module=module;
             return this;
         }
 

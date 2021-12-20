@@ -113,7 +113,7 @@ public abstract class JobSearch {
 
             return jobCount;
         }
-        else if(q.isCommentFilter() || q.isTagFilter())
+        else if(q.isCommentFilter() || q.isTagFilter() || q.isModuleFilter())
         {
             int jobCount = 0;
 
@@ -154,7 +154,17 @@ public abstract class JobSearch {
                         q.getBatchId(),
                         groupIds);
             }
-
+            
+            if (q.isModuleFilter())
+            {
+                jobCount = new AnalysisDAO().getJobsWithModuleCount(
+                        q.getModule().toLowerCase(),
+                        userId,
+                        q.getBatchId(),
+                        groupIds);
+            }
+            
+            
             return jobCount;
         }
         else {
@@ -210,7 +220,7 @@ public abstract class JobSearch {
                 jobInfos = searchJobsOwnedByUser(q, ds, q.getUserId());
 
             }
-            else if(q.isCommentFilter() || q.isTagFilter())
+            else if(q.isCommentFilter() || q.isTagFilter() || q.isModuleFilter())
             {
                 if (q.isTagFilter())
                 {
@@ -223,6 +233,13 @@ public abstract class JobSearch {
                     //first get the intersection of jobs that matched the filter above
                     jobInfos = searchJobsByComment(q, ds);
                 }
+                if (q.isModuleFilter())
+                {
+                    //first get the intersection of jobs that matched the filter above
+                    jobInfos = searchJobsByModule(q, ds);
+                }
+                
+                
             }
             else
             {
@@ -382,6 +399,46 @@ public abstract class JobSearch {
         return jobInfos;
     }
 
+    private static List<JobInfo> searchJobsByModule(SearchQuery q, AnalysisDAO ds) {
+
+        List<JobInfo> jobInfos;
+        Set<String> groupIds = null;
+
+        String userId = null;
+        if(q.getGroupId() != null)
+        {
+            groupIds.add(q.getGroupId());
+        }
+        else if(q.isShowAll())
+        {
+            if(!q.isCurrentUserAdmin())
+            {
+                IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                groupIds = new HashSet<String>(groupMembership.getGroups(q.getCurrentUser()));
+            }
+        }
+        else
+        {
+            userId = q.getUserId();
+        }
+
+        jobInfos = ds.getPagedJobsWithModule(
+                q.getModule().toLowerCase(),
+                userId,
+                q.getBatchId(),
+                groupIds,
+                q.getPageNum(),
+                q.getPageSize(),
+                q.getJobSortOrder(),
+                q.isAscending());
+
+        return jobInfos;
+    }
+    
+    
+    
+    
+    
     /**
      * Makes a DB and/or system call to get the list of groups for the current user.
      * Based on JSF implementation in the JobResultsFilterBean.
