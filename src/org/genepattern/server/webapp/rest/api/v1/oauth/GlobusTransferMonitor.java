@@ -104,8 +104,8 @@ public class GlobusTransferMonitor {
         
     }
     
-    public void addWaitingOutbound(String submissionId, String user, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, String destEndpointId) {
-        TransferOutWaitThread twt = new TransferOutWaitThread(submissionId, user, cl, file, userContext, destDir, fileSize, destEndpointId);
+    public void addWaitingOutbound(String submissionId, String user, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, String destEndpointId, String label) {
+        TransferOutWaitThread twt = new TransferOutWaitThread(submissionId, user, cl, file, userContext, destDir, fileSize, destEndpointId, label);
         threads.add(twt);
         twt.start();
         
@@ -216,6 +216,7 @@ class TransferWaitThread extends Thread {
     String destDir = null;
     long fileSize = 0L;
     String direction = null;
+    String label = null;
     
     GpContext userContext;
     protected static Logger log = Logger.getLogger(TransferInWaitThread.class);
@@ -638,7 +639,7 @@ class TransferInWaitThread extends TransferWaitThread {
 class TransferOutWaitThread extends TransferWaitThread{
     String destinationEndpointId = null;
     String fileUrl = null;
-    public TransferOutWaitThread(String submissionId, String user,  GlobusClient client, String file, GpContext userContext, String dest, long size, String destEndpointId) {
+    public TransferOutWaitThread(String submissionId, String user,  GlobusClient client, String file, GpContext userContext, String dest, long size, String destEndpointId, String label) {
         this.fileUrl = file;
         try {
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -659,6 +660,7 @@ class TransferOutWaitThread extends TransferWaitThread{
         this.fileSize = size;
         this.destinationEndpointId = destEndpointId;
         this.direction = "outbound";
+        this.label = label;
     }
     
     public void run() {
@@ -699,12 +701,16 @@ class TransferOutWaitThread extends TransferWaitThread{
             transferObject.addProperty("source_endpoint", myEndpointId);
             transferObject.addProperty("destination_endpoint", destinationEndpointId);
             transferObject.addProperty("verify_checksum", true);
+            transferObject.addProperty("label", label);
+            
             
             JsonObject transferItem = new JsonObject();
             transferItem.addProperty("DATA_TYPE", "transfer_item");
             transferItem.addProperty("recursive", false);
             transferItem.addProperty("destination_path", destDir + fileName);
             transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ user +"/globus/"+fileName);
+            
+            
            
             // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
             
@@ -729,7 +735,7 @@ class TransferOutWaitThread extends TransferWaitThread{
                 byte[] input = transferObject.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);           
             }
-            
+            System.out.println("TRANSFER OUT OBJECT \n" + transferObject.toString());
             String taskId = null;
             JsonElement transferResponse = null;
             
@@ -738,8 +744,13 @@ class TransferOutWaitThread extends TransferWaitThread{
             
        
         } catch (Exception e){
-
+            this.error = e.getMessage();
+            this.status = "ERROR";
            e.printStackTrace();
+           
+           GlobusTransferMonitor.getInstance().threadFinished(this);
+           cleanUpACL(); // get rid of the ACL if no transfers are in progress
+           return;
         } 
         
         

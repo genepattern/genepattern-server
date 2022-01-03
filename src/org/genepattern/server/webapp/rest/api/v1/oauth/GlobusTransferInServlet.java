@@ -80,11 +80,12 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         String path = null;
         String gp_user_id = null;
         String gp_session_id = null;
-        
+        String label = "Transfer Into GenePattern";
         try {
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
             destDir = request.getParameter("destDir");
+            label = request.getParameter("label");
              
             Enumeration<String> e = (Enumeration<String>)request.getParameterNames();
             
@@ -116,7 +117,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         
         try {
             for (int i=0; i<files.size();i++){
-                submissionId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir);
+                submissionId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir, label);
             }
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block
@@ -155,13 +156,15 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         
         String gp_user_id = null;
         String gp_session_id = null;
-        
+        String label = "From GenePattern";
         try {
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
             fileToTransfer = request.getParameter("gp_file");
             gp_user_id = request.getParameter("gp_username");
             gp_session_id = request.getParameter("gp_session_id");
+            label = request.getParameter("label");
+            
         } catch (Exception ex){
             ex.printStackTrace();
         }
@@ -182,7 +185,7 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         
         try {
            
-           submissionId = globusClient.transferFileToGlobus(request, endpointId, path, fileToTransfer);
+           submissionId = globusClient.transferFileToGlobus(request, endpointId, path, fileToTransfer, label);
   
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block

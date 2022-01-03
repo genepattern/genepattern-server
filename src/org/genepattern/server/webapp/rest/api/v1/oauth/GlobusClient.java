@@ -337,7 +337,7 @@ public class GlobusClient {
      * @throws ProtocolException
      * @throws InterruptedException
      */
-    public String transferFileToGlobus(HttpServletRequest request, String destEndpointId, String path, String fileToTransfer) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+    public String transferFileToGlobus(HttpServletRequest request, String destEndpointId, String path, String fileToTransfer, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         refreshToken(request, OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
@@ -357,7 +357,7 @@ public class GlobusClient {
             return null;
         }
         
-        GlobusTransferMonitor.getInstance().addWaitingOutbound( submissionId,  userId, this,  fileToTransfer, userContext, path, fileSize,  destEndpointId);
+        GlobusTransferMonitor.getInstance().addWaitingOutbound( submissionId,  userId, this,  fileToTransfer, userContext, path, fileSize,  destEndpointId, label);
             
 
        
@@ -366,7 +366,7 @@ public class GlobusClient {
     
     
 
-    public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+    public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         String submissionId = null;
@@ -403,17 +403,22 @@ public class GlobusClient {
             // so to transfer in we need to know our endpoint ID
             String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
             submissionId = getSubmissionId(transferToken);
-    
+            if (label == null) label = "Transfer Into GenePattern";
+            
             JsonObject transferObject = new JsonObject();
             transferObject.addProperty("DATA_TYPE", "transfer");
             transferObject.addProperty("submission_id", submissionId);
             transferObject.addProperty("source_endpoint", sourceEndpointId);
             transferObject.addProperty("destination_endpoint", myEndpointID);
             transferObject.addProperty("verify_checksum", true);
+            transferObject.addProperty("label", label); // XXX Get this from the earlier return
             
             JsonObject transferItem = new JsonObject();
             transferItem.addProperty("DATA_TYPE", "transfer_item");
             transferItem.addProperty("recursive", false);
+            
+        
+            
             transferItem.addProperty("source_path", path + file);
             transferItem.addProperty("destination_path", "/~/GenePatternLocal/"+ userId +"/globus/"+file);
            
