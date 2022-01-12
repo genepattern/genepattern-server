@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
@@ -90,7 +92,7 @@ public class GlobusTransferMonitor {
         failedTransferStart.addProperty("submissionid", submissionId);
         failedTransferStart.addProperty("user", user);
         failedTransferStart.addProperty("error", error);
-        failedTransferStart.addProperty("status", "ERROR");
+        failedTransferStart.addProperty("status", "FAILED");
         failedTransferStart.addProperty("file", file);
         failedTransferStart.addProperty("destDir", destDir);
         failedTransferStart.addProperty("size", -1);
@@ -100,6 +102,12 @@ public class GlobusTransferMonitor {
         JsonObject statusObj = new JsonObject();
         statusObj.addProperty("is_ok", false);
         statusObj.addProperty("nice_status_short_description", error);
+        statusObj.addProperty("bytes_transferred", 0);
+        
+        failedTransferStart.add("statusObject", statusObj);
+        
+        
+        
         finishedTransfers.add(failedTransferStart);
         
     }
@@ -587,7 +595,18 @@ class TransferInWaitThread extends TransferWaitThread {
             }
         }
         
+        try {
+            // handle special characters
+            String f2 = URIUtil.encodePath(file);
+            return "/gp/users/"+user+ dirPath + f2;
+        }
+        catch (URIException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         return "/gp/users/"+user+ dirPath + file;
+      //  return "/gp/users/"+user+ dirPath +  URLEncoder.encode(file);
         
     }
     
@@ -595,7 +614,8 @@ class TransferInWaitThread extends TransferWaitThread {
         String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
         ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
         
-       
+      
+        
         if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
             // need to look at desired destDir

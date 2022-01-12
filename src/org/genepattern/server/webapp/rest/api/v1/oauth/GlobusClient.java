@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -39,6 +40,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.rest.api.v1.Util;
@@ -419,8 +421,8 @@ public class GlobusClient {
             
         
             
-            transferItem.addProperty("source_path", path + file);
-            transferItem.addProperty("destination_path", "/~/GenePatternLocal/"+ userId +"/globus/"+file);
+            transferItem.addProperty("source_path", path + UrlUtil.encodeURIcomponent(file));
+            transferItem.addProperty("destination_path", "/~/GenePatternLocal/"+ userId +"/globus/"+UrlUtil.encodeURIcomponent(file));
            
             JsonArray transferItems = new JsonArray();
             transferItems.add(transferItem);
@@ -470,7 +472,11 @@ public class GlobusClient {
         // Get the token for making the transfer call
         String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
            
-        URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+file);
+        String encodedFileName = URLEncoder.encode(file);
+        
+        //URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+UrlUtil.encodeURIcomponent(file));
+        URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+encodedFileName);
+        
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
         connection.setRequestMethod("GET");
         
