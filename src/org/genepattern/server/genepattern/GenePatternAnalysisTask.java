@@ -166,6 +166,7 @@ import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.Expander;
+import org.genepattern.server.util.FTPDownloader;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.MailSender;
 import org.genepattern.server.util.ProcReadStream;
@@ -189,6 +190,8 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 
 import com.google.common.base.Strings;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive metadata descriptions and obviating
@@ -1162,8 +1165,35 @@ public class GenePatternAnalysisTask {
                                         is = conn.getInputStream();
                                     } 
                                     catch (IOException e) {
-                                        vProblems.add("Unable to connect to " + url + ". ");
-                                        downloadUrl = false;
+                                        // FTP downloads fail a lot.  Try again a different way
+                                        // JTL 1/11/2022  FTPClient.Stream retrieveFileStream(String remote)
+                                        if (url.getProtocol().equalsIgnoreCase("ftp")){
+                                            FTPDownloader ftpDownloader;
+                                            try {
+                                                File tmpFile = File.createTempFile("ftp", "tmp");
+                                                System.out.println(tmpFile.getAbsolutePath());
+                                                tmpFile.deleteOnExit();
+                                                ftpDownloader = new FTPDownloader(url.getHost(), "anonymous", "genepattern@ucsd.edu");
+                                                ftpDownloader.downloadFile(url.getPath(), tmpFile.getAbsolutePath());
+                                                System.out.println("FTP DOWNLOAD MADE IT   " + outDir);
+                                                
+                                                ftpDownloader = new FTPDownloader(url.getHost(), "anonymous", "genepattern@ucsd.edu");
+                                                // replace the inputStream
+                                                is = ftpDownloader.downloadFileStream(url.getPath());
+                                                
+                                            }
+                                            catch (Exception e1) {
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                                downloadUrl = false;
+                                            }
+                                                
+                                               
+                                        } else {
+                                            e.printStackTrace();
+                                            vProblems.add("Unable to connect to " + url + ". ");
+                                            downloadUrl = false;
+                                        }
                                     }
                                 }
                             }
@@ -2414,6 +2444,7 @@ public class GenePatternAnalysisTask {
      */
     public static String getDownloadFileName(URLConnection conn, URL u) {
 	try {
+	   
 	    String contentDis = conn.getHeaderField("Content-Disposition");
 	    if (contentDis != null) {
 		String[] tokens = contentDis.split(";");
@@ -2427,6 +2458,7 @@ public class GenePatternAnalysisTask {
 		}
 	    }
 	} catch (Throwable t) {
+	    t.printStackTrace();
 	}
 	String path = u.getPath();
 	try {

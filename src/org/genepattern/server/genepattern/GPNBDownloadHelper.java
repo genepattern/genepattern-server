@@ -3,6 +3,7 @@ package org.genepattern.server.genepattern;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.util.FTPDownloader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,19 @@ public class GPNBDownloadHelper {
     }
 
     static InputStream constructInputStream(URI uri) throws IOException {
+        if (uri.getScheme().equalsIgnoreCase("ftp")) return constructFTPInputStream(uri);
         return uri.toURL().openConnection().getInputStream();
     }
+    
+    static InputStream constructFTPInputStream(URI uri) throws IOException {
+        try {
+            FTPDownloader ftpDownloader = new FTPDownloader(uri.getHost(), "anonymous", "genepattern@ucsd.edu");
+            // replace the inputStream
+            return ftpDownloader.downloadFileStream(uri.getPath());
+        } catch (Exception e){
+            throw new IOException(e);
+        }
+    }
+    
+    
 }
