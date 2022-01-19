@@ -70,6 +70,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
     response.getWriter().append("Served at: ").append(request.getContextPath());
     GlobusClient globusClient = new GlobusClient();
     ArrayList<String> files = new ArrayList<String>();
+    ArrayList<String> folders = new ArrayList<String>();
     String destDir = null; // comes in as directory URL or absent
     String submissionId = null;
     try {
@@ -82,6 +83,13 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         String gp_session_id = null;
         String label = "Transfer Into GenePattern";
         try {
+            System.out.println("   -   -   -   -   -   -   -   -   GLOBUS TRANSFER IN   -   -   -   -   -   ");
+            Enumeration enumParamNames = request.getParameterNames();
+            while (enumParamNames.hasMoreElements()){
+                String name = (String)enumParamNames.nextElement();
+                String val = request.getParameter(name);
+                System.out.println("   -   "+ name + "  =  " + val);
+            }
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
             destDir = request.getParameter("destDir");
@@ -96,6 +104,14 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
                     files.add(val);
                 }
             }
+            e = (Enumeration<String>)request.getParameterNames();
+            while (e.hasMoreElements()){
+                String key = (String)e.nextElement();
+                String val = request.getParameter(key);
+                if (key.startsWith("folder[")){
+                    folders.add(val);
+                }
+            }
             gp_user_id = request.getParameter("gp_username");
             gp_session_id = request.getParameter("gp_session_id");
         } catch (Exception ex){
@@ -105,7 +121,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         reestablishGenepatternSession(request, gp_user_id, gp_session_id);
         
         
-        if ((endpointId == null)||(path==null)||(files.size()==0)){
+        if ((endpointId == null)||(path==null)||((files.size()+folders.size())==0)){
             // user probably hit the cancel button
             // so nothing to do here but go to the 
             // transfer complete page which itself does
@@ -119,6 +135,11 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
             for (int i=0; i<files.size();i++){
                 submissionId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir, label);
             }
+            for (int i=0; i<folders.size();i++){
+                submissionId = globusClient.startGlobusFolderTransfer(request, endpointId, path, folders.get(i), destDir, label);
+            }
+            
+            
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

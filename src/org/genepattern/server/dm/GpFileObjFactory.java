@@ -138,6 +138,9 @@ public class GpFileObjFactory {
             throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator character ('/').");
         }
 
+       
+        File userRootDir = ServerConfigurationFactory.instance().getUserDir(userContext);
+        
         //relativize the path by manually removing './'
         String relativePath = uploadFile.getPath();
         if (relativePath.startsWith("./") || relativePath.startsWith("."+File.separator)) {
@@ -145,7 +148,7 @@ public class GpFileObjFactory {
         }
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
-        File serverFile = new File(userUploadDir, relativePath);
+        File serverFile = new File(userRootDir, relativePath);
         
         //2) construct a URI from the file, to get the relative uri path
         //   e.g. uriPath=/users/<user_id>[/relativeParentDir]/filename

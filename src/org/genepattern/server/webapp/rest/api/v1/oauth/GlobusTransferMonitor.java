@@ -120,8 +120,8 @@ public class GlobusTransferMonitor {
     }
     
     
-    public void addWaitingInbound(String submissionId, String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize) {
-        TransferInWaitThread twt = new TransferInWaitThread(submissionId, user, taskID, cl, file, userContext, destDir, fileSize);
+    public void addWaitingInbound(String submissionId, String user, String taskID, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, boolean recursive) {
+        TransferInWaitThread twt = new TransferInWaitThread(submissionId, user, taskID, cl, file, userContext, destDir, fileSize, recursive);
         threads.add(twt);
         twt.start();
         
@@ -225,6 +225,7 @@ class TransferWaitThread extends Thread {
     long fileSize = 0L;
     String direction = null;
     String label = null;
+    boolean recursive = false;
     
     GpContext userContext;
     protected static Logger log = Logger.getLogger(TransferInWaitThread.class);
@@ -401,7 +402,7 @@ class TransferWaitThread extends Thread {
         }
     }
     
-    public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, File toFile) throws IOException {
+    public static boolean s3MoveFile(GpContext userContext, String fromFileS3Url, File toFile, boolean recursive) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String bucket = getBucketName(gpConfig, userContext);
@@ -410,9 +411,12 @@ class TransferWaitThread extends Thread {
         String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
          
         String execArgs[];
-        
-        execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
-        
+        if (recursive){
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", "--recursive", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
+                
+        } else {
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
+        }
         
         boolean success = false;
         Process proc = Runtime.getRuntime().exec(execArgs);
@@ -453,7 +457,7 @@ class TransferWaitThread extends Thread {
 
 class TransferInWaitThread extends TransferWaitThread {
   
-    public TransferInWaitThread(String submissionId, String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest, long size) {
+    public TransferInWaitThread(String submissionId, String user, String taskId, GlobusClient client, String file, GpContext userContext, String dest, long size, boolean recursive) {
         this.submissionId = submissionId;
         this.user = user;
         this.taskId = taskId;
@@ -463,6 +467,7 @@ class TransferInWaitThread extends TransferWaitThread {
         this.destDir = dest;
         this.fileSize = size;
         this.direction = "inbound";
+        this.recursive = recursive;
     }
 
    
@@ -628,22 +633,55 @@ class TransferInWaitThread extends TransferWaitThread {
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath( file), (LSID)null);
       
             // move the file within S3 to the desired location   
-            s3CopyFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile());
+            s3MoveFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile(), this.recursive);
             
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
             BigInteger size = statusObject.get("bytes_transferred").getAsBigInteger();
             
             uploadFilePath.setFileLength(new Long(size.longValue()));
             uploadFilePath.setLastModified(new Date());
-            hib.beginTransaction();
-            fileUtil.updateUploadsDb(hib, uploadFilePath);
-            hib.commitTransaction();
+            if (recursive) {
+                // make the parent directory because it needs to be therre to mimic the S3 file structure
+                uploadFilePath.getServerFile().mkdirs();
+                hib.beginTransaction();
+                fileUtil.updateUploadsDb(hib, uploadFilePath, false);
+                hib.commitTransaction();
+                
+                // now we need to get the directory listing from S3 and make the local sub directories and
+                // add the files one by one
+             
+                addAllChildren(fileUtil, hib, uploadFilePath);
+                
+                
+            } else {
+                hib.beginTransaction();
+                fileUtil.updateUploadsDb(hib, uploadFilePath, false);
+                hib.commitTransaction();
+            }
+            
+            
             
         } else {
             throw new Exception("File from Globus is missing.  Not at " + myS3EndpointRoot + user +"/globus/"+file);
         }
     }
     
+    protected void addAllChildren(JobInputFileUtil fileUtil, HibernateSessionManager hib, GpFilePath uploadFilePath) throws IOException, GpFilePathException, DbException{
+        final GpContext serverContext = GpContext.getServerContext();
+        final ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
+      
+        ArrayList<GpFilePath> children = externalFileManager.listFiles(this.userContext, uploadFilePath.getServerFile());
+        
+        for (GpFilePath child: children){
+            if (child.getServerFile().isDirectory()){
+                addAllChildren(fileUtil, hib, child);
+            } else {
+                hib.beginTransaction();
+                fileUtil.updateUploadsDb(hib, child, false);
+                hib.commitTransaction();
+            }
+        }
+    }
     
 
    

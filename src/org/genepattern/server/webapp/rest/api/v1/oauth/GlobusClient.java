@@ -367,8 +367,17 @@ public class GlobusClient {
     }
     
     
-
+    public String startGlobusFolderTransfer(HttpServletRequest request, String sourceEndpointId, String path, String folder, String destDir, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+        
+        return startGlobusTransfer( request,  sourceEndpointId,  path,  folder,  destDir,  label,  true);
+    }
+     
     public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
+        
+        return startGlobusTransfer( request,  sourceEndpointId,  path,  file,  destDir,  label,  false);
+    }
+    
+    public String startGlobusTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir, String label, boolean recursive) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         String submissionId = null;
@@ -417,19 +426,35 @@ public class GlobusClient {
             
             JsonObject transferItem = new JsonObject();
             transferItem.addProperty("DATA_TYPE", "transfer_item");
-            transferItem.addProperty("recursive", false);
-            
-        
-            
+            transferItem.addProperty("recursive", recursive);
             transferItem.addProperty("source_path", path + UrlUtil.encodeURIcomponent(file));
             transferItem.addProperty("destination_path", "/~/GenePatternLocal/"+ userId +"/globus/"+UrlUtil.encodeURIcomponent(file));
            
+            if (recursive){
+                // for directories we need to add filter rules, we will exclude any hidden files
+                // {
+                //    "DATA_TYPE": "filter_rule",
+               //     "method": "exclude",
+               //     "name": ".*"
+               //   }
+                JsonArray filterRules = new JsonArray();
+                
+                JsonObject filterRule = new JsonObject();
+                filterRule.addProperty("DATA_TYPE", "filter_rule");
+                filterRule.addProperty("method", "exclude");
+                filterRule.addProperty("name", ".*");
+                filterRules.add(filterRule);
+                
+                transferObject.add("filter_rules", filterRules);
+            }
+            
+            
             JsonArray transferItems = new JsonArray();
             transferItems.add(transferItem);
             
             transferObject.add("DATA", transferItems);
             
-            //System.out.println("     "+transferObject);
+            System.out.println("     "+transferObject);
             URL url = new URL(transferAPIBaseUrl+"/transfer");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
             connection.setRequestMethod("POST");
@@ -454,7 +479,7 @@ public class GlobusClient {
             
             // spawn a new thread to wait for completion
            
-            GlobusTransferMonitor.getInstance().addWaitingInbound(submissionId, userId, taskId, this, file, context, destDir, fileSize);
+            GlobusTransferMonitor.getInstance().addWaitingInbound(submissionId, userId, taskId, this, file, context, destDir, fileSize, recursive);
             return submissionId;
         } catch (Exception e){
             if (submissionId == null) submissionId = UUID.randomUUID().toString();
@@ -464,6 +489,19 @@ public class GlobusClient {
        
     }
     
+    /**
+     * Do a globus "LS" transfer API call on an object so that we can get its file size
+     * 
+     * @param request
+     * @param sourceEndpointId
+     * @param path
+     * @param file
+     * @return
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws ProtocolException
+     * @throws InterruptedException
+     */
     public JsonObject getGlobusFileDetails(HttpServletRequest request, String sourceEndpointId, String path, String file) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
     
         //refreshToken(request, OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
@@ -476,6 +514,8 @@ public class GlobusClient {
         
         //URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+UrlUtil.encodeURIcomponent(file));
         URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+encodedFileName);
+        
+        System.out.println(url.toString());
         
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
         connection.setRequestMethod("GET");
@@ -745,16 +785,23 @@ public class GlobusClient {
         
     }
     
-  
-  
-  
   public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url) throws IOException {
+      return s3CopyFile(userContext, fromFileS3Url, toFileS3Url, false);
+  }
+  
+  
+  public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url, boolean recursive) throws IOException {
       // For S3 file downloads, we want to generate a presigned URL to redirect to
       final GpConfig gpConfig=ServerConfigurationFactory.instance();
       String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
       String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
        
-      String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};             
+      String execArgs[];
+      if (recursive){
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp","--recursive",fromFileS3Url, toFileS3Url};             
+      } else {
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};     
+      }
       boolean success = false;
       Process proc = Runtime.getRuntime().exec(execArgs);
       try {

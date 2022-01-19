@@ -4643,7 +4643,7 @@ function glb_browse(destinationDirectory) {
     	populatedAction += "&destDir="+ encodeURIComponent(destinationDirectory);
     }
     $("#globusAction")[0].value = populatedAction;
-    $("#globusFolderLimit")[0].value = 0;
+    $("#globusFolderLimit")[0].value = 1;
     $("#globusFileLimit")[0].value = 5;
     
     
