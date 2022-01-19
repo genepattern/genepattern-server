@@ -269,6 +269,7 @@ class TransferWaitThread extends Thread {
         transferObject.addProperty("size", this.fileSize);
         transferObject.addProperty("timestamp", System.currentTimeMillis());
         transferObject.addProperty("direction", direction);
+        transferObject.addProperty("recursive", recursive);
         
         return transferObject;
     }

@@ -4664,7 +4664,7 @@ function glb_browse(destinationDirectory) {
 
 
 
-function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty){
+function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirectory){
 	var split = window.location.origin.length;
 	var directory = directoryUrl.substring(split);
 	
@@ -4714,7 +4714,12 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty){
 	if (initComplete != true){
 		progressbar = globusToasterFile.find(".globus-toaster-file-progress");
 		progressbar.attr("title", "Globus transfers only update twice per minute and will continue if you leave this page.");
-	    progressbar.tooltip();
+	    if (isDirectory){
+	    	progressbar.attr("title", "Progress of directory transfers is only available on the globus \"Activity\" page.  Use the \"View on Globus\" button for updated status.");
+		    
+	    }
+		
+		progressbar.tooltip();
 	    globusToasterFile.find(".globus-toaster-file-cancel").button("disable");	
 		var cancelButton =  globusToasterFile.find(".globus-toaster-file-cancel");
 		cancelButton.button("enable");
@@ -4807,6 +4812,13 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty){
 	        
 		}
 		
+	 } else {
+		 if (isDirectory){
+			 // arbitrarily hang at 50% since we don't get good progress details
+			 // from globus.  The tooltip tells users that this is the case
+			 progressbar .find(".globus-toaster-file-progress-label").text("% Unavailable.");
+		 }
+		 
 	 }
 
 }
@@ -4851,7 +4863,13 @@ function getGlobusTransferStatus(openEvenIfEmpty){
             		// keep compatibility with old uploaders who share the toaster
             		task.fileName = task.file;
             		task.name = task.file;
-             		if (updateToaster) globusAddToOrUpdateToaster( task, task.destDir, openEvenIfEmpty);
+            		if (task.recursive){
+            			var suffix = " (directory)"
+            			task.fileName = task.fileName + suffix;
+            			task.name = task.name + suffix;
+            		}
+            		
+             		if (updateToaster) globusAddToOrUpdateToaster( task, task.destDir, openEvenIfEmpty, task.recursive);
              		
                     if ((task.status == "ACTIVE") && (task.status.is_ok != false)){
                     	globusTransferInitiated = false;
