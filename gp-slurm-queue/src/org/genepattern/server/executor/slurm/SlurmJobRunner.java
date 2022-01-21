@@ -226,8 +226,8 @@ public class SlurmJobRunner implements JobRunner {
         }
         
         // the value in the config file is a default and also a floor for nCPU
-        Integer nCPU = drmJobSubmission.getCpuCount();
-        if (nCPU == null) nCPU = 1;
+        Integer nCPU = new Integer(drmJobSubmission.getProperty("job.cpuCount.per.task"));
+        if (nCPU == null) nCPU = 10;
         if (cpusPerTaskGPUOveride != null) {
             
             if (cpusPerTaskGPUOveride > nCPU) nCPU=cpusPerTaskGPUOveride;

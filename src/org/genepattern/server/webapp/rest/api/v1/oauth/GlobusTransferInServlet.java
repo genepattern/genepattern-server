@@ -151,13 +151,35 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         response.getWriter().append("\nERROR ").append(ex.getMessage());
     }
     
+ //"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound")
+    StringBuffer buff = new StringBuffer("/gp/GlobusTransferComplete.html");
+    if ((folders.size() +files.size()) > 0){
+        buff.append("?submissionId=");
+        buff.append(submissionId);
+        buff.append("&direction=inbound");
+        buff.append("&destDir=");
+        buff.append(UrlUtil.encodeURIcomponent(destDir));
+        for (int i=0; i<files.size(); i++){
+            buff.append("&file=");
+            buff.append(UrlUtil.encodeURIcomponent(files.get(i)));
+        }
+        for (int i=0; i<folders.size(); i++){
+            buff.append("&folder=");
+            buff.append(UrlUtil.encodeURIcomponent(folders.get(i)));
+        }
+        
+    }
+     System.out.println(buff.toString());
+    
+    response.sendRedirect(buff.toString());
     // redirect to a page to close the popup and call the parent window to tell it to look
     // for the new file to appear in the user's files tab
-    if (files.size() > 0){
-        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound");
-    } else {
-        response.sendRedirect("/gp/GlobusTransferComplete.html");
-    }
+//    if (files.size() > 0){
+//        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound");
+//    
+//    } else {
+//        response.sendRedirect("/gp/GlobusTransferComplete.html");
+//    }
 }
 
 

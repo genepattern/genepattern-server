@@ -4561,24 +4561,41 @@ function glb_send_to(filePath) {
 	//
 	var w = window.open('', 'form-target', 'width=800, height=800');
 
-//	window.globusCallbackFunction = function(filename, destDir, submissionID){
-//	var openGlobus = confirm("You can monitor the transfer status within the Globus File Manager. Open Globus File Manager?");
-//	if (openGlobus){
-//	window.open("https://app.globus.org/activity");
-//	}
-//	}
-	window.globusCallbackFunction = function(filename, destDir, submissionID, direction){
+
+	window.globusCallbackFunction = function(files, folders, destDir, submissionID, direction){
 		globusTransferInitiated= true;
-		if ((filename != null) && (destDir != null)){
-			// open the toaster on the file
-			var file = new Object();
-			file.name=filename;
-			file.fileName = filename;
-			file.id = submissionID;
-			file.direction = direction;
-			globusAddToOrUpdateToaster(file, destDir, true)
+			try {
+			if ( (destDir != null) && (submissionIDaddTo != null)){
+				for (var i=0; i < files.length; i++){
+					// open the toaster on the file
+					var file = new Object();
+					file.name=files[i];
+					file.fileName = files[i];
+					file.id = submissionID;
+					file.direction = direction;
+					globusAddToOrUpdateToaster(file, destDir, true, false)
+					
+				}
+				for (var i=0; i < folders.length; i++){
+					// open the toaster on the file
+					var folder = new Object();
+					folder.name=folders[i];
+					folder.fileName = folders[i];
+					folder.id = submissionID;
+					folder.direction = direction;
+					globusAddToOrUpdateToaster(folder, destDir, true, true)
+				}
+			
+			
+				setTimeout( getGlobusTransferStatus , 10000 );
+			}
+			
+		} catch( e ){
+			alert(e);
+			console.log(e);
+			return destDir;
+			
 		}
-		setTimeout( getGlobusTransferStatus , 10000 );
 	}
 
 
@@ -4616,18 +4633,52 @@ function glb_browse(destinationDirectory) {
    
     var w = window.open('', 'form-target', 'width=800, height=800');
     
-    window.globusCallbackFunction = function(filename, destDir, submissionID, direction){
-	    	globusTransferInitiated= true;
-	    	if ((filename != null) && (destDir != null)){
-	    		// open the toaster on the file
-	    		var file = new Object();
-	    		file.name=filename;
-	    		file.fileName = filename;
-	    		file.id = submissionID;
-	    		file.direction = direction;
-	    		globusAddToOrUpdateToaster(file, destDir, true)
-	    	}
-		setTimeout( getGlobusTransferStatus , 10000 );
+    window.globusCallbackFunction = function(files, folders, destDir, submissionID, direction){
+//	    	globusTransferInitiated= true;
+//	    	if ((filename != null) && (destDir != null)){
+//	    		// open the toaster on the file
+//	    		var file = new Object();
+//	    		file.name=filename;
+//	    		file.fileName = filename;
+//	    		file.id = submissionID;
+//	    		file.direction = direction;
+//	    		globusAddToOrUpdateToaster(file, destDir, true)
+//	    	}
+//		setTimeout( getGlobusTransferStatus , 10000 );
+    	
+    	globusTransferInitiated= true;
+		try {
+		if ( (destDir != null) && (submissionID != null)){
+			for (var i=0; i < files.length; i++){
+				// open the toaster on the file
+				var file = new Object();
+				file.name=files[i];
+				file.fileName = files[i];
+				file.id = submissionID;
+				file.direction = direction;
+				globusAddToOrUpdateToaster(file, destDir, true, false)
+				
+			}
+			for (var i=0; i < folders.length; i++){
+				// open the toaster on the file
+				var folder = new Object();
+				folder.name=folders[i];
+				folder.fileName = folders[i];
+				folder.id = submissionID;
+				folder.direction = direction;
+				globusAddToOrUpdateToaster(folder, destDir, true, true)
+			}
+		
+		
+			setTimeout( getGlobusTransferStatus , 10000 );
+		}
+		
+	} catch( e ){
+		alert(e);
+		console.log(e);
+		return destDir;
+		
+	}
     }
     
     // add our session ID to be able to recognize the return
@@ -4674,8 +4725,15 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 		fileName = file.fileName.substring(file.fileName.indexOf("/")+1);
 	}
 	
-	
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	// now add in a "/" at the end for directories
+	if (isDirectory) {
+		file.name = file.name + "/";
+		file.fileName = file.name;
+		fileName = file.name;
+	}
+	
+	
 	
 	var alreadyOpen = false;
 	// if the dialog is not already created then the dialog('isOpen') call throws an exception
@@ -4693,8 +4751,9 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 	
 	if (alreadyOpen === true){
 		if (globusToasterFile.size() == 0){
-			appendToGlobusToaster(file);
+			appendToGlobusToaster(file, isDirectory);
 			firstTime = true;
+			
 		}
 		
 	} else {
@@ -4702,7 +4761,8 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 		// Dont open it if its closed and any files are actually finished
 		if (openEvenIfEmpty || globusTransferInitiated || file.statusObject == null || file.statusObject.status == "ACTIVE"){
 			var filelist = [file];
-			initGlobusToaster(filelist, directory);
+			initGlobusToaster([], directory);
+			appendToGlobusToaster(file, isDirectory);
 		    firstTime = true;
 		}
 	}
@@ -4715,8 +4775,9 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 		progressbar = globusToasterFile.find(".globus-toaster-file-progress");
 		progressbar.attr("title", "Globus transfers only update twice per minute and will continue if you leave this page.");
 	    if (isDirectory){
-	    	progressbar.attr("title", "Progress of directory transfers is only available on the globus \"Activity\" page.  Use the \"View on Globus\" button for updated status.");
-		    
+	    	progressbar.attr("title", "For progress of directory transfers use the \"View on Globus\" button to open the Globus \"Activity\" page.");
+	    	
+	    	progressbar.progressbar( "option", "value", false );
 	    }
 		
 		progressbar.tooltip();
@@ -4761,21 +4822,40 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 	}
 	
 	if (file.statusObject != null){
-		var transferred = file.statusObject.bytes_transferred;
-		var size = file.size;
-		var percent = Math.floor((transferred/size) * 100);
 		
-		progressbar.progressbar("value", percent);
-		if (percent == 100) {
-			cleanGlobusToaster(); 
-			$.ajax({
-	             cache: false,
-	             type: "GET",
-	             url: "/gp/rest/v1/globus/clearCompletedTask?submissionID="+file.id,
-	             dataType: "json"
-	     	});
+		if (!isDirectory){
+			var transferred = file.statusObject.bytes_transferred;
+			var size = file.size;
+			var percent = Math.floor((transferred/size) * 100);
+			
+			progressbar.progressbar("value", percent);
+			if (percent == 100) {
+				cleanGlobusToaster(); 
+				$.ajax({
+		             cache: false,
+		             type: "GET",
+		             url: "/gp/rest/v1/globus/clearCompletedTask?submissionID="+file.id,
+		             dataType: "json"
+		     	});
+			}
+		} else {
+			// directories are indeterminate
+			progressbar.progressbar( "option", "value", false );
+			progressbar.find(".globus-toaster-file-progress-label").text("in progress...");
+			progressbar.find(".globus-toaster-file-progress-label").addClass("barber");
+			
+			if (file.statusObject.status == "SUCCEEDED"){
+				progressbar.progressbar("value", 100);
+				progressbar.find(".globus-toaster-file-progress-label").removeClass("barber");
+				cleanGlobusToaster(); 
+				$.ajax({
+		             cache: false,
+		             type: "GET",
+		             url: "/gp/rest/v1/globus/clearCompletedTask?submissionID="+file.id,
+		             dataType: "json"
+		     	});
+			}
 		}
-		
 		 
          
 		
@@ -4784,7 +4864,7 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 		if ((file.statusObject.is_ok == false) || ("FAILED" === file.status)){
 			//var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
 			globusToasterFile.find(".globus-toaster-file-cancel").button("disable");
-	         
+			progressbar.find(".globus-toaster-file-progress-label").removeClass("barber");
 			var errorString = "Error from Globus";
 			 if (file.error != null) errorString += (": " + file.error);
 			 else if (file.statusObject.nice_status_short_description != null) errorString += (": " + file.statusObject.nice_status_short_description);
@@ -4816,7 +4896,9 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 		 if (isDirectory){
 			 // arbitrarily hang at 50% since we don't get good progress details
 			 // from globus.  The tooltip tells users that this is the case
-			 progressbar .find(".globus-toaster-file-progress-label").text("% Unavailable.");
+			 progressbar.find(".globus-toaster-file-progress-label").text("in progress...");
+			 progressbar.progressbar( "option", "value", false );
+			 progressbar.find(".globus-toaster-file-progress-label").addClass("barber");
 		 }
 		 
 	 }
@@ -4863,11 +4945,6 @@ function getGlobusTransferStatus(openEvenIfEmpty){
             		// keep compatibility with old uploaders who share the toaster
             		task.fileName = task.file;
             		task.name = task.file;
-            		if (task.recursive){
-            			var suffix = " (directory)"
-            			task.fileName = task.fileName + suffix;
-            			task.name = task.name + suffix;
-            		}
             		
              		if (updateToaster) globusAddToOrUpdateToaster( task, task.destDir, openEvenIfEmpty, task.recursive);
              		
@@ -4899,24 +4976,31 @@ function getGlobusTransferStatus(openEvenIfEmpty){
 }
 
 // copy of the upload toaster for globus transfers in and out
-function appendToGlobusToaster(file){
+function appendToGlobusToaster(file, isDirectory){
     // var toaster = $("<div></div>").addClass("upload-toaster-list");
     var toaster = $("#globus-toaster")[0];
     // after a cancel it might already be there
     existing = $(".globus-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
   	if (existing.length > 0 ) return;
   	var glbImage = "/gp/images/globusToGenePattern.png";
-    if (file.direction === "outbound") glbImage = "/gp/images/genepatternToGlobus.png"
+    if (file.direction === "outbound") glbImage = "/gp/images/genepatternToGlobus.png";
     
-    $("<div></div>")
+    var nameSpan = $("<span></span>").addClass("globus-toaster-file-name").text(file.name + "  ");
+    if (isDirectory){
+    	var folderImage = "/gp/images/iconFolder.gif";
+    	nameSpan.prepend($(" <img src='"+folderImage+"' height='15px' class='globus-directional-image' alt='folder'></img>"))
+    } else {
+    	var fileImage = "/gp/images/iconLeaf.gif";
+    	
+      	nameSpan.prepend($(" <img src='"+fileImage+"' height='15px' class='globus-directional-image' alt='file'></img>"))
+        
+    }
+    
+    var newDiv = $("<div></div>")
         .addClass("globus-toaster-file")
         .attr("name", file.name)
         .append($("<img src='"+glbImage+"' height='15px' class='globus-directional-image' alt='"+file.direction+"'></img>"))
-        .append(
-        $("<span></span>")
-            .addClass("globus-toaster-file-name")
-            .text(file.name)
-    )
+        .append(nameSpan)
         .append(
         $("<div></div>")
             .addClass("globus-toaster-file-progress")
@@ -4940,9 +5024,13 @@ function appendToGlobusToaster(file){
             .addClass("globus-toaster-file-cancel")
             .text("Cancel")
             .button()
-    )
-        .appendTo(toaster);
-    var uploadDialog = $(".globus-dialog");
+    );
+    
+    newDiv.appendTo(toaster);
+    if (isDirectory){
+    	
+    }
+    //var uploadDialog = $(".globus-dialog");
    
 }
 
