@@ -241,13 +241,25 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         response.getWriter().append("\nERROR ").append(ex.getMessage());
     }
     
-    // pull the filename out of the file URL we were given
-    int beginIndex = fileToTransfer.lastIndexOf("/")+1;
-    String filename = fileToTransfer.substring(beginIndex);
-    
     // redirect to a page to close the popup and call the parent window to tell it to look
     // for the new file to appear in the user's files tab
-    response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+    
+    // pull the filename out of the file URL we were given
+    if (fileToTransfer.endsWith("/")){
+        // its a directory
+        int beginIndex = fileToTransfer.substring(0, fileToTransfer.length()-1).lastIndexOf("/")+1;
+        if (beginIndex == -1) beginIndex = 1;
+        String filename = fileToTransfer.substring(beginIndex, fileToTransfer.length()-1);
+        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&folder="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+  
+    } else {
+    
+        int beginIndex = fileToTransfer.lastIndexOf("/")+1;
+        String filename = fileToTransfer.substring(beginIndex);
+        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+        
+    }
+    
     
 }
 

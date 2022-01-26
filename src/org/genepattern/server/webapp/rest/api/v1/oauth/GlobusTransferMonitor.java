@@ -112,8 +112,8 @@ public class GlobusTransferMonitor {
         
     }
     
-    public void addWaitingOutbound(String submissionId, String user, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, String destEndpointId, String label) {
-        TransferOutWaitThread twt = new TransferOutWaitThread(submissionId, user, cl, file, userContext, destDir, fileSize, destEndpointId, label);
+    public void addWaitingOutbound(String submissionId, String user, GlobusClient cl, String file, GpContext userContext, String destDir, long fileSize, String destEndpointId, String label, boolean isDirectory) {
+        TransferOutWaitThread twt = new TransferOutWaitThread(submissionId, user, cl, file, userContext, destDir, fileSize, destEndpointId, label, isDirectory);
         threads.add(twt);
         twt.start();
         
@@ -698,7 +698,9 @@ class TransferInWaitThread extends TransferWaitThread {
 class TransferOutWaitThread extends TransferWaitThread{
     String destinationEndpointId = null;
     String fileUrl = null;
-    public TransferOutWaitThread(String submissionId, String user,  GlobusClient client, String file, GpContext userContext, String dest, long size, String destEndpointId, String label) {
+    String S3TempLocationURL = null;
+    
+    public TransferOutWaitThread(String submissionId, String user,  GlobusClient client, String file, GpContext userContext, String dest, long size, String destEndpointId, String label, boolean isDirectory) {
         this.fileUrl = file;
         try {
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -720,6 +722,7 @@ class TransferOutWaitThread extends TransferWaitThread{
         this.destinationEndpointId = destEndpointId;
         this.direction = "outbound";
         this.label = label;
+        this.recursive = isDirectory;
     }
     
     public void run() {
@@ -744,8 +747,9 @@ class TransferOutWaitThread extends TransferWaitThread{
                 String fromFileS3Url = "s3://"+getBucketName(gpConfig, userContext)+ "/"+getBucketRoot(gpConfig, userContext)+uploadFilePath.getServerFile().getAbsolutePath();
                 String myS3EndpointRoot = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
                 String toS3Url = myS3EndpointRoot + user +"/globus/"+fileName;
-                
-                globusClient.s3CopyFile(userContext, fromFileS3Url,  toS3Url);
+                // XXX JTL need to delete this copy later
+                S3TempLocationURL = toS3Url;
+                globusClient.s3CopyFile(userContext, fromFileS3Url,  toS3Url, recursive);
             }
             
             String transferToken = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
@@ -761,11 +765,27 @@ class TransferOutWaitThread extends TransferWaitThread{
             transferObject.addProperty("destination_endpoint", destinationEndpointId);
             transferObject.addProperty("verify_checksum", true);
             transferObject.addProperty("label", label);
-            
+            if (recursive){
+                // for directories we need to add filter rules, we will exclude any hidden files
+                // {
+                //    "DATA_TYPE": "filter_rule",
+               //     "method": "exclude",
+               //     "name": ".*"
+               //   }
+                JsonArray filterRules = new JsonArray();
+                
+                JsonObject filterRule = new JsonObject();
+                filterRule.addProperty("DATA_TYPE", "filter_rule");
+                filterRule.addProperty("method", "exclude");
+                filterRule.addProperty("name", ".*");
+                filterRules.add(filterRule);
+                
+                transferObject.add("filter_rules", filterRules);
+            }
             
             JsonObject transferItem = new JsonObject();
             transferItem.addProperty("DATA_TYPE", "transfer_item");
-            transferItem.addProperty("recursive", false);
+            transferItem.addProperty("recursive", recursive);
             transferItem.addProperty("destination_path", destDir + fileName);
             transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ user +"/globus/"+fileName);
             
@@ -806,7 +826,11 @@ class TransferOutWaitThread extends TransferWaitThread{
             this.error = e.getMessage();
             this.status = "ERROR";
            e.printStackTrace();
-           
+           try {
+               globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
+           } catch (Exception ee){
+               ee.printStackTrace();
+           }
            GlobusTransferMonitor.getInstance().threadFinished(this);
            cleanUpACL(); // get rid of the ACL if no transfers are in progress
            return;
@@ -884,6 +908,12 @@ class TransferOutWaitThread extends TransferWaitThread{
             GlobusTransferMonitor em = GlobusTransferMonitor.getInstance();
             
         } finally {
+            // delete the temp copy of the file/dir
+            try {
+                globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             GlobusTransferMonitor.getInstance().threadFinished(this);
             cleanUpACL(); // get rid of the ACL if no transfers are in progress
         }

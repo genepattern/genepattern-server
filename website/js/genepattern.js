@@ -2162,8 +2162,21 @@ function createFileWidget(linkElement, appendTo) {
             data.push({
                 "lsid": "",
                 "name": "Transfer from Globus Endpoint",
-                "description": "Transfer files in from a Globus endpoint to this directory.",
-                "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "description": "Transfer files from a Globus endpoint into this directory.",
+                "version": "<img src=\"/gp/images/globusLogoInbound.png\" alt=\"\" height=\"36px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "callAfterItemCreation": function(item){
+                	// open the file dialog when clicked
+                	//resumableUploader.assignBrowse(item);
+                	//alert("Globus Browse " + item);
+                }
+
+            });
+            
+            data.push({
+                "lsid": "",
+                "name": "Transfer to Globus Endpoint",
+                "description": "Transfer this directory and its contents to a Globus endpoint.",
+                "version": "<img src=\"/gp/images/globusLogoOutbound.png\" alt=\"\" height=\"36px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
                 "callAfterItemCreation": function(item){
                 	// open the file dialog when clicked
                 	//resumableUploader.assignBrowse(item);
@@ -2203,7 +2216,7 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Transfer File to Globus Endpoint",
                 "description": "Transfer File to a Globus endpoint.",
-                "version": "<img src=\"/gp/images/globusLogoGrey.png\" alt=\"\" height=\"27px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "version": "<img src=\"/gp/images/globusLogoOutbound.png\" alt=\"\" height=\"36px\"  />", "documentation": "", "categories": [], "suites": [], "tags": [],
             });
             
         }
@@ -4565,7 +4578,7 @@ function glb_send_to(filePath) {
 	window.globusCallbackFunction = function(files, folders, destDir, submissionID, direction){
 		globusTransferInitiated= true;
 			try {
-			if ( (destDir != null) && (submissionIDaddTo != null)){
+			if ( (destDir != null) && (submissionID != null)){
 				for (var i=0; i < files.length; i++){
 					// open the toaster on the file
 					var file = new Object();
@@ -4610,8 +4623,19 @@ function glb_send_to(filePath) {
 	var populatedAction = baseAction + "?gp_action=sendToGlobus&gp_session_id="+ sessionId+"&gp_username="+username+"&gp_file="+encodeURIComponent(filePath);
 	$("#globusAction")[0].value = populatedAction;
 	$("#globusFolderLimit")[0].value = 1;
-	$("#globusFileLimit")[0].value = 0;
-	$("#globusTag")[0].value = "From GenePattern";	
+	$("#globusFileLimit")[0].value = 10;
+	
+	if (! filePath.endsWith("/")){
+		var idx = filePath.lastIndexOf("/");
+		var name = filePath.substring(idx+1);
+		$("#globusTag")[0].value = name + " from GenePattern";
+	} else {
+		var secondLastIndex = filePath.lastIndexOf('/', filePath.lastIndexOf('/')-1)
+		var name = filePath.substring(secondLastIndex+1, filePath.length-1);
+		$("#globusTag")[0].value = name + " from GenePattern";
+	}
+	
+		
 	$("#glbBrowseForm").submit();
 
 	// log usage
@@ -5250,6 +5274,12 @@ function createGlobusWidget(){
     });
     actionData.push({
         "lsid": "",
+        "name": "Transfer to Globus Endpoint",
+        "description": "Transfer this directory and its contents to a Globus Endpoint...",
+        "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+    });
+    actionData.push({
+        "lsid": "",
         "name": "Globus Transfer Status",
         "description": "View the status of any currently executing or recent transfers between Genepattern and Globus endpoints.",
         "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
@@ -5272,6 +5302,7 @@ function createGlobusWidget(){
             click: function(event) {
                 var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Globus Transfer Status") === 0;
                 var transferAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Transfer from Globus Endpoint") === 0;
+                var transferOutAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Transfer to Globus Endpoint") === 0;
                 var loginAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Login to Globus") === 0;
                 var fileManagerAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open the Globus File Manager") === 0;
            
@@ -5281,6 +5312,14 @@ function createGlobusWidget(){
                 } else if (transferAction) {
                 	
                 	browseGlobusIfLoginValid();
+                	$(".search-widget:visible").searchslider("hide");
+                } else if (transferOutAction) {
+                	
+                	$(".search-widget:visible").searchslider("hide");
+                    var wid = $(event.target).closest(".file-widget");
+                	var directory = wid.attr("name");
+                	
+                	browseGlobusIfLoginValid(directory);
                 	$(".search-widget:visible").searchslider("hide");
                 } else if (loginAction){
                 	window.location = "/gp/oauthglobus"

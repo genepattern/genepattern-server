@@ -42,20 +42,20 @@ function onLoad(){
 		
 		if (direction == null) direction = "inbound";
 	
-		if (files.length > 0){
-			$.ajax({
-		        type: "GET",
-		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(files)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
-		        cache: false
-		    });
-		} 
-		if (folders.length > 0){
-			$.ajax({
-		        type: "GET",
-		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(folders)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
-		        cache: false
-		    });
-		} 
+// 		if (files.length > 0){
+// 			$.ajax({
+// 		        type: "GET",
+// 		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(files)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
+// 		        cache: false
+// 		    });
+// 		} 
+// 		if (folders.length > 0){
+// 			$.ajax({
+// 		        type: "GET",
+// 		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(folders)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
+// 		        cache: false
+// 		    });
+// 		} 
 		
 		
 		

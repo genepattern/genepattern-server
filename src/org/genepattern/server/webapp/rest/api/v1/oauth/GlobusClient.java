@@ -351,6 +351,8 @@ public class GlobusClient {
         setupOpenACLForTransfer(request);
         String submissionId = this.getSubmissionId(transferToken);
         long fileSize = 0L;
+        boolean isDirectory = fileToTransfer.endsWith("/");
+        
         try {
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, fileToTransfer, (LSID)null);
             fileSize = uploadFilePath.getFileLength();
@@ -359,7 +361,7 @@ public class GlobusClient {
             return null;
         }
         
-        GlobusTransferMonitor.getInstance().addWaitingOutbound( submissionId,  userId, this,  fileToTransfer, userContext, path, fileSize,  destEndpointId, label);
+        GlobusTransferMonitor.getInstance().addWaitingOutbound( submissionId,  userId, this,  fileToTransfer, userContext, path, fileSize,  destEndpointId, label, isDirectory);
             
 
        
@@ -789,6 +791,41 @@ public class GlobusClient {
       return s3CopyFile(userContext, fromFileS3Url, toFileS3Url, false);
   }
   
+  
+  public static boolean s3DeleteTempFile(GpContext userContext, String s3UrlToDelete, boolean recursive) throws IOException{
+      
+      final GpConfig gpConfig=ServerConfigurationFactory.instance();
+      String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+      String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
+       
+      String execArgs[];
+      if (recursive){
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm","--recursive",s3UrlToDelete};             
+      } else {
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm", s3UrlToDelete};     
+      }
+      boolean success = false;
+      Process proc = Runtime.getRuntime().exec(execArgs);
+      try {
+          // proc.waitFor(3, TimeUnit.MINUTES);
+          proc.waitFor();
+          success = (proc.exitValue() == 0);
+          if (!success){
+              //logStdout(proc, "copy s3 file"); 
+              //logStderr(proc, "copy s3 file"); 
+          }
+          
+      } catch (Exception e){
+         // log.debug(e);
+          e.printStackTrace();
+          return false;
+          
+      } finally {
+          proc.destroy();
+      }
+      return success;
+      
+  }
   
   public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url, boolean recursive) throws IOException {
       // For S3 file downloads, we want to generate a presigned URL to redirect to

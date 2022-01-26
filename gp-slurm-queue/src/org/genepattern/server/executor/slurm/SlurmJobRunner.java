@@ -226,8 +226,16 @@ public class SlurmJobRunner implements JobRunner {
         }
         
         // the value in the config file is a default and also a floor for nCPU
-        Integer nCPU = new Integer(drmJobSubmission.getProperty("job.cpuCount.per.task"));
-        if (nCPU == null) nCPU = 10;
+        
+        String nCPUStr = drmJobSubmission.getProperty("job.cpuCount.per.task");
+        System.out.println("ABOUT TO GET NCPU ============================-------------");
+        Integer nCPU = null;
+        if (nCPUStr != null){
+            nCPU = new Integer(nCPUStr);
+        } else {
+            nCPU = drmJobSubmission.getCpuCount();
+        }
+        if (nCPU == null) nCPU = 1;
         if (cpusPerTaskGPUOveride != null) {
             
             if (cpusPerTaskGPUOveride > nCPU) nCPU=cpusPerTaskGPUOveride;
@@ -239,6 +247,8 @@ public class SlurmJobRunner implements JobRunner {
             Integer n_gpu = new Integer(nGPU);
             Integer n_gpu_job = new Integer(nGPU_job);
             if (n_gpu_job > n_gpu) nGPU = nGPU_job;
+            
+            if (nCPU < 10) nCPU = 10; // for GPU
         }
         String ntasksPerNodeDefault =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
         String ntasksPerNode = drmJobSubmission.getProperty("job.numTasksPerNode");
