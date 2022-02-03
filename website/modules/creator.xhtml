@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <div class="ui-layout-center">
+    <div class="ui-layout-center" id="creatorMainPane">
         <p class="heading">Details</p>
         <div class ="hcontent">
             <div id="saveDialog" style="display:none;" class="save-dialog">
@@ -513,6 +513,47 @@
                 <b>NOTE:</b> Please make any changes to the parameters and their flags in the Parameters section only.
             </p>
         </div>
+        <p class="heading" id="joboptionheading">Job Options</p>
+        <div  class="hcontent" id="joboptioncontent">
+          <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td>
+                        Job Memory:
+                    </td>
+                    <td colspan="3">
+                        <input type="search" name="jobMemory"  size="100"/>
+                        <a href='createhelp.jsp#JobMemory' target='help'>
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Job cpuCount:
+                    </td>
+                    <td colspan="3">
+                        <input type="search" name="jobCpuCount"  size="100"/>
+                        <a href='createhelp.jsp#JobCpuCount' target='help'>
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Job Walltime:
+                    </td>
+                    <td colspan="3">
+                        <input type="search" name="jobWalltime"  size="100"/>
+                        <a href='createhelp.jsp#JobWalltime' target='help'>
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                        </a>
+                    </td>
+                </tr>
+         
+         </table>
+         
+        </div>
+
 
         <p class="heading">Parameters</p>
         <div class="hcontent">
@@ -540,6 +581,8 @@
             </div>
             <div id="parameters"></div>
         </div>
+
+        
     </div>
 <!--</div> -->
 

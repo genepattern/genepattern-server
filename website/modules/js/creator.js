@@ -336,12 +336,9 @@ function saveModule()
     var version = $('input[name="comment"]').val();
     var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
     var dockerImage = $('input[name="dockerImage"]').val();
-    //if(dockerImage == undefined || dockerImage == null || dockerImage.length < 1)
-    //{
-    //    saveError("A docker image must be specified");
-    //    return;
-    //}
-    
+    var jobMemory = $('input[name="jobMemory"]').val();
+    var jobCpuCount = $('input[name="jobCpuCount"]').val();
+    var jobWalltime = $('input[name="jobWalltime"]').val();
     
     
     var filesToDelete = module_editor.filesToDelete;
@@ -352,6 +349,7 @@ function saveModule()
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
         "job.docker.image": dockerImage,
+        "job.memory": jobMemory,"job.cpuCount": jobCpuCount,"job.walltime": jobWalltime, 
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile,"documentationUrl":documentationUrl ,"src.repo":src_repo};
 
@@ -2494,6 +2492,20 @@ function loadModuleInfo(module)
     {
         $('input[name="dockerImage"]').val(module["job.docker.image"]);
     }
+    if(module["job.memory"] !== undefined)
+    {
+        $('input[name="jobMemory"]').val(module["job.memory"]);
+    }
+    if(module["job.cpuCount"] !== undefined)
+    {
+        $('input[name="jobCpuCount"]').val(module["job.cpuCount"]);
+    }
+    if(module["job.walltime"] !== undefined)
+    {
+        $('input[name="jobWalltime"]').val(module["job.walltime"]);
+    }
+
+    
     if(module["src.repo"] !== undefined)
     {
         $('input[name="src.repo"]').val(module["src.repo"]);
@@ -2636,7 +2648,8 @@ function loadModuleInfo(module)
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
-            && keyName != "job.docker.image"
+            && keyName != "job.docker.image"  
+            && keyName != "job.cpuCount" && keyName != "job.memory"&& keyName != "job.walltime"
             && keyName != "src.repo" && keyName != "documentationUrl"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
@@ -2931,6 +2944,8 @@ function loadModule(taskId)
             loadParameterInfo(response["parameters"]);
             loadParameterGroups(response["ParamGroupsJson"]);
            
+            // collapse the jobOptions to its initially closed
+            $($("#joboptionheading").find(".imgexpand")[0]).trigger("click")
             
             setDirty(false);
             $(this).resize();
