@@ -3321,7 +3321,8 @@ jQuery(document).ready(function() {
 
     //check if this is a request to edit an existing module
     editModule();
-
+    
+    
     $(".heading").live("click", function()
     {
         var visible = $(this).next(".hcontent").data("visible");
@@ -4086,7 +4087,8 @@ jQuery(document).ready(function() {
    
     })
     
-    
+    // collapse the jobOptions to its initially closed
+    $($("#joboptionheading").find(".imgexpand")[0]).trigger("click")
 });
 
 function dragEnter(evt)

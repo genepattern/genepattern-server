@@ -103,6 +103,16 @@ Lists the support files packaged with the module, such as executable programs, d
         <a name="Parameters_brief"></a><strong>Parameters</strong><br>
 Lists the module parameters, including the file formats of any input files required by the module.</p>
 
+<p>
+        <a name="Memory_brief"></a><strong>Job Memory</strong><br>
+Sets the default value for the memory allocation limit when this module is run.</p>
+<p>
+        <a name="cpuCount_brief"></a><strong>Job cpuCount</strong><br>
+Sets the default value for the number of virtual CPUs assigned when this module is run.</p>
+<p>
+        <a name="Walltime_brief"></a><strong>Job Walltime</strong><br>
+Sets the default value for maximum duration of a run before automatic termination when this module is run.</p>
+
 <hr>
 
 <a name="editingPropertiesHelp"></a><h2>Creating and Editing Modules</h2>
@@ -494,6 +504,33 @@ Check out the <a href="https://hub.docker.com/u/genepattern/">GenePattern organi
 <li>Tags for default image repository: <a href="https://hub.docker.com/r/genepattern/docker-java17/tags/">hub.docker.com/r/genepattern/docker-java17/tags</a>.</li>
 <li>DockerHub overview: <a href="https://docs.docker.com/docker-hub/">docs.docker.com/docker-hub</a>.</li>
 </ul>
+<br><br><hr>
+<a name="jobOptions"></a><h3>Job Options</h3>
+<p>The job option  settings are optional and may be overridden by the GenePattern administrator of any GenePattern server.  
+Additional options may be set by the administrators as well, but the following three job options are the most common 
+and as such you may set suggested default values for them in the Module Integrator.</p>
+<p>
+<a name="jobMemory"></a><h4>Job Memory</h4>
+This sets the maximum amount of memory that could be potentially allocated to a job running this module.  If the module attemps to
+allocate a greater amount it will result in an run error, reported in the stderr.txt file.  The exact error messages that may appear 
+vary depending on the details of docker container running the module and also the docker launch system used (i.e. local docker daemon, Singularity or
+AWS batch).  
+</p>
+<p>
+<a name="jobCpuCount"></a><h4>Job cpuCount</h4>
+This sets the number of virtual CPUs allocated to a job running this module.  For modules taking advantage of parallel or 
+multi-threaded implementations higher CPU counts can greatly reduce the module runtime.  However more CPUs also increase the cost
+of an analysis and provide no benefit for single-threaded or non-parallel modules, which are much more common.
+</p>
+<p>
+<a name="jobWalltime"></a><h4>Job Walltime</h4>
+The walltime is the maximum duration allowed for a job running this module to take.  If the job exceeds this walltime, 
+the GenePattern server will automatically kill it when this time limit is reached.  Setting a default walltime greater
+than the execution time needed generally has no negative effects for normal runs, but may increase the cost of runs
+where the module fails but does not exit, therefore it is recommended to set this only slightly longer than the expected 
+execution time for a typical dataset.
+</p>
+
 
 
 <br><br><hr>

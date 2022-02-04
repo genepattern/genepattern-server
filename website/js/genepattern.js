@@ -2933,7 +2933,14 @@ function createJobWidget(job) {
                 var url = listObject.attr("data-url");
 
                 if (statusAction) {
-                    loadJobStatus(job.jobId, false);
+                	
+                	var module = all_modules_map[job.taskLsid];
+                	var categories = module.categories;
+                	var vizIndex = categories.findIndex(element => {
+                		  return element.toLowerCase() === "javascript".toLowerCase();
+                	});
+                	
+                    loadJobStatus(job.jobId, "true", vizIndex >= 0);
                 }
 
                 else if (downloadAction) {
@@ -3382,7 +3389,7 @@ function loadJavascript(jobId, container, openInNewWindow) {
     });
 }
 
-function loadJobStatus(jobId, forceVisualizers) {
+function loadJobStatus(jobId, forceVisualizers, isVisualizer) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
@@ -3449,26 +3456,31 @@ function loadJobStatus(jobId, forceVisualizers) {
         visualizerAppend = openVisualizers;
     }
 
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend + openNewWindow);
+    if (true == isVisualizer) {
+    	  window.location= "/gp/pages/index.jsf?jobid=" + jobId + openVisualizers + openNewWindow;
+   	      
+    } else {
+    	history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend + openNewWindow);
 
-    $.ajax({
-        type: "GET",
-        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers + openNewWindow,
-        cache: false,
-        success: function(data) {
-            var jobResults = $("#jobResults");
-            jobResults.html(data);
-            jobResults.show();
-        },
-        error: function(data) {
-            if (typeof data === 'object') {
-                data = data.responseText;
-            }
-
-            showErrorMessage(data);
-        },
-        dataType: "html"
-    });
+	    $.ajax({
+	        type: "GET",
+	        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers + openNewWindow,
+	        cache: false,
+	        success: function(data) {
+	            var jobResults = $("#jobResults");
+	            jobResults.html(data);
+	            jobResults.show();
+	        },
+	        error: function(data) {
+	            if (typeof data === 'object') {
+	                data = data.responseText;
+	            }
+	
+	            showErrorMessage(data);
+	        },
+	        dataType: "html"
+	    });
+    }
 }
 
 function getJobFilter() {
