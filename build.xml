@@ -523,7 +523,7 @@
                 <param name="L" value="Cambridge" />
                 <param name="S" value="MA" />
                 <param name="C" value="US" />
-                <param name="EMAILADDRESS" value="gp-help@broadinstitute.org" />
+                <param name="EMAILADDRESS" value="genepattern-team@broadinstitute.org" />
             </dname>
         </genkey>
     </target>
