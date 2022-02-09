@@ -112,8 +112,8 @@ $(function()
                 position: 'right'
             },
             {
-                intro: ' <div class="tour-header"> Congestion Estimate</div>'
-                    + ' <p>The congestion estimate for a job in the pending state now lists the number of jobs ahead of yours</p>'
+                intro: ' <div class="tour-header">Job Queue Status</div>'
+                    + ' <p>The job queue status for a job in the pending state now lists the number of jobs ahead of yours</p>'
                     + ' <img src="../js/images/Congestion_estimate_webtourJune2021.jpg" alt="Updated Congestion Estimate" width="1200" />'
             },
             {
