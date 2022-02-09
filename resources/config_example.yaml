@@ -215,7 +215,7 @@ default.properties:
     # moduleIntegratorDefaultContainers 
     #     Sets the default list of containers in the dropdown to elect a docker container in the ModuleIntegrator
     #       
-    #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  jupyter/datascience-notebook:r-3.6.2     
+    #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  genepattern/docker-java17:0.12  genepattern/docker-python36:0.4
 
     ##############################################################
     # allowAdminEditNonLocalModules

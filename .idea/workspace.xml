@@ -8,162 +8,14 @@
       <artifact name="gp-full" />
     </artifacts-to-build>
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="7642d3ac-e14b-40bc-8d97-c6e798036675" name="Default" comment="testing">
-      <change beforePath="$PROJECT_DIR$/.classpath" beforeDir="false" afterPath="$PROJECT_DIR$/.classpath" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/IAClasses.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/IAClasses.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/build.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gp-macapp/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/gp-macapp/build.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gp-trunk.iml" beforeDir="false" afterPath="$PROJECT_DIR$/gp-trunk.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/GenePatternLogo.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/GenePatternLogo.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/GenePatternLogoSmall.JPG" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/GenePatternLogoSmall.JPG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/IAPropertyFileReader.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/IAPropertyFileReader.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/ant/iaant.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/ant/iaant.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/autorun.inf" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/autorun.inf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/build.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/buildlog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/buildlog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/IAClasses.zip" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/IAClasses.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/build.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/CalculateShutdownPort.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/CalculateShutdownPort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/DeleteFileAndDir.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/DeleteFileAndDir.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/GetHostName.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/GetHostName.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/GetHostNameMac.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/GetHostNameMac.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/GetJavaHome.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/GetJavaHome.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/GetLsidAuthority.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/GetLsidAuthority.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/SetRVariablePath.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/SetRVariablePath.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/URLCaller.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/URLCaller.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/custom/src/WriteBuildXml.java" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/custom/src/WriteBuildXml.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/customizeWar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/customizeWar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpcustom.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpcustom.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/GenePatternHome.html" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/GenePatternHome.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/GenePatternWebsite.URL" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/GenePatternWebsite.URL" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/GenePatternWebsite.html" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/GenePatternWebsite.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/MacOS/R-2.5.zip" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/MacOS/R-2.5.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/NOTICE" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/NOTICE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/RELEASE-NOTES" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/RELEASE-NOTES" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/RUNNING.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/RUNNING.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/Server.properties" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/Server.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/bootstrap.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/bootstrap.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/catalina-macapp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/catalina-macapp.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/catalina-tasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/catalina-tasks.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/catalina.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/catalina.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/catalina.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/catalina.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/commons-daemon.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/commons-daemon.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/commons-logging-api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/commons-logging-api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/cpappend.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/cpappend.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/digest.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/digest.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/digest.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/digest.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/jkstatus-tasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/jkstatus-tasks.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/jmx.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/jmx.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/jmxaccessor-tasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/jmxaccessor-tasks.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/jsvc.tar.gz" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/jsvc.tar.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/logs/genepattern.log" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/logs/genepattern.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/logs/webserver.log" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/logs/webserver.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/service.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/service.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/setclasspath.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/setclasspath.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/setclasspath.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/setclasspath.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/shutdown.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/shutdown.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/shutdown.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/shutdown.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/startup.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/startup.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/startup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/startup.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tomcat-juli.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tomcat-juli.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tomcat-native.tar.gz" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tomcat-native.tar.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tomcat5.exe" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tomcat5.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tomcat5w.exe" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tomcat5w.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tool-wrapper.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tool-wrapper.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/tool-wrapper.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/tool-wrapper.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/version.bat" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/version.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/bin/version.sh" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/bin/version.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/i18n/tomcat-i18n-en.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/i18n/tomcat-i18n-en.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/i18n/tomcat-i18n-es.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/i18n/tomcat-i18n-es.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/i18n/tomcat-i18n-fr.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/i18n/tomcat-i18n-fr.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/i18n/tomcat-i18n-ja.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/i18n/tomcat-i18n-ja.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/ant-launcher.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/ant-launcher.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/ant.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/ant.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/commons-el.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/commons-el.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/hsqldb.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/hsqldb.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/jasper-compiler-jdt.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/jasper-compiler-jdt.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/jasper-compiler.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/jasper-compiler.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/jasper-runtime.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/jasper-runtime.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/jaxrpc.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/jaxrpc.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/jsp-api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/jsp-api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/naming-factory-dbcp.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/naming-factory-dbcp.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/naming-factory.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/naming-factory.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/naming-resources.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/naming-resources.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/saaj.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/saaj.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/servlet-api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/servlet-api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/common/lib/tools.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/common/lib/tools.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/catalina.policy" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/catalina.policy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/catalina.properties" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/catalina.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/context.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/context.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/logging.properties" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/logging.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/server-minimal.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/server-minimal.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/server.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/server.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/tomcat-users.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/tomcat-users.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/conf/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/conf/web.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/logs/placeholder.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/logs/placeholder.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina-ant-jmx.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina-ant-jmx.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina-ant.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina-ant.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina-cluster.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina-cluster.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina-optional.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina-optional.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina-storeconfig.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina-storeconfig.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/catalina.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/catalina.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/commons-modeler.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/commons-modeler.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/jaas.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/jaas.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/servlets-cgi.renametojar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/servlets-cgi.renametojar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/servlets-default.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/servlets-default.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/servlets-invoker.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/servlets-invoker.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/servlets-ssi.renametojar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/servlets-ssi.renametojar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/servlets-webdav.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/servlets-webdav.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-ajp.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-ajp.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-apr.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-apr.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-coyote.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-coyote.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-http.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-http.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-jkstatus-ant.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-jkstatus-ant.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/server/lib/tomcat-util.jar" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/server/lib/tomcat-util.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/temp/placeholder.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/temp/placeholder.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/ROOT/index.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/ROOT/index.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/gp/GenePatternLogo.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/gp/GenePatternLogo.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/gp/WEB-INF/classes/placeholder.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/gp/WEB-INF/classes/placeholder.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/gp/WEB-INF/server-config.wsdd" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/gp/WEB-INF/server-config.wsdd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/gp/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/gp/favicon.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/webapps/gp/jobResults/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/webapps/gp/jobResults/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/work/Catalina/localhost/_/SESSIONS.ser" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/work/Catalina/localhost/_/SESSIONS.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Tomcat/work/Catalina/localhost/_/tldCache.ser" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Tomcat/work/Catalina/localhost/_/tldCache.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Windows/Perl.zip" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Windows/Perl.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpdist/Windows/R.zip" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpdist/Windows/R.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/gpversions.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/gpversions.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/iabuild.properties" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/iabuild.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/pattern128b.GIF" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/pattern128b.GIF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/pattern128b.icns" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/pattern128b.icns" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/pattern16b.GIF" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/pattern16b.GIF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/pattern32b.GIF" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/pattern32b.GIF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/runtimeBuild.properties" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/runtimeBuild.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/runtimeBuild.xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/runtimeBuild.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/server.iap_xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/server.iap_xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverBuild.iap_xml" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverBuild.iap_xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverBuildlocales/ProjectLocalizationInfo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverBuildlocales/ProjectLocalizationInfo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverBuildlocales/custom_en" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverBuildlocales/custom_en" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverlocales/ProjectLocalizationInfo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverlocales/ProjectLocalizationInfo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverlocales/custom_en" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverlocales/custom_en" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverlocales_Migrated_Configuration/ProjectLocalizationInfo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverlocales_Migrated_Configuration/ProjectLocalizationInfo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/serverlocales_Migrated_Configuration/custom_en" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/serverlocales_Migrated_Configuration/custom_en" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/start128.gif" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/start128.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/start128.icns" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/start128.icns" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/start16.gif" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/start16.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/start32.gif" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/start32.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/stop128.icns" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/stop128.icns" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/stop16.GIF" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/stop16.GIF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/stop32.GIF" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/stop32.GIF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/installer-2014/version.txt" beforeDir="false" afterPath="$PROJECT_DIR$/installer-2014-sp1/version.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/releaseTargets.xml" beforeDir="false" afterPath="$PROJECT_DIR$/releaseTargets.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/wrapper_scripts/build-precompile-jsp.xml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/wrapper_scripts/build-precompile-jsp.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/genepattern/server/webapp/jsf/NotebookBean.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/genepattern/server/webapp/jsf/NotebookBean.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/src/org/genepattern/server/genepattern/TestCommandLineParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/src/org/genepattern/server/genepattern/TestCommandLineParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/src/org/genepattern/server/webapp/TestStartupServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/src/org/genepattern/server/webapp/TestStartupServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/config_example.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/config_example.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/genepattern/modules/ModuleQueryServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/genepattern/modules/ModuleQueryServlet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -360,9 +212,6 @@
     <ui_properties converted="true" />
     <breakpoint_rules converted="true" />
   </component>
-  <component name="FavoritesManager">
-    <favorites_list name="gp-trunk" />
-  </component>
   <component name="FindManager">
     <FindUsagesManager>
       <setting name="OPEN_NEW_TAB" value="false" />
@@ -371,7 +220,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="installer-2014-sp1" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -450,6 +299,9 @@
     <option name="FILTER_INFO" value="true" />
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="49" />
@@ -1448,13 +1300,6 @@
       <option name="presentableId" value="Default" />
       <updated>1386363260516</updated>
     </task>
-    <task id="LOCAL-00496" summary="Merged GenePattern Notebook code and bug fixes into the main GenePattern JavaScript library">
-      <created>1430845343572</created>
-      <option name="number" value="00496" />
-      <option name="presentableId" value="LOCAL-00496" />
-      <option name="project" value="LOCAL" />
-      <updated>1430845343572</updated>
-    </task>
     <task id="LOCAL-00497" summary="Merged GenePattern Notebook code and bug fixes into the main GenePattern JavaScript library">
       <created>1430845479646</created>
       <option name="number" value="00497" />
@@ -1791,7 +1636,14 @@
       <option name="project" value="LOCAL" />
       <updated>1634763377657</updated>
     </task>
-    <option name="localTasksCounter" value="545" />
+    <task id="LOCAL-00545" summary="removing gp-help email address">
+      <created>1644450484956</created>
+      <option name="number" value="00545" />
+      <option name="presentableId" value="LOCAL-00545" />
+      <option name="project" value="LOCAL" />
+      <updated>1644450484956</updated>
+    </task>
+    <option name="localTasksCounter" value="546" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -1902,7 +1754,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="develop" />
+                        <option value="origin/develop" />
                       </list>
                     </value>
                   </entry>
@@ -1913,7 +1765,21 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="origin/develop" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -1924,7 +1790,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=" added dev header image and theme" />
     <MESSAGE value="add new webtour section for browser notification" />
     <MESSAGE value="syntax errors" />
     <MESSAGE value="fix path to image" />
@@ -1949,7 +1814,8 @@
     <MESSAGE value="testing" />
     <MESSAGE value="testing webhook" />
     <MESSAGE value="Changed all references to installer-2014 to installer-2014-sp1 and changed the directory for the IA build executable to InstallAnywhere2014SP1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed all references to installer-2014 to installer-2014-sp1 and changed the directory for the IA build executable to InstallAnywhere2014SP1" />
+    <MESSAGE value="removing gp-help email address" />
+    <option name="LAST_COMMIT_MESSAGE" value="removing gp-help email address" />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
