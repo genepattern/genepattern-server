@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.  --%>
+  ~ Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.  --%>
 <%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
 <%@ page import="org.genepattern.server.webapp.jsf.UIBean" %>
 <link href="<%=request.getContextPath()%>/css/frozen/style.css" rel="stylesheet" type="text/css" />

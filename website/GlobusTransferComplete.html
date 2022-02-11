@@ -13,31 +13,58 @@ function getParameterByName(name, url = window.location.href) {
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+   function getQueryParams(name) {
+	   qs = location.search;
 
+	   var params = [];
+	   var tokens;
+	   var re = /[?&]?([^=]+)=([^&]*)/g;
+
+	   while (tokens = re.exec(qs))
+	   { 
+	       if (decodeURIComponent(tokens[1]) == name)
+	       params.push(decodeURIComponent(tokens[2]));
+	   }
+
+	   return params;
+	}
+   
 function onLoad(){
 	
 	try {
-		var file = getParameterByName("file");
+		var files = getQueryParams("file");
+		var folders = getQueryParams("folder");
 		var destDir = getParameterByName("destDir");
 		var taskId = getParameterByName("submissionId");
 		var direction = getParameterByName("direction");
 		
-		opener.globusCallbackFunction(file, destDir, taskId, direction);  
+		var d = opener.globusCallbackFunction(files, folders, destDir, taskId, direction);  
 		
 		if (direction == null) direction = "inbound";
-		// http://127.0.0.1:8280/gp/rest/v1/usagelogging/log?logname=foo3&loglevel=trace&message=gup3&message=part2&message=third
-		// record usage logging
-		$.ajax({
-	        type: "GET",
-	        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(file)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
-	        cache: false
-	    });
+	
+// 		if (files.length > 0){
+// 			$.ajax({
+// 		        type: "GET",
+// 		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(files)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
+// 		        cache: false
+// 		    });
+// 		} 
+// 		if (folders.length > 0){
+// 			$.ajax({
+// 		        type: "GET",
+// 		        url: "/gp/rest/v1/usagelogging/log?logname=globus&loglevel=trace&message=TransferStart&message="+encodeURIComponent(username)+"&message="+encodeURIComponent(folders)+"&message="+encodeURIComponent(destDir)+"&message="+direction,
+// 		        cache: false
+// 		    });
+// 		} 
+		
+		
+		
 		
 	} catch (e){
 		// failed but its not truly necessary and better to close the window than leave it hanging
+		alert(e);
 		console.log(e);
 	}
-	
 	
 	window.close();
 }

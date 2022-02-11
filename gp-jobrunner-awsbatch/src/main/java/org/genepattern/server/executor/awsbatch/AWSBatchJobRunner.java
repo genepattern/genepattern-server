@@ -1255,13 +1255,14 @@ public class AWSBatchJobRunner implements JobRunner {
                     bw.write(parentDir);
                     bw.write("  >> "+dest_prefix+""+script_dir+"/s3_downloads.log");
                 } else {
-                 // now get the file with wget
-                    bw.write("wget -O \"");
+                    // now get the file with wget, 60 sec network timeout and put stderr and stdout output to s3_downloads since wget sends logging to stderr always
+                    // and we don't want that to cause a module error
+                    bw.write("wget -S -T 60  -O \"");
                     bw.write(dest_prefix);
                     bw.write(urlfile[1]);
                     bw.write("\"  ");
                     bw.write(urlfile[0]);
-                    bw.write("  || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[0]+" 1> "+dest_prefix+""+script_dir+"/stderr.txt   2>&1");
+                    bw.write(" >>"+dest_prefix+""+script_dir+"/s3_downloads.log  2>&1 || echo 'wget download failed "+urlfile[1]+"' ; rm -f "+urlfile[1]+" >> "+dest_prefix+""+script_dir+"/stderr.txt   2>&1");
                     
                     
                 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 package org.genepattern.server.webapp.jsf;
@@ -140,7 +140,7 @@ public class RegisterServerBean {
 
     public RegisterServerBean(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
         this.mgr=mgr;
-        this.email = gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
+        this.email = gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "genepattern-team@broadinstitute.org");
     }
 
     private String handleException(Exception e) {

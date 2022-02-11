@@ -426,7 +426,10 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         try {
             //special-case, block 'tmp'
             //GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath, (LSID)null);
-            File rel = FileUtil.relativizePath(userUploadDir, uploadFile);
+            File userRootDir = ServerConfigurationFactory.instance().getUserDir(userContext);
+            
+            
+            File rel = FileUtil.relativizePath(userRootDir, uploadFile);
             
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, userUploadDir, rel);
             if (DataManager.isTmpDir(uploadFilePath)) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
@@ -20,6 +20,7 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.util.LSID;
 
 /**
  * Utility class for job input files which are uploaded directly from a web client
@@ -239,6 +240,38 @@ public class JobInputFileUtil {
         _addUploadFileToDb(mgr, gpFilePath);
     }
 
+    /**
+     * Save a record in the GP DB for the newly created user upload file.
+     * @param gpFilePath
+     */
+    public void updateUploadsDb(final HibernateSessionManager mgr, final GpFilePath gpFilePath, boolean recursive) 
+    throws GpFilePathException, DbException {
+        if (recursive){
+            if (!gpFilePath.getServerFile().isDirectory()){
+                _addUploadFileToDb(mgr, gpFilePath);
+            }
+            File allFiles[] = gpFilePath.getServerFile().listFiles();
+            for (int i=0; i< allFiles.length; i++){
+                File f = allFiles[i];
+                try {
+                    File oldFile = gpFilePath.getServerFile();
+                    File newFileAbsolute = new File(oldFile.getParentFile(), f.getName());
+                    File newFileRelative = new File(gpFilePath.getRelativeFile().getParent(), f.getName());
+                    GpFilePath newPath = GpFileObjFactory.getUserUploadFile(gpConfig, context, newFileRelative);
+                    updateUploadsDb(mgr, newPath, recursive);
+                }
+                catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    throw new DbException(e.getMessage());
+                }
+            }
+        } else {
+            _addUploadFileToDb(mgr, gpFilePath);
+        }
+    }
+    
+    
     /**
      * For the current user, given a relative path to a file,
      * add a record in the User Uploads DB for the file,

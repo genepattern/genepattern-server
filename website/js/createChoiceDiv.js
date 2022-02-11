@@ -423,19 +423,33 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     //run_task_info.params[parameterName].initialChoiceValues = false;
                     paramDetails.initialChoiceValues = false;
 
+                    // not (has default, initial is empty) and empty is an option
                     if(!(paramDetails.default_value == "" && initialValuesList[0] == "")
                             && $.inArray(initialValuesList[0], matchingValueList) != -1)
                     {
                         choice.val( initialValuesList[0]);
-                    }
+                    } 
 
+                    // has default, empty initial value list but empty is an option
                     if((paramDetails.default_value == "" && initialValuesList[0] == "")
                             || $.inArray(initialValuesList[0], matchingValueList) != -1)
                     {
                         //indicate initial value was found in drop-down list
                         //run_task_info.params[parameterName].initialChoiceValues = true;
                         paramDetails.initialChoiceValues = true;
+                    } 
+                    
+                    // JTL 1/10/2022  GP-9009
+                    // has an initial value that is not part of the list, make sure the drop down does not show the 
+                    // default if it is a file type input
+                    if ((initialValuesList[0] != "") && ($.inArray(initialValuesList[0], matchingValueList) == -1)
+                    		&& !($.inArray(initialValuesList[0], "") == -1)
+                    		&& (paramDetails.choiceInfo.choiceAllowCustom == true)) {
+                    	console.log("Got an entry that is not in the list");
+                    	choice.val("");
                     }
+                    
+                    
                 }
             }
 

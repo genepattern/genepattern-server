@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 /**
@@ -40,7 +40,7 @@ import org.genepattern.server.util.MailSender;
  */
 public class ContactUsBean {
     public static final String PROP_CONTACT_EMAIL="contact.us.email";
-    public static final String DEFAULT_CONTACT_EMAIL="gp-help@broadinstitute.org";
+    public static final String DEFAULT_CONTACT_EMAIL="genepattern-team@broadinstitute.org";
 
     private String subject;
 

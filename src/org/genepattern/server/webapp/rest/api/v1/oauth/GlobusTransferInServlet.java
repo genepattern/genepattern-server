@@ -70,6 +70,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
     response.getWriter().append("Served at: ").append(request.getContextPath());
     GlobusClient globusClient = new GlobusClient();
     ArrayList<String> files = new ArrayList<String>();
+    ArrayList<String> folders = new ArrayList<String>();
     String destDir = null; // comes in as directory URL or absent
     String submissionId = null;
     try {
@@ -80,11 +81,19 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         String path = null;
         String gp_user_id = null;
         String gp_session_id = null;
-        
+        String label = "Transfer Into GenePattern";
         try {
+            System.out.println("   -   -   -   -   -   -   -   -   GLOBUS TRANSFER IN   -   -   -   -   -   ");
+            Enumeration enumParamNames = request.getParameterNames();
+            while (enumParamNames.hasMoreElements()){
+                String name = (String)enumParamNames.nextElement();
+                String val = request.getParameter(name);
+                System.out.println("   -   "+ name + "  =  " + val);
+            }
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
             destDir = request.getParameter("destDir");
+            label = request.getParameter("label");
              
             Enumeration<String> e = (Enumeration<String>)request.getParameterNames();
             
@@ -93,6 +102,14 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
                 String val = request.getParameter(key);
                 if (key.startsWith("file[")){
                     files.add(val);
+                }
+            }
+            e = (Enumeration<String>)request.getParameterNames();
+            while (e.hasMoreElements()){
+                String key = (String)e.nextElement();
+                String val = request.getParameter(key);
+                if (key.startsWith("folder[")){
+                    folders.add(val);
                 }
             }
             gp_user_id = request.getParameter("gp_username");
@@ -104,7 +121,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         reestablishGenepatternSession(request, gp_user_id, gp_session_id);
         
         
-        if ((endpointId == null)||(path==null)||(files.size()==0)){
+        if ((endpointId == null)||(path==null)||((files.size()+folders.size())==0)){
             // user probably hit the cancel button
             // so nothing to do here but go to the 
             // transfer complete page which itself does
@@ -116,8 +133,13 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         
         try {
             for (int i=0; i<files.size();i++){
-                submissionId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir);
+                submissionId = globusClient.startGlobusFileTransfer(request, endpointId, path, files.get(i), destDir, label);
             }
+            for (int i=0; i<folders.size();i++){
+                submissionId = globusClient.startGlobusFolderTransfer(request, endpointId, path, folders.get(i), destDir, label);
+            }
+            
+            
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -129,13 +151,35 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         response.getWriter().append("\nERROR ").append(ex.getMessage());
     }
     
+ //"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound")
+    StringBuffer buff = new StringBuffer("/gp/GlobusTransferComplete.html");
+    if ((folders.size() +files.size()) > 0){
+        buff.append("?submissionId=");
+        buff.append(submissionId);
+        buff.append("&direction=inbound");
+        buff.append("&destDir=");
+        buff.append(UrlUtil.encodeURIcomponent(destDir));
+        for (int i=0; i<files.size(); i++){
+            buff.append("&file=");
+            buff.append(UrlUtil.encodeURIcomponent(files.get(i)));
+        }
+        for (int i=0; i<folders.size(); i++){
+            buff.append("&folder=");
+            buff.append(UrlUtil.encodeURIcomponent(folders.get(i)));
+        }
+        
+    }
+     System.out.println(buff.toString());
+    
+    response.sendRedirect(buff.toString());
     // redirect to a page to close the popup and call the parent window to tell it to look
     // for the new file to appear in the user's files tab
-    if (files.size() > 0){
-        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound");
-    } else {
-        response.sendRedirect("/gp/GlobusTransferComplete.html");
-    }
+//    if (files.size() > 0){
+//        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(files.get(0))+"&destDir="+UrlUtil.encodeURIcomponent(destDir)+"&direction=inbound");
+//    
+//    } else {
+//        response.sendRedirect("/gp/GlobusTransferComplete.html");
+//    }
 }
 
 
@@ -155,13 +199,15 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         
         String gp_user_id = null;
         String gp_session_id = null;
-        
+        String label = "From GenePattern";
         try {
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
             fileToTransfer = request.getParameter("gp_file");
             gp_user_id = request.getParameter("gp_username");
             gp_session_id = request.getParameter("gp_session_id");
+            label = request.getParameter("label");
+            
         } catch (Exception ex){
             ex.printStackTrace();
         }
@@ -182,7 +228,7 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         
         try {
            
-           submissionId = globusClient.transferFileToGlobus(request, endpointId, path, fileToTransfer);
+           submissionId = globusClient.transferFileToGlobus(request, endpointId, path, fileToTransfer, label);
   
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block
@@ -195,13 +241,25 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         response.getWriter().append("\nERROR ").append(ex.getMessage());
     }
     
-    // pull the filename out of the file URL we were given
-    int beginIndex = fileToTransfer.lastIndexOf("/")+1;
-    String filename = fileToTransfer.substring(beginIndex);
-    
     // redirect to a page to close the popup and call the parent window to tell it to look
     // for the new file to appear in the user's files tab
-    response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+    
+    // pull the filename out of the file URL we were given
+    if (fileToTransfer.endsWith("/")){
+        // its a directory
+        int beginIndex = fileToTransfer.substring(0, fileToTransfer.length()-1).lastIndexOf("/")+1;
+        if (beginIndex == -1) beginIndex = 1;
+        String filename = fileToTransfer.substring(beginIndex, fileToTransfer.length()-1);
+        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&folder="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+  
+    } else {
+    
+        int beginIndex = fileToTransfer.lastIndexOf("/")+1;
+        String filename = fileToTransfer.substring(beginIndex);
+        response.sendRedirect("/gp/GlobusTransferComplete.html?submissionId="+submissionId +"&file="+UrlUtil.encodeURIcomponent(filename)+"&destDir="+UrlUtil.encodeURIcomponent(path)+"&direction=outbound");
+        
+    }
+    
     
 }
 

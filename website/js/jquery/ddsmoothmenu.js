@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+ * Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.
  */
 
 //** Smooth Navigational Menu- By Dynamic Drive DHTML code library: http://www.dynamicdrive.com
