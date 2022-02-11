@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -49,6 +46,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.common.io.BaseEncoding;
@@ -66,6 +64,10 @@ public class GlobusClient {
         String oAuthTokenURL = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_TOKEN_URL_KEY, "https://auth.globus.org/v2/oauth2/token");
         
         String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
+
+        // Handle the optional forward query parameter
+        String forward = servletRequest.getParameter("forward");
+        callbackUrl += forward != null ? "?forward=" + URLEncoder.encode(forward, "UTF-8"): "";
          
         OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(servletRequest);
         String code = oar.getCode();
@@ -123,6 +125,26 @@ public class GlobusClient {
         
        
         
+    }
+
+    public String jsonPayload(HttpServletRequest servletRequest) {
+        JsonObject payload = new JsonObject();
+        String email = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY);
+        String accessToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
+        String transferToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        String transferRefreshToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY);
+        JsonElement userJson = (JsonElement) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY);
+        String refreshToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY);
+
+        payload.add(OAuthConstants.OAUTH_USER_ID_ATTR_KEY, new JsonPrimitive(email));
+        payload.add(OAuthConstants.OAUTH_EMAIL_ATTR_KEY, new JsonPrimitive(email));
+        payload.add(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, new JsonPrimitive(accessToken));
+        payload.add(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, new JsonPrimitive(transferToken));
+        payload.add(OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, new JsonPrimitive(transferRefreshToken));
+        payload.add(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, userJson);
+        payload.add(OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, new JsonPrimitive(refreshToken));
+
+        return payload.toString();
     }
     
     /**
