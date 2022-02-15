@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.persistence.criteria.JoinType;
+
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
@@ -471,17 +473,31 @@ public class AnalysisDAO extends BaseDAO {
         }
         else {
         
-            System.out.println("MOD SEARCH m="+module + "  u="+userId);
-            
             Criteria criteria = mgr.getSession().createCriteria(AnalysisJob.class)
                     .add(Restrictions.like("taskName", module, MatchMode.ANYWHERE).ignoreCase());
-    
+            
+            boolean userClause = true;
             if (groupIds != null && groupIds.size() > 0)
             {
-                criteria.createAlias("permissions", "permissions")
-                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+                //criteria.createAlias("permissions", "permissions")
+                //        .add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+                
+                if (userId == null) {
+                    criteria.createAlias("permissions", "permissions")
+                        .add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+                } else {
+                    // if we have both userId and groups then selectall was chosen by a non-admin so we 
+                    // need a disjunction here
+                    Disjunction userGroupDisjunction = Restrictions.disjunction();
+                    userGroupDisjunction.add(Restrictions.eq("userId", userId));
+                    criteria.createAlias("permissions", "permissions", 1);
+                    userGroupDisjunction.add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+                    userClause = false;
+                    criteria.add(userGroupDisjunction);
+                }
+                
             }
-            if(userId != null)
+            if ((userId != null) && userClause)
             {
                 criteria.add(Restrictions.eq("userId", userId));
             }
@@ -497,12 +513,9 @@ public class AnalysisDAO extends BaseDAO {
             projectionList.add(Projections.countDistinct("jobNo"));
             criteria.setProjection(projectionList);
     
-            System.out.println(criteria.toString());
-            
-            showCriteriaSql(criteria);
+            // showCriteriaSql(criteria);
             
             jobCount = getCount(criteria.uniqueResult());
-            System.out.println("   found "+ jobCount);
         }
         return jobCount;
         
@@ -519,7 +532,7 @@ public class AnalysisDAO extends BaseDAO {
             Field f = OuterJoinLoader.class.getDeclaredField("sql");
             f.setAccessible(true);
             String sql = (String) f.get(loader);
-            System.out.println(sql);
+            
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -541,7 +554,8 @@ public class AnalysisDAO extends BaseDAO {
 
         int firstResult = (pageNum - 1) * pageSize;
         int maxResults = pageSize;
-
+        
+        
         mgr.beginTransaction();
 
         List<JobInfo> jobInfos = null;
@@ -585,12 +599,27 @@ public class AnalysisDAO extends BaseDAO {
                 criteria.addOrder(sortOrder);
             }
 
+            boolean userClause  = true;
             if (groupIds != null && groupIds.size() > 0)
             {
-                criteria.createAlias("permissions", "permissions")
-                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+                if (userId == null) {
+                    criteria.createAlias("permissions", "permissions")
+                        .add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+                } else {
+                    // if we have both userId and groups then selectall was chosen by a non-admin so we 
+                    // need to eliminate the current user's count which we add back in later
+                    // because the permissions join will fail for this user's modules that have 
+                    // not been shared to any groups
+                    Disjunction userGroupDisjunction = Restrictions.disjunction();
+                    userGroupDisjunction.add(Restrictions.eq("userId", userId));
+                    criteria.createAlias("permissions", "permissions", 1); // 1 == left outer join
+                    userGroupDisjunction.add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+                    
+                    userClause = false;
+                    criteria.add(userGroupDisjunction);
+                }
             }
-            if(userId != null)
+            if((userId != null) && userClause)
             {
                 criteria.add(Restrictions.eq("userId", userId));
             }
@@ -601,7 +630,7 @@ public class AnalysisDAO extends BaseDAO {
             objDisjunction.add(Restrictions.lt("parent", 0));
             criteria.add(objDisjunction);
             
-            
+            //showCriteriaSql(criteria);
             @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = criteria.list();
 

@@ -130,6 +130,7 @@ public abstract class JobSearch {
                 {
                     IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
                     groupIds = new HashSet<String>(groupMembership.getGroups(q.getCurrentUser()));
+                    userId = q.getCurrentUser();
                 }
             }
             else
@@ -415,6 +416,13 @@ public abstract class JobSearch {
             {
                 IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
                 groupIds = new HashSet<String>(groupMembership.getGroups(q.getCurrentUser()));
+                if ((q.getModule() != null) && (q.isShowAll())){
+                    if (q.getModule().length()>0){
+                        // for module searches by non-admins we need to pass in the user id as well
+                        // so that we get public modules AND their own when its a searchAll
+                        userId = q.getCurrentUser();
+                    }
+                }
             }
         }
         else
