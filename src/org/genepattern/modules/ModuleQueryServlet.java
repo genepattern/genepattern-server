@@ -245,7 +245,7 @@ public class ModuleQueryServlet extends HttpServlet {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         String containers = gpConfig.getGPProperty(userContext, 
                 "moduleIntegratorDefaultContainers", 
-                "genepattern/docker-perl52:0.2  jupyter/datascience-notebook:r-3.6.3");
+                "genepattern/docker-perl52:0.2  genepattern/docker-java17:0.12  genepattern/docker-python36:0.4");
         ResponseJSON message = new ResponseJSON();
         if (containers != null && containers.length() > 0) {
             JSONArray carray = new JSONArray();

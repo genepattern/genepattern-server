@@ -215,7 +215,7 @@ default.properties:
     # moduleIntegratorDefaultContainers 
     #     Sets the default list of containers in the dropdown to elect a docker container in the ModuleIntegrator
     #       
-    #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  jupyter/datascience-notebook:r-3.6.2     
+    #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  genepattern/docker-java17:0.12  genepattern/docker-python36:0.4
 
     ##############################################################
     # allowAdminEditNonLocalModules
@@ -297,7 +297,7 @@ default.properties:
     # the mail server for sending messages from the GenePattern server      
     smtp.server: smtp.broadinstitute.org
     # the email recipient of help requests sent via the 'contact us' link
-    contact.us.email: "gp-help@broadinstitute.org"
+    contact.us.email: "genepattern-team@broadinstitute.org"
     # the from email address for messages sent to end users, such as from the 'forgot password' link  
     smtp.from.email: "no-reply@genepattern.org"
     # (optional), workaround for 'Helo command rejected: need fully-qualified hostname'

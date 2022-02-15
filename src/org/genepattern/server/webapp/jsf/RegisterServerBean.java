@@ -140,7 +140,7 @@ public class RegisterServerBean {
 
     public RegisterServerBean(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
         this.mgr=mgr;
-        this.email = gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
+        this.email = gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "genepattern-team@broadinstitute.org");
     }
 
     private String handleException(Exception e) {

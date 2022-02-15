@@ -51,6 +51,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.common.io.BaseEncoding;
@@ -68,7 +69,11 @@ public class GlobusClient {
         String oAuthTokenURL = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_TOKEN_URL_KEY, "https://auth.globus.org/v2/oauth2/token");
         
         String callbackUrl = gpConfig.getGenePatternURL() + "oauthcallback";
-         
+
+        // Handle the optional forward query parameter
+        String forward = servletRequest.getParameter("forward");
+        callbackUrl += forward != null ? "?forward=" + URLEncoder.encode(forward, "UTF-8"): "";
+
         OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(servletRequest);
         String code = oar.getCode();
         OAuthClientRequest request = OAuthClientRequest
@@ -126,7 +131,27 @@ public class GlobusClient {
        
         
     }
-    
+
+    public String jsonPayload(HttpServletRequest servletRequest) {
+        JsonObject payload = new JsonObject();
+        String email = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_EMAIL_ATTR_KEY);
+        String accessToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TOKEN_ATTR_KEY);
+        String transferToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
+        String transferRefreshToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY);
+        JsonElement userJson = (JsonElement) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY);
+        String refreshToken = (String) servletRequest.getSession().getAttribute(OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY);
+
+        payload.add(OAuthConstants.OAUTH_USER_ID_ATTR_KEY, new JsonPrimitive(email));
+        payload.add(OAuthConstants.OAUTH_EMAIL_ATTR_KEY, new JsonPrimitive(email));
+        payload.add(OAuthConstants.OAUTH_TOKEN_ATTR_KEY, new JsonPrimitive(accessToken));
+        payload.add(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY, new JsonPrimitive(transferToken));
+        payload.add(OAuthConstants.OAUTH_TRANSFER_REFRESH_TOKEN_ATTR_KEY, new JsonPrimitive(transferRefreshToken));
+        payload.add(OAuthConstants.OAUTH_USER_ID_USERPROPS_KEY, userJson);
+        payload.add(OAuthConstants.OAUTH_REFRESH_TOKEN_ATTR_KEY, new JsonPrimitive(refreshToken));
+
+        return payload.toString();
+    }
+
     /**
      * Refresh an access token token with globus using its refresh token. Use the keys into the session
      * object to get the token and refresh token.
@@ -352,7 +377,7 @@ public class GlobusClient {
         String submissionId = this.getSubmissionId(transferToken);
         long fileSize = 0L;
         boolean isDirectory = fileToTransfer.endsWith("/");
-        
+
         try {
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, fileToTransfer, (LSID)null);
             fileSize = uploadFilePath.getFileLength();
@@ -370,15 +395,15 @@ public class GlobusClient {
     
     
     public String startGlobusFolderTransfer(HttpServletRequest request, String sourceEndpointId, String path, String folder, String destDir, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
-        
+
         return startGlobusTransfer( request,  sourceEndpointId,  path,  folder,  destDir,  label,  true);
     }
-     
+
     public String startGlobusFileTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir, String label) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
-        
+
         return startGlobusTransfer( request,  sourceEndpointId,  path,  file,  destDir,  label,  false);
     }
-    
+
     public String startGlobusTransfer(HttpServletRequest request, String sourceEndpointId, String path, String file, String destDir, String label, boolean recursive) throws MalformedURLException, IOException, ProtocolException, InterruptedException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
@@ -417,7 +442,7 @@ public class GlobusClient {
             String myEndpointID = gpConfig.getGPProperty(context, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
             submissionId = getSubmissionId(transferToken);
             if (label == null) label = "Transfer Into GenePattern";
-            
+
             JsonObject transferObject = new JsonObject();
             transferObject.addProperty("DATA_TYPE", "transfer");
             transferObject.addProperty("submission_id", submissionId);
@@ -425,7 +450,7 @@ public class GlobusClient {
             transferObject.addProperty("destination_endpoint", myEndpointID);
             transferObject.addProperty("verify_checksum", true);
             transferObject.addProperty("label", label); // XXX Get this from the earlier return
-            
+
             JsonObject transferItem = new JsonObject();
             transferItem.addProperty("DATA_TYPE", "transfer_item");
             transferItem.addProperty("recursive", recursive);
@@ -440,17 +465,17 @@ public class GlobusClient {
                //     "name": ".*"
                //   }
                 JsonArray filterRules = new JsonArray();
-                
+
                 JsonObject filterRule = new JsonObject();
                 filterRule.addProperty("DATA_TYPE", "filter_rule");
                 filterRule.addProperty("method", "exclude");
                 filterRule.addProperty("name", ".*");
                 filterRules.add(filterRule);
-                
+
                 transferObject.add("filter_rules", filterRules);
             }
-            
-            
+
+
             JsonArray transferItems = new JsonArray();
             transferItems.add(transferItem);
             
@@ -493,7 +518,7 @@ public class GlobusClient {
     
     /**
      * Do a globus "LS" transfer API call on an object so that we can get its file size
-     * 
+     *
      * @param request
      * @param sourceEndpointId
      * @param path
@@ -513,12 +538,12 @@ public class GlobusClient {
         String transferToken = (String)request.getSession().getAttribute(OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
            
         String encodedFileName = URLEncoder.encode(file);
-        
+
         //URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+UrlUtil.encodeURIcomponent(file));
         URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+encodedFileName);
-        
+
         System.out.println(url.toString());
-        
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
         connection.setRequestMethod("GET");
         
@@ -786,23 +811,23 @@ public class GlobusClient {
             
         
     }
-    
+
   public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url) throws IOException {
       return s3CopyFile(userContext, fromFileS3Url, toFileS3Url, false);
   }
-  
-  
+
+
   public static boolean s3DeleteTempFile(GpContext userContext, String s3UrlToDelete, boolean recursive) throws IOException{
-      
+
       final GpConfig gpConfig=ServerConfigurationFactory.instance();
       String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
       String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
-       
+
       String execArgs[];
       if (recursive){
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm","--recursive",s3UrlToDelete};             
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm","--recursive",s3UrlToDelete};
       } else {
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm", s3UrlToDelete};     
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "rm", s3UrlToDelete};
       }
       boolean success = false;
       Process proc = Runtime.getRuntime().exec(execArgs);
@@ -811,22 +836,22 @@ public class GlobusClient {
           proc.waitFor();
           success = (proc.exitValue() == 0);
           if (!success){
-              //logStdout(proc, "copy s3 file"); 
-              //logStderr(proc, "copy s3 file"); 
+              //logStdout(proc, "copy s3 file");
+              //logStderr(proc, "copy s3 file");
           }
-          
+
       } catch (Exception e){
          // log.debug(e);
           e.printStackTrace();
           return false;
-          
+
       } finally {
           proc.destroy();
       }
       return success;
-      
+
   }
-  
+
   public static boolean s3CopyFile(GpContext userContext, String fromFileS3Url, String toFileS3Url, boolean recursive) throws IOException {
       // For S3 file downloads, we want to generate a presigned URL to redirect to
       final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -835,9 +860,9 @@ public class GlobusClient {
        
       String execArgs[];
       if (recursive){
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp","--recursive",fromFileS3Url, toFileS3Url};             
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp","--recursive",fromFileS3Url, toFileS3Url};
       } else {
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};     
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};
       }
       boolean success = false;
       Process proc = Runtime.getRuntime().exec(execArgs);

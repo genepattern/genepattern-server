@@ -34,8 +34,17 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
 	      
 	    GlobusClient globusClient = new GlobusClient();
 	    try {
+            // Login to globus.  Get an access_token.  Throws an exception if login fails for any reason
+            globusClient.login(servletRequest);
+
             // If the forward parameter is set, forward there
             String urlTargetPostLogin = servletRequest.getParameter("forward");
+
+            // Attach the Globus payload if the forward parameter is defined
+            if (urlTargetPostLogin != null) {
+                String globusPayload = globusClient.jsonPayload(servletRequest);
+                urlTargetPostLogin += "?globus=" + URLEncoder.encode(globusPayload, "UTF-8");
+            }
 
             // If not, forward to the origin
             if (urlTargetPostLogin == null) {
@@ -46,9 +55,7 @@ public class GlobusOAuthCallbackServlet extends HttpServlet {
             if (urlTargetPostLogin == null) {
                 urlTargetPostLogin  = gpConfig.getGenePatternURL().toString();
             }
-            // Login to globus.  Get an access_token.  Throws an exception if login fails for any reason
-            globusClient.login(servletRequest);
-            // XXX TODO pass in the url that was originally requested and redirect to it
+
             servletResponse.sendRedirect(urlTargetPostLogin);
         }
         catch (Exception e) {
