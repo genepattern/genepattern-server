@@ -13693,7 +13693,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<string><![CDATA[genepattern-team@broadinstitute.org]]></string>
 					</property>
 					<property name="copyright">
-						<string><![CDATA[2003-2021]]></string>
+						<string><![CDATA[2003-2022]]></string>
 					</property>
 					<property name="license">
 						<string><![CDATA[Commercial]]></string>

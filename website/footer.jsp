@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright 2021 The Broad Institute, Inc.
+  ~ Copyright 2003-2022 The Broad Institute, Inc.
   ~ SOFTWARE COPYRIGHT NOTICE
   ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
   ~

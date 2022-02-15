@@ -15,7 +15,7 @@
 		<key>CFBundleVersion</key>
 		<string>16.0</string>
 		<key>CFBundleGetInfoString</key>
-		<string>GenePattern, Copyright (c) 2003-2021 Regents of the University of California and Broad Institute</string>
+		<string>GenePattern, Copyright (c) 2003-2022 Regents of the University of California and Broad Institute</string>
 		<key>CFBundleIconFile</key>
 		<string>GenePattern.icns</string>
 		<key>WorkingDirectory</key>

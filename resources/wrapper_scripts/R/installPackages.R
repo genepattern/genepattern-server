@@ -1,5 +1,5 @@
 ## SOFTWARE COPYRIGHT NOTICE AGREEMENT
-## Copyright (c) 2003-2021 Regents of the University of California and Broad Institute. All rights reserved.
+## Copyright (c) 2003-2022 Regents of the University of California and Broad Institute. All rights reserved.
 ##
 ## This software is supplied without any warranty or guaranteed support
 ## whatsoever. Neither the Broad Institute nor MIT can be responsible for its
