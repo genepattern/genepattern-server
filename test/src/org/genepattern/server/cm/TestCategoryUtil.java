@@ -288,11 +288,12 @@ public class TestCategoryUtil {
         // see: http://docs.mockito.googlecode.com/hg/1.9.5/org/mockito/Spy.html for an "Important gotcha when spying on real objects!"
         Mockito.doReturn(customCategoriesFromDb).when(spy).getCustomCategoriesFromDb(taskInfo);
 
+        // categories are now now all made lowercase
         List<String> categories=spy.getCategoriesForTask(gpConfig, customUserContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
-        Assert.assertEquals("category[0]", "ActualA", categories.get(0));
-        Assert.assertEquals("category[1]", "ActualB", categories.get(1));
+        Assert.assertEquals("category[0]", "actuala", categories.get(0));
+        Assert.assertEquals("category[1]", "actualb", categories.get(1));
     }
     
     /**
