@@ -311,8 +311,9 @@ public class TestGetNextTaskLsid {
     @Test
     public void customNamespace_genericDbSequence() throws MalformedURLException, RemoteException, DbException {
         final String customNamespace=initCustomNamespace();
-        // only works for non-HSQL non-ORACLE dbVendor
-        //when(gpConfig.getDbVendor()).thenReturn(customDbVendor);
+        // only works for non-HSQL non-ORACLE dbVendor - Feb 2022 - see if this fixes it
+        when(gpConfig.getDbVendor()).thenReturn(customDbVendor);
+        // Feb 2022 - this is failing and I think that's not noise
         assertEquals(
                 // expected
                 new LSID("urn:lsid:broad-cancer-genomics:"+customNamespace+":1:1"),
