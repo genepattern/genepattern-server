@@ -624,6 +624,13 @@ public class UploadResource {
     private String getUploadRelativePath(String destPath, String username){
         String root = "/users/" + username + "/uploads";
         int idx = destPath.indexOf(root);
+        // deal with it sometimes being a file path and sometimes a URL
+        
+        if (idx < 0) {
+            root = "/users/" + username;
+            idx = destPath.indexOf( "/users/" + username);
+        }
+        
         String path =  destPath.substring(idx + root.length());
         if (path.length() ==0)  return  ".";
         else return path.substring(1);

@@ -4640,10 +4640,12 @@ function glb_send_to(filePath) {
 	if (! filePath.endsWith("/")){
 		var idx = filePath.lastIndexOf("/");
 		var name = filePath.substring(idx+1);
+		name = name.replace(".","_");
 		$("#globusTag")[0].value = name + " from GenePattern";
 	} else {
 		var secondLastIndex = filePath.lastIndexOf('/', filePath.lastIndexOf('/')-1)
 		var name = filePath.substring(secondLastIndex+1, filePath.length-1);
+		name = name.replace(".","_");
 		$("#globusTag")[0].value = name + " from GenePattern";
 	}
 	

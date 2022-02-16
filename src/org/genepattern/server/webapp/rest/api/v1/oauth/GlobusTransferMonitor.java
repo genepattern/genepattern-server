@@ -910,7 +910,20 @@ class TransferOutWaitThread extends TransferWaitThread{
         } finally {
             // delete the temp copy of the file/dir
             try {
-                globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
+                String myEndpointType = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
+                
+                if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
+                    String myEndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
+                    File newFile = new File(myEndpointRoot + user +"/globus/"+file);
+                    if (newFile.exists()) {
+                        boolean deleted = newFile.delete();
+                        System.out.println("Globus temp file deleted " + deleted + "  " + newFile.getAbsolutePath());
+                    }
+                } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
+                    globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
+                }
+                
+                
             } catch (Exception e){
                 e.printStackTrace();
             }
