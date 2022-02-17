@@ -317,8 +317,8 @@ public class TestCategoryUtil {
         List<String> categories=spy.getCategoriesForTask(gpConfig, customUserContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
-        Assert.assertEquals("category[0]", "CustomA", categories.get(0));
-        Assert.assertEquals("category[1]", "CustomB", categories.get(1));
+        Assert.assertEquals("category[0]", "customa", categories.get(0));
+        Assert.assertEquals("category[1]", "customb", categories.get(1));
     }
 
     /**
