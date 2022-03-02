@@ -354,6 +354,8 @@ public class DataManager {
     public static ExternalFileManager getExternalFileManager(GpContext gpContext) {
         ExternalFileManager externalManager = null;
         String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, ExternalFileManager.classPropertyKey);
+        log.error("==== External file downloader is " + downloaderClass);
+        if (downloaderClass == null) return null;
         
         try {
              
@@ -364,8 +366,8 @@ public class DataManager {
             }
             externalManager = (ExternalFileManager) svcClass.newInstance();
         } catch(Exception ioe){
-            log.error("Failed to download using external downloader class: " + downloaderClass, ioe);
-            
+            log.error("Failed find external downloader class: " + downloaderClass, ioe);
+            return null;
         }
         return externalManager;
     }
