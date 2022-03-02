@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
@@ -495,9 +496,9 @@ class TransferInWaitThread extends TransferWaitThread {
                 // TODO should we refresh the token before each use?
                 String token = globusClient.getTokenFromUserPrefs(user, OAuthConstants.OAUTH_TRANSFER_TOKEN_ATTR_KEY);
                 statusObject = globusClient.getTransferDetails(taskId, token);
+                log.error(statusObject);
                 
                 status = globusClient.checkTransferStatus(statusObject);
-                //Boolean isOk = statusObject.get("is_ok").getAsBoolean();
                
                 Boolean isOk = true;
                 try {
@@ -515,6 +516,7 @@ class TransferInWaitThread extends TransferWaitThread {
                 
                 lastStatusCheckTime = System.currentTimeMillis();
             } catch (Exception e){
+                e.printStackTrace();
                 error = e.getMessage();
                 status = "ERROR";
             }
@@ -733,21 +735,18 @@ class TransferOutWaitThread extends TransferWaitThread{
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, this.fileUrl, (LSID)null);
             String fileName = uploadFilePath.getName();
             
-                 
             // make a copy of the GP file on GenePattern's globus endpoint so that it can be transferred
             String myEndpointRoot = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
             File newFile = new File(myEndpointRoot + user +"/globus/"+fileName);
             String myEndpointType = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_TYPE);
-            
+     
             if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_LOCALFILE)){
-                Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                
+                Path p = Files.copy(uploadFilePath.getServerFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
                 // need to tell the externalFileManager to copy it for us
                 String fromFileS3Url = "s3://"+getBucketName(gpConfig, userContext)+ "/"+getBucketRoot(gpConfig, userContext)+uploadFilePath.getServerFile().getAbsolutePath();
                 String myS3EndpointRoot = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
                 String toS3Url = myS3EndpointRoot + user +"/globus/"+fileName;
-                // XXX JTL need to delete this copy later
                 S3TempLocationURL = toS3Url;
                 globusClient.s3CopyFile(userContext, fromFileS3Url,  toS3Url, recursive);
             }
@@ -756,7 +755,6 @@ class TransferOutWaitThread extends TransferWaitThread{
             
             // so to transfer in we need to know our endpoint ID
             String myEndpointId = gpConfig.getGPProperty(userContext, OAuthConstants.OAUTH_LOCAL_ENDPOINT_ID, "eb7230ac-d467-11eb-9b44-47c0f9282fb8");
-            
     
             JsonObject transferObject = new JsonObject();
             transferObject.addProperty("DATA_TYPE", "transfer");
@@ -766,12 +764,6 @@ class TransferOutWaitThread extends TransferWaitThread{
             transferObject.addProperty("verify_checksum", true);
             transferObject.addProperty("label", label);
             if (recursive){
-                // for directories we need to add filter rules, we will exclude any hidden files
-                // {
-                //    "DATA_TYPE": "filter_rule",
-               //     "method": "exclude",
-               //     "name": ".*"
-               //   }
                 JsonArray filterRules = new JsonArray();
                 
                 JsonObject filterRule = new JsonObject();
@@ -789,16 +781,10 @@ class TransferOutWaitThread extends TransferWaitThread{
             transferItem.addProperty("destination_path", destDir + fileName);
             transferItem.addProperty("source_path", "/~/GenePatternLocal/"+ user +"/globus/"+fileName);
             
-            
-           
-            // TODO MUST COPY THE FILE TO MY GLOBUS ENDPOINT FIRST
-            
             JsonArray transferItems = new JsonArray();
             transferItems.add(transferItem);
-            
             transferObject.add("DATA", transferItems);
-            
-            //System.out.println("     "+transferObject);
+
             URL url = new URL(globusClient.transferAPIBaseUrl+"/transfer");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
             connection.setRequestMethod("POST");
@@ -814,19 +800,20 @@ class TransferOutWaitThread extends TransferWaitThread{
                 byte[] input = transferObject.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);           
             }
-            System.out.println("TRANSFER OUT OBJECT \n" + transferObject.toString());
+            
             String taskId = null;
             JsonElement transferResponse = null;
             
             transferResponse =  getJsonResponse(connection);
             this.taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
             
-       
         } catch (Exception e){
+            log.error(e);
+            log.error("Transfer failed: ", e);
             this.error = e.getMessage();
             this.status = "ERROR";
-           e.printStackTrace();
-           try {
+           
+            try {
                globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
            } catch (Exception ee){
                ee.printStackTrace();
@@ -917,7 +904,7 @@ class TransferOutWaitThread extends TransferWaitThread{
                     File newFile = new File(myEndpointRoot + user +"/globus/"+file);
                     if (newFile.exists()) {
                         boolean deleted = newFile.delete();
-                        System.out.println("Globus temp file deleted " + deleted + "  " + newFile.getAbsolutePath());
+                        log.info("Globus temp file deleted " + deleted + "  " + newFile.getAbsolutePath());
                     }
                 } else if (myEndpointType.equalsIgnoreCase(OAuthConstants.OAUTH_ENDPOINT_TYPE_S3)){
                     globusClient.s3DeleteTempFile(userContext, S3TempLocationURL, recursive);
