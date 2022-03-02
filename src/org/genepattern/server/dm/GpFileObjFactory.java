@@ -105,6 +105,7 @@ public class GpFileObjFactory {
             gpConfig=ServerConfigurationFactory.instance();
         }
         File userUploadDir = gpConfig.getUserUploadDir(userContext);
+        log.error("   -   -   -   GpFileObjectFactory>>getUseruploadFile A "+ userUploadDir.getAbsolutePath());
         return getUserUploadFile(userContext, userUploadDir, uploadFile);
     }
 
@@ -139,7 +140,7 @@ public class GpFileObjFactory {
         }
 
        
-        File userRootDir = ServerConfigurationFactory.instance().getUserDir(userContext);
+       // File userRootDir = ServerConfigurationFactory.instance().getUserDir(userContext);
         
         //relativize the path by manually removing './'
         String relativePath = uploadFile.getPath();
@@ -148,7 +149,7 @@ public class GpFileObjFactory {
         }
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
-        File serverFile = new File(userRootDir, relativePath);
+        File serverFile = new File(userUploadDir, relativePath);
         
         //2) construct a URI from the file, to get the relative uri path
         //   e.g. uriPath=/users/<user_id>[/relativeParentDir]/filename
