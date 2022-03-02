@@ -24,6 +24,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.log4j.Logger;
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
@@ -57,6 +58,8 @@ import com.google.gson.JsonParser;
 import com.google.common.io.BaseEncoding;
 
 public class GlobusClient {
+    private static Logger log = Logger.getLogger(GlobusClient.class);
+    
     public static String transferAPIBaseUrl = "https://transfer.api.globusonline.org/v0.10" ;
     
     public void login(HttpServletRequest servletRequest) throws OAuthProblemException, OAuthSystemException, MalformedURLException, ProtocolException, UnsupportedEncodingException, IOException{
@@ -126,8 +129,6 @@ public class GlobusClient {
         
         // THESE CALLS ARE JUST FOR TEST/DEBUG
         JsonElement tokenDetails = getTokenDetails(accessToken);
-        //System.out.println("@login TokenDetails: "+ accessToken+"\n\t"+ tokenDetails);
-        
        
         
     }
@@ -196,14 +197,9 @@ public class GlobusClient {
         }    
         // get the json response
         JsonElement je = getJsonResponse(con);
-        //System.out.println(je);
         
         String newAccess = je.getAsJsonObject().get("access_token").getAsString();
-        String newRefresh = je.getAsJsonObject().get("refresh_token").getAsString();
-       
-        //System.out.println("\tnew refresh: " + newRefresh);
-        //System.out.println("\tnew access: " + newAccess);
-    
+        String newRefresh = je.getAsJsonObject().get("refresh_token").getAsString();  
         
         servletRequest.getSession().setAttribute(refreshTokenKey, newRefresh);
         servletRequest.getSession().setAttribute(accessTokenKey, newAccess);
@@ -408,9 +404,9 @@ public class GlobusClient {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
         String submissionId = null;
+ 
         try {
-        
-             if (userId == null) {
+            if (userId == null) {
                 userId = request.getParameter("gp_user_id");
             }
             
@@ -481,7 +477,7 @@ public class GlobusClient {
             
             transferObject.add("DATA", transferItems);
             
-            System.out.println("     "+transferObject);
+            log.debug("     "+transferObject);
             URL url = new URL(transferAPIBaseUrl+"/transfer");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
             connection.setRequestMethod("POST");
@@ -509,6 +505,7 @@ public class GlobusClient {
             GlobusTransferMonitor.getInstance().addWaitingInbound(submissionId, userId, taskId, this, file, context, destDir, fileSize, recursive);
             return submissionId;
         } catch (Exception e){
+            e.printStackTrace();
             if (submissionId == null) submissionId = UUID.randomUUID().toString();
             GlobusTransferMonitor.getInstance().addFailedTransferStart(submissionId, userId, file, destDir, e.getMessage());
             return submissionId;
@@ -542,7 +539,7 @@ public class GlobusClient {
         //URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+UrlUtil.encodeURIcomponent(file));
         URL url = new URL(transferAPIBaseUrl+"/operation/endpoint/"+sourceEndpointId+"/ls?path="+path+"&filter=name:="+encodedFileName);
 
-        System.out.println(url.toString());
+        log.debug(url.toString());
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();        
         connection.setRequestMethod("GET");
@@ -581,7 +578,7 @@ public class GlobusClient {
         JsonElement jsonResponse = null;
         
         jsonResponse =  getJsonResponse(connection);
-        System.out.println(jsonResponse.toString());
+        log.debug(jsonResponse.toString());
         return jsonResponse.getAsJsonObject();
     }
     
@@ -684,7 +681,6 @@ public class GlobusClient {
         
         URL anUrl = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/"+myEndpointID+"/access");  
         
-        // System.out.println("ACL CALL " + anUrl.toString());
         HttpURLConnection con = (HttpURLConnection) anUrl.openConnection();
          
         String authHeaderValue = "Bearer " + appAccessToken; 
@@ -708,9 +704,7 @@ public class GlobusClient {
             byte[] input = aclObject.toString().getBytes("utf-8");
             os.write(input, 0, input.length);           
             JsonElement je = getJsonResponse(con);
-            //System.out.println(je);
            
-            
         } catch (Exception e){
             boolean realError = false;
             if (con.getResponseCode() == 409 ){
@@ -719,7 +713,7 @@ public class GlobusClient {
                 String code = jerr.getAsJsonObject().get("code").getAsString();
                 if ("Exists".equalsIgnoreCase(code)){
                     //String ruleId = getUserACLId( userAccessToken);
-                    //System.out.println("GLOBUS access rule already existed "+ ruleId);
+                   
                 } else {
                     realError = true;
                 }
@@ -755,7 +749,6 @@ public class GlobusClient {
             Xcon.setRequestProperty("Accept", "application/json");
             
             JsonElement je = getJsonResponse(Xcon);
-            //System.out.println(je);
                 
             String code = je.getAsJsonObject().get("code").getAsString();
             return "Deleted".equalsIgnoreCase(code);
@@ -785,7 +778,6 @@ public class GlobusClient {
             Xcon.setRequestProperty("Accept", "application/json");
             
             JsonElement je = getJsonResponse(Xcon);
-            //System.out.println(je);
             JsonArray aclEntries = je.getAsJsonObject().get("DATA").getAsJsonArray();
             for (int i=0; i< aclEntries.size(); i++){
                 JsonObject anAccess = aclEntries.get(i).getAsJsonObject();
