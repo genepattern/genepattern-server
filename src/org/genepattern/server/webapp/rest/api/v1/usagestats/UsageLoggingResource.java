@@ -12,15 +12,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Appender;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 
 
 /**
- * A class and REST resource that can be used for arbitraty usage logging.  Since we
+ * A class and REST resource that can be used for arbitrary usage logging.  Since we
  * just want a really general thing that goes to a  log file that we can scan to 
  * pull out details. Its just a very generic api to allow things to be 
  * written to a log or logs
@@ -51,10 +52,7 @@ public class UsageLoggingResource {
             if (i != (messageList.size()-1)) msg.append("\t");
         }
         String message = msg.toString();
-        
-        Appender appender = log.getAppender(logname);
-        if (appender == null) createNewAppender(log, logname);
-        
+         
         if ("trace".equalsIgnoreCase(loglevel)){
             log.trace(message);
         } else if ("info".equalsIgnoreCase(loglevel)){
@@ -68,35 +66,4 @@ public class UsageLoggingResource {
             log.trace(message);
         }
     }
-    
-    /**
-     * A new log file appender is needed.  For nw we always use the same defaults until there
-     * is a reason so get more complicated
-     * 
-     * @param logname
-     */
-    protected static Appender createNewAppender(Logger log, String logname){
-       
-        RollingFileAppender appender = new RollingFileAppender();
-        appender.setName(logname);
-        
-        String logDir = System.getProperty("gp.log");
-        appender.setFile(logDir+"/"+logname+".log");
-        
-        System.out.println("Created log at "+logDir+"/"+logname+".log");
-        appender.setLayout(new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n"));
-        appender.setAppend(true);
-        appender.setThreshold(Level.ALL);
-        appender.activateOptions();
-        appender.setMaxBackupIndex(5);
-        appender.setMaxFileSize("20MB");
-        appender.setImmediateFlush(true);
-        
-        log.addAppender(appender);
-        log.setLevel(Level.ALL);
-        return appender;
-    }
-    
-    
-    
 }
