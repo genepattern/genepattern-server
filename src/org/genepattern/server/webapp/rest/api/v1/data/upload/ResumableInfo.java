@@ -84,7 +84,7 @@ public class ResumableInfo {
        
         try{
             // System.out.println("Uploaded file complete.  Copying from "+ file.getAbsolutePath() + " to " + dest.getAbsolutePath());
-            
+            dest.getParentFile().mkdirs();
             Files.move(file, dest);
             
         } catch (Exception ioe){
