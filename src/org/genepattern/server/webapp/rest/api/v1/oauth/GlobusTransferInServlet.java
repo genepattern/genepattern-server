@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -27,6 +28,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.LSID;
 
@@ -40,7 +42,8 @@ import com.google.gson.JsonParser;
  */
 public class GlobusTransferInServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+	private static Logger log = Logger.getLogger(GlobusTransferInServlet.class);
+
 	public static String transferAPIBaseUrl = "https://transfer.api.globusonline.org/v0.10" ;
 	
 	
@@ -56,9 +59,9 @@ public class GlobusTransferInServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 	    // gp_action=sendToGlobus
 	    boolean isSendToGlobus = "sendToGlobus".equalsIgnoreCase(request.getParameter("gp_action"));
+	    
 	    if (isSendToGlobus) outwardTransferToGlobus(request, response);
 	    else  	    inboundTransferFromGlobus(request, response);
 	    return;
@@ -83,12 +86,10 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         String gp_session_id = null;
         String label = "Transfer Into GenePattern";
         try {
-            System.out.println("   -   -   -   -   -   -   -   -   GLOBUS TRANSFER IN   -   -   -   -   -   ");
             Enumeration enumParamNames = request.getParameterNames();
             while (enumParamNames.hasMoreElements()){
                 String name = (String)enumParamNames.nextElement();
                 String val = request.getParameter(name);
-                System.out.println("   -   "+ name + "  =  " + val);
             }
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
@@ -169,7 +170,7 @@ protected void inboundTransferFromGlobus(HttpServletRequest request, HttpServlet
         }
         
     }
-     System.out.println(buff.toString());
+     log.debug(buff.toString());
     
     response.sendRedirect(buff.toString());
     // redirect to a page to close the popup and call the parent window to tell it to look
@@ -200,6 +201,7 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         String gp_user_id = null;
         String gp_session_id = null;
         String label = "From GenePattern";
+        
         try {
             endpointId = request.getParameter("endpoint_id");
             path = request.getParameter("path");
@@ -207,13 +209,11 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
             gp_user_id = request.getParameter("gp_username");
             gp_session_id = request.getParameter("gp_session_id");
             label = request.getParameter("label");
-            
         } catch (Exception ex){
             ex.printStackTrace();
         }
         
         reestablishGenepatternSession(request, gp_user_id, gp_session_id);
-        
         
         if ((endpointId == null)||(path==null)||(fileToTransfer == null)){
             // user probably hit the cancel button
@@ -227,9 +227,7 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         
         
         try {
-           
            submissionId = globusClient.transferFileToGlobus(request, endpointId, path, fileToTransfer, label);
-  
         }  catch (InterruptedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -240,7 +238,6 @@ protected void outwardTransferToGlobus(HttpServletRequest request, HttpServletRe
         ex.printStackTrace();
         response.getWriter().append("\nERROR ").append(ex.getMessage());
     }
-    
     // redirect to a page to close the popup and call the parent window to tell it to look
     // for the new file to appear in the user's files tab
     
