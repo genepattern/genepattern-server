@@ -99,7 +99,8 @@ public class GlobusTaskResource {
     public Response cancelTask(@Context HttpServletRequest request, @Context HttpServletResponse response,  @QueryParam("submissionID") String submissionID) throws IOException {
         String userId = (String)request.getSession().getAttribute(GPConstants.USERID);
          
-        JsonObject ret = GlobusTransferMonitor.getInstance().removeWaitingUser(userId, submissionID);;
+        JsonObject ret = GlobusTransferMonitor.getInstance().removeWaitingUser(userId, submissionID);
+        if (ret == null) Response.status(200).entity("{error:'task not found'}").build();
         return Response.status(200).entity(ret.toString()).build();
     }
     
