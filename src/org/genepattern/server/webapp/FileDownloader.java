@@ -94,8 +94,14 @@ public class FileDownloader {
             // in an external location and redirect to its special download handler
             String userId = UIBeanHelper.getUserId();
             GpContext userContext = GpContext.getContextForUser(userId);
-            ExternalFileManager externalDownloader = DataManager.getExternalFileManager(GpContext.getServerContext());
             
+            ExternalFileManager externalDownloader = null;
+            try {
+                externalDownloader = DataManager.getExternalFileManager(GpContext.getServerContext());
+            } catch (Exception e){
+                log.error("Non-fatal error looking for external downloader", e);
+            }
+                
             if (externalDownloader != null) {
                 try {
                     externalDownloader.downloadFile(userContext, request, response, file);
@@ -106,6 +112,7 @@ public class FileDownloader {
                 } catch(Exception e){
                     log.error("Failed to download (2) with : " + externalDownloader, e);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
                 } 
                 
             } else {
