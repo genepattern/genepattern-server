@@ -458,13 +458,19 @@ public class SlurmJobRunner implements JobRunner {
     private DrmJobStatus extractSlurmStatus(String extJobId, File stderr, List<String> output) throws Exception {
         // Extract the status string from the output
         String slurmStatusString = null;
-        if (output.size() > 3) log.warn("Extra lines found in Slurm status output");
+        if (output.size() > 3) log.warn("Extra lines found in Slurm status output " + output.size());
         if (output.size() > 2) {
-            StringTokenizer tokenizer = new StringTokenizer(output.get(2));
+            // nominally there should be 3 lines unless SDSC adds warning messages like they did on 2/23/22
+            // so if there are >3 lines we will try for the last one
+            int idx = output.size()-1;
+            StringTokenizer tokenizer = new StringTokenizer(output.get(idx));
+            log.error("--Parsing slurm status from: " + output.get(idx));
+            
             if (tokenizer.countTokens() < 5) {
                 log.warn("Missing tokens from Slurm status output");
             }
             else {
+                
                 int count = 1;
                 while (count != 5) {
                     tokenizer.nextToken();
