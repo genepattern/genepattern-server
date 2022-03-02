@@ -1,3 +1,9 @@
+//      Feb 2022 - bhill
+//      The cache location and download location changed at some point
+//      Or at least how we are determining the working dir.
+//      likely when we started used S3
+//      disabling for now.
+
 package org.genepattern.server.job.input;
 
 import static org.junit.Assert.assertEquals;
@@ -76,6 +82,7 @@ public class TestParamListHelper {
      * </pre>
      * @return
      */
+     
     protected static GpConfig initCachedConfig(final File gpHomeDir) {
         // need to customize the properties
         GpConfig gpConfig=new GpConfig.Builder()

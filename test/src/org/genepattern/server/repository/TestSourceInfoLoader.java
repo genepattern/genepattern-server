@@ -65,18 +65,19 @@ public class TestSourceInfoLoader {
     //     Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGparc.getBriefDescription());
     //     Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGparc.getFullDescription());
     // }
-    
-    @Test
-    public void testFromGPBeta() {
-        final TaskInfo pdTaskInfo=taskLoader.getTaskInfo(pdLsid);
-        final SourceInfo fromGPBeta=sourceInfoLoader.getSourceInfo(pdTaskInfo);
-        Assert.assertNotNull("expecting non-null sourceInfo", fromGPBeta);
-        Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromGPBeta.getType());
-        Assert.assertEquals("sourceInfo.label", "GP beta (new)", fromGPBeta.getLabel());
-        Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromGPBeta.getIconImgSrc());
-        Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGPBeta.getBriefDescription());
-        Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGPBeta.getFullDescription());
-    }
+
+// We no longer actively suppor the beta repo
+//     @Test
+//     public void testFromGPBeta() {
+//         final TaskInfo pdTaskInfo=taskLoader.getTaskInfo(pdLsid);
+//         final SourceInfo fromGPBeta=sourceInfoLoader.getSourceInfo(pdTaskInfo);
+//         Assert.assertNotNull("expecting non-null sourceInfo", fromGPBeta);
+//         Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromGPBeta.getType());
+//         Assert.assertEquals("sourceInfo.label", "GP beta (new)", fromGPBeta.getLabel());
+//         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromGPBeta.getIconImgSrc());
+//         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromGPBeta.getBriefDescription());
+//         Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromGPBeta.getFullDescription());
+//     }
     
     @Test
     public void testFromUnknown() {

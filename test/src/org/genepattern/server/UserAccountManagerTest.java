@@ -208,15 +208,14 @@ public class UserAccountManagerTest {
             // valid usernames ...
             //   { "", "", true },
             { "basic", "myusername", true, true },
-            { "space character ' '", "my username", true, false },
-            
             { "email", "myusername@example.com", true, true },
-            { "email with space", "my username@example.com", true, false },
             { "email with hyphen", "my-username@example.com", true, true },
             { "email with underscore", "my_username@example.com", true, true },
             { "email with dot", "my.username@example.com", true, true },
             
             // invalid usernames ...
+            { "email with space", "my username@example.com", false, false },
+            { "space character ' '", "my username", false, false },
             { "empty string", "", false, false },
             { "newline", "myusername\n", false, false },
             { "tab character", "my\tusername", false, false },

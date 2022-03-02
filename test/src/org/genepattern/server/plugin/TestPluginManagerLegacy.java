@@ -217,24 +217,25 @@ public class TestPluginManagerLegacy {
         assertNotNull(actual);
         assertComparePatchInfo("", initTopHatPatchInfos(), actual);
     }
+    //We don't use patches any more as of Nov 2021
+//     @Test
+//     public void updateUrlIfNecessary_oldUrl() {
+//         final String fromUrl="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+//         assertEquals("from old Broad repository",
+//                 // expected
+//                 "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip",
+//                 PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
+//     }
     
-    @Test
-    public void updateUrlIfNecessary_oldUrl() {
-        final String fromUrl="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        assertEquals("from old Broad repository", 
-                // expected
-                "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip", 
-                PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
-    }
-    
-    @Test
-    public void updateUrlIfNecessary_newUrl() {
-        final String fromUrl="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        assertEquals("from new Broad repository", 
-                // expected
-                "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip", 
-                PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
-    }
+    //We don't use patches any more as of Nov 2021
+//     @Test
+//     public void updateUrlIfNecessary_newUrl() {
+//         final String fromUrl="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+//         assertEquals("from new Broad repository",
+//                 // expected
+//                 "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip",
+//                 PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
+//     }
 
     @Test
     public void updateUrlIfNecessary_noChange() {
@@ -254,23 +255,24 @@ public class TestPluginManagerLegacy {
         assertEquals("null arg", null, PluginManagerLegacy.updateUrlIfNecessary(null));
     }
     
-    @Test
-    public void requiredPatches_updateUrl() throws JobDispatchException {
-        final String lsidFromManifest=ANT;
-        final String urlFromManifest="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        final String urlExpected="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        
-        final TaskInfo taskInfo = new TaskInfo();
-        taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, lsidFromManifest);
-        taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_URLS, urlFromManifest);
-        
-        final List<PatchInfo> patchInfos = PluginManagerLegacy.getRequiredPatches(taskInfo);
-        assertEquals("num patches", 1, patchInfos.size());
-        assertEquals("patchInfos[0].lsid", lsidFromManifest, patchInfos.get(0).getLsid());
-        assertEquals("patchInfos[1].url", 
-                urlExpected,
-                patchInfos.get(0).getUrl());
-    }
+    // We don't use these anymore - they were retired in Nov 2021
+//     @Test
+//     public void requiredPatches_updateUrl() throws JobDispatchException {
+//         final String lsidFromManifest=ANT;
+//         final String urlFromManifest="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+//         final String urlExpected="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+//
+//         final TaskInfo taskInfo = new TaskInfo();
+//         taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, lsidFromManifest);
+//         taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_URLS, urlFromManifest);
+//
+//         final List<PatchInfo> patchInfos = PluginManagerLegacy.getRequiredPatches(taskInfo);
+//         assertEquals("num patches", 1, patchInfos.size());
+//         assertEquals("patchInfos[0].lsid", lsidFromManifest, patchInfos.get(0).getLsid());
+//         assertEquals("patchInfos[1].url",
+//                 urlExpected,
+//                 patchInfos.get(0).getUrl());
+//     }
     
     @Test(expected=JobDispatchException.class)
     public void requiredPatches_mismatchedLsidAndUrl() throws Exception {
