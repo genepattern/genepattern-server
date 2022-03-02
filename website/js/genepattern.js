@@ -4641,12 +4641,12 @@ function glb_send_to(filePath) {
 		var idx = filePath.lastIndexOf("/");
 		var name = filePath.substring(idx+1);
 		name = name.replace(".","_");
-		$("#globusTag")[0].value = name + " from GenePattern";
+		$("#globusTag")[0].value = "Directory" + name + " from GenePattern";
 	} else {
 		var secondLastIndex = filePath.lastIndexOf('/', filePath.lastIndexOf('/')-1)
 		var name = filePath.substring(secondLastIndex+1, filePath.length-1);
 		name = name.replace(".","_");
-		$("#globusTag")[0].value = name + " from GenePattern";
+		$("#globusTag")[0].value = "File " + name + " from GenePattern";
 	}
 	
 		
@@ -4672,17 +4672,6 @@ function glb_browse(destinationDirectory) {
     var w = window.open('', 'form-target', 'width=800, height=800');
     
     window.globusCallbackFunction = function(files, folders, destDir, submissionID, direction){
-//	    	globusTransferInitiated= true;
-//	    	if ((filename != null) && (destDir != null)){
-//	    		// open the toaster on the file
-//	    		var file = new Object();
-//	    		file.name=filename;
-//	    		file.fileName = filename;
-//	    		file.id = submissionID;
-//	    		file.direction = direction;
-//	    		globusAddToOrUpdateToaster(file, destDir, true)
-//	    	}
-//		setTimeout( getGlobusTransferStatus , 10000 );
     	
     	globusTransferInitiated= true;
 		try {
@@ -5286,12 +5275,7 @@ function createGlobusWidget(){
         "description": "Transfer data into GenePattern from a Globus Endpoint.",
         "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
-    actionData.push({
-        "lsid": "",
-        "name": "Transfer to Globus Endpoint",
-        "description": "Transfer this directory and its contents to a Globus Endpoint...",
-        "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
-    });
+
     actionData.push({
         "lsid": "",
         "name": "Globus Transfer Status",
