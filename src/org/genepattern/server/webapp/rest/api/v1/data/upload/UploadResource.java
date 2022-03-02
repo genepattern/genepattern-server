@@ -595,6 +595,7 @@ public class UploadResource {
                
                 
                 File serverFile = new File(info.destinationFilePath+File.separator + info.resumableFilename);
+                serverFile.getParentFile().mkdirs();
                 UserUploadFile finalFile = GpFileObjFactory.getUploadedFilePath(userContext, info, uploadRelPath, serverFile);
                 
                 
@@ -612,7 +613,7 @@ public class UploadResource {
                 
             }
             
-            
+          
         } catch (Throwable t){
             t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
@@ -622,14 +623,18 @@ public class UploadResource {
 
     
     private String getUploadRelativePath(String destPath, String username){
+      
+        log.error("Upload resource getRelPath for -- " + destPath + " -- " + username);
+        
+        
         String root = "/users/" + username + "/uploads";
         int idx = destPath.indexOf(root);
         // deal with it sometimes being a file path and sometimes a URL
         
-        if (idx < 0) {
-            root = "/users/" + username;
-            idx = destPath.indexOf( "/users/" + username);
-        }
+//        if (idx < 0) {
+//            root = "/users/" + username;
+//            idx = destPath.indexOf( "/users/" + username);
+//        }
         
         String path =  destPath.substring(idx + root.length());
         if (path.length() ==0)  return  ".";
@@ -671,6 +676,9 @@ public class UploadResource {
         String resumableRelativePath    = request.getParameter("resumableRelativePath");
         
         String path              = request.getParameter("target");
+        
+        log.error("-- -- -- UploadResource: Target is " + path);
+        
         GpFilePath file = getUploadFile(gpConfig, userContext, path);      
         
         
