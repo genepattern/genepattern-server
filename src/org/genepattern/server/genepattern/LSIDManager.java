@@ -81,6 +81,7 @@ public class LSIDManager {
     public static LSID getNextLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace, final String requestedLSID, final LsidVersion.Increment versionIncrement)
     throws java.rmi.RemoteException {
         LSID taskLSID = null;
+       
         if (requestedLSID != null && requestedLSID.length() > 0) {
             try {
                 taskLSID = new LSID(requestedLSID);
@@ -91,9 +92,12 @@ public class LSIDManager {
         }
         final String lsidAuthority=gpConfig.getLsidAuthority(gpContext);
         final boolean isInTransaction=mgr.isInTransaction();
+        boolean itsNew = false;
         try {
             if (taskLSID == null) {
                 taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
+                return taskLSID;
+//                itsNew = true;
             } 
             //else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
             boolean lsidIsMine = LSIDUtil.isAuthorityMine(requestedLSID);
@@ -103,8 +107,9 @@ public class LSIDManager {
             if (lsidIsMine || (userEditAllowed && (requestedLSID.length() > 0) )  ) {
                 taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
             } 
-            else {
-                taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
+            else  {
+               //if (!itsNew) 
+                   taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
             }
         }
         catch (Throwable t) {
