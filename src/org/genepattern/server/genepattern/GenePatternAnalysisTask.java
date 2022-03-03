@@ -1337,6 +1337,24 @@ public class GenePatternAnalysisTask {
         }
         props.setProperty(JobRunner.PROP_DOCKER_IMAGE, dockerImage);
         
+     // GP-9086 make sure cpuCount it available before the command line is generated for the modules that need it for parallelization
+        // without this it will be added if explicitly set, but not if left to the default because it won't be in the context
+        // before the command line is generated
+        String jobCpuCount = null;
+        try {
+            jobCpuCount = gpConfig.getGPProperty(jobContext, "job.cpuCount");
+            if (jobCpuCount.length() == 0){
+                throw new NullPointerException();
+            }
+        } catch (Exception eee){
+            GpContext userContext = GpContext.getContextForUser(jobInfo.getUserId());
+            jobCpuCount = gpConfig.getGPProperty(userContext, "job.cpuCount", "1");
+        } finally {
+            props.setProperty("job.cpuCount", jobCpuCount);
+        }
+        
+        
+        
         paramsCopy = stripOutSpecialParams(paramsCopy);
         // check that all parameters are used in the command line
         // and that all non-optional parameters that are cited actually exist
