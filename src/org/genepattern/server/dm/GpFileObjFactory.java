@@ -101,11 +101,9 @@ public class GpFileObjFactory {
     throws GpFilePathException 
     {
         if (gpConfig == null) {
-            log.error("gpConfig==null, using ServerConfigurationFactory.instance");
             gpConfig=ServerConfigurationFactory.instance();
         }
         File userUploadDir = gpConfig.getUserUploadDir(userContext);
-        log.error("   -   -   -   GpFileObjectFactory>>getUseruploadFile A "+ userUploadDir.getAbsolutePath());
         return getUserUploadFile(userContext, userUploadDir, uploadFile);
     }
 
