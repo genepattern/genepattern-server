@@ -1072,7 +1072,8 @@ function initParam(parameterInfo, index, batchParams) {
     run_task_info.params[parameterInfo.name].description = parameterInfo.description;
     run_task_info.params[parameterInfo.name].altDescription = parameterInfo.altDescription;
     run_task_info.params[parameterInfo.name].groupInfo = parameterInfo.groupInfo;
-
+    run_task_info.params[parameterInfo.name].fileFormat = parameterInfo.fileFormat;
+    
     if (batchParams !== undefined && batchParams !== null && batchParams.indexOf(parameterInfo.name) !== -1) {
         run_task_info.params[parameterInfo.name].isBatch = true;
     }
@@ -3477,17 +3478,24 @@ function checkForValidFileExtension(fileName, paramName, run_task_info){
     var aMatchIsMade = false;
     // if file types are specified and they do not contain this parameterName
     // then there is a mismatch
+    // if no file formats are defined, just assume its OK
+    if (run_task_info.params[paramName].fileFormat == null) {
+    	aMatchIsMade = true;
+    } else if (run_task_info.params[paramName].fileFormat.length == 0){
+    	aMatchIsMade = true;
+    }
     
-    if (allParamsForThisFile.length > 0) {
-    	for (var aType in possibleFileTypes){
-    		var list = run_task_info.sendTo[aType]
-    		if (list != null){
-    			aMatchIsMade =  aMatchIsMade | list.includes(paramName);
-    		}
-    		if (aMatchIsMade) break;
-    	}
-    } 
-    
+    if (!aMatchIsMade){
+	    if (allParamsForThisFile.length > 0) {
+	    	for (var aType in possibleFileTypes){
+	    		var list = run_task_info.sendTo[aType]
+	    		if (list != null){
+	    			aMatchIsMade =  aMatchIsMade | list.includes(paramName);
+	    		}
+	    		if (aMatchIsMade) break;
+	    	}
+	    } 
+    }
     var fileTypesForParam = []
     if (!aMatchIsMade){
         
@@ -3507,6 +3515,8 @@ function checkForValidFileExtension(fileName, paramName, run_task_info){
         	if (aMatchIsMade) break;
         }
     }
+    
+    
     var retval = new Object();
     retval.isValid = aMatchIsMade;
     retval.fileTypesForParam = fileTypesForParam;
