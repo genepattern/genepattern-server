@@ -381,9 +381,17 @@ public class AWSBatchJobRunner implements JobRunner {
                 // jobs[0].jobQueue
                 final String jobQueue=awsJob.optString("jobQueue");
                 // jobs[0].status
-                final String awsStatusCode = awsJob.optString("status");
+                String awsStatusCode = awsJob.optString("status");
                 // jobs[0].statusReason
                 final String awsStatusReason = awsJob.optString("statusReason");
+
+                // GP-9100 when batch times out a job it comes back as succeeded but 
+                // GenePattern considers it as failed
+                if (("SUCCEEDED".equals(awsStatusCode)) && (awsStatusReason.contains("duration exceeded timeout"))){
+                    awsStatusCode = "FAILED";
+                }
+                
+                
                 if (log.isDebugEnabled()) {
                     
                   //  log.debug("getStatus("+jobRecord.getGpJobNo()+") call is: " + checkStatusScript + " " + awsId);
@@ -417,15 +425,15 @@ public class AWSBatchJobRunner implements JobRunner {
                     final File metadataDir=getMetadataDir(jobRecord);
                     try {
                         refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
-                        log.debug("A");
+                        
                     } 
                     catch (Throwable t) {
-                        log.debug("ERROR A");
+                        
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
                     final Integer exitCode=getExitCodeFromMetadataDir(metadataDir);
                     if (exitCode != null) {
-                        log.debug("B");
+                       
                         b.exitCode(exitCode);
                         // special-case: custom timeout
                         if (exitCode==142) {
@@ -433,7 +441,7 @@ public class AWSBatchJobRunner implements JobRunner {
                         }
                     }
                     else if (containerExitCode >= 0) {
-                        log.debug("C");
+                        
                         // special-case: aws batch timeout
                         //   awsStatusCode: FAILED
                         //   awsStatusReason: Job attempt duration exceeded timeout
