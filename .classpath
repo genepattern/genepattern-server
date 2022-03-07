@@ -150,7 +150,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/saaj.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/sax.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-api-1.7.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-log4j12-1.7.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/snakeyaml-1.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/stax-api-1.0-2.jar"/>
