@@ -4,7 +4,10 @@
 package org.genepattern.server.job.input.choice;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +21,8 @@ import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 import org.genepattern.webservice.ParameterInfo;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Initialize the list of choices for a given parameter from a remote ftp server.
@@ -161,6 +166,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             initChoiceInfoEntriesFromFtp(param, remoteDir, choiceInfo, dirFilter);
         } else if (remoteDir.startsWith("s3")) {
             initChoiceInfoEntriesFromS3(param, remoteDir, choiceInfo, dirFilter);
+        } else if (remoteDir.startsWith("http")) {
+            initChoiceInfoEntriesFromHTTPFile(param, remoteDir, choiceInfo, dirFilter);
         }
         
         return choiceInfo;
@@ -201,6 +208,38 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         } 
         return choiceInfo;
     }
+    
+    private ChoiceInfo initChoiceInfoEntriesFromHTTPFile(final ParameterInfo param, final String fileUrl, final ChoiceInfo choiceInfo, final DirFilter dirFilter) {
+        
+        // 
+        try {
+            InputStream is = new URL(fileUrl).openStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            StringBuilder sb = new StringBuilder();
+            int cp;
+            while ((cp = rd.read()) != -1) {
+              sb.append((char) cp);
+            }
+            JSONArray json = new JSONArray(sb.toString());
+            for (int i=0; i< json.length(); i++){
+                JSONObject obj = json.getJSONObject(i);
+                String label = obj.getString("label");
+                String url = obj.getString("url");
+                final Choice choice=new Choice(label, url, false);
+                choiceInfo.add(choice);
+             }
+            
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e);
+        }
+        final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+fileUrl+" on "+new Date();
+        choiceInfo.setStatus(Flag.OK, statusMessage);
+        
+        return choiceInfo;
+    }
+    
     
     private ChoiceInfo initChoiceInfoEntriesFromS3(final ParameterInfo param, final String s3DirURI, final ChoiceInfo choiceInfo, final DirFilter dirFilter) {
         
