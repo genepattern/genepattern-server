@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <!-- Logging Properties -->
+    <Properties>
+        <Property name="LOG_PATTERN">[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</Property>
+	<Property name="APP_LOG_ROOT">${sys:gp.log:-default/opt/genepattern/logs}</Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- File Appenders on need basis -->
+        <RollingFile name="webserverLog" fileName="${APP_LOG_ROOT}/webserver.log"
+            filePattern="${APP_LOG_ROOT}/wenserver-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+        <RollingFile name="oauthLog" fileName="${APP_LOG_ROOT}/oauth.log"
+            filePattern="${APP_LOG_ROOT}/oauth-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+        <RollingFile name="genepatternLog" fileName="${APP_LOG_ROOT}/genepattern.log"
+            filePattern="${APP_LOG_ROOT}/app-error-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+        <Root level="info" additivity="false">
+    			<AppenderRef ref="webserverLog" />
+          <AppenderRef ref="Console"  />
+    		</Root>
+
+        <Logger name="org.genepattern" additivity="false" level="debug">
+            <AppenderRef ref="genepatternLog" />
+						<AppenderRef ref="webserverLog" />
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="org.genepattern.server.webapp.rest.api.v1.oauth.AuthResource" additivity="false" level="debug">
+            <AppenderRef ref="oauthLog" />
+            <AppenderRef ref="Console"  />
+        </Logger>
+
+  			<Logger name="org.genepattern.server.executor.pipeline" additivity="true" level="trace"/>
+
+    </Loggers>
+
+</Configuration>
