@@ -225,10 +225,9 @@ public class SlurmJobRunner implements JobRunner {
             if (memRequested.getNumBytes() < gpuMinMem.getNumBytes()) memRequested = gpuMinMem;
         }
         
-        // the value in the config file is a default and also a floor for nCPU
+     
         
         String nCPUStr = drmJobSubmission.getProperty("job.cpuCount.per.task");
-        System.out.println("ABOUT TO GET NCPU ============================-------------");
         Integer nCPU = null;
         if (nCPUStr != null){
             nCPU = new Integer(nCPUStr);
@@ -255,6 +254,44 @@ public class SlurmJobRunner implements JobRunner {
         String ntasksPerNodeDefault =  config.getGPProperty(jobContext, "slurm.ntasks.per.node", "1"); // GPU uses 2
         String ntasksPerNode = drmJobSubmission.getProperty("job.numTasksPerNode");
         if (ntasksPerNode == null) ntasksPerNode =  ntasksPerNodeDefault;
+        
+        
+        // the partition can override the default IFF nGPU >= 4
+        // this is for the SDSC expanse system where you cannot use the gpu-shared
+        // queue for 4 or more GPU but the GPU-shared is cheaper and we want to use that when we can
+        //
+        // to use in config specify a drmSubmission variable name and a value and an alt queue name
+        //     job.alt.queue: "gpu"
+        //     job.alt.queue.switchover.var: "job.gpuCount"
+        //     job.alt.queue.switchover.val: "4"
+        //
+        // with this it will switch to the queue/partition named 'gpu' if job.gpuCount >= 4
+        
+        String altPartition = config.getGPProperty(jobContext, "job.alt.queue", null);
+        String altSwitchover = config.getGPProperty(jobContext, "job.alt.queue.switchover.val", null);
+        String altSwitchoverVar = config.getGPProperty(jobContext, "job.alt.queue.switchover.var", null);
+
+//        System.out.println("---- altPartition "+ altPartition);
+//        System.out.println("---- altSwitchover "+ altSwitchover);
+//        System.out.println("---- altSwitchoverVar "+ altSwitchoverVar);
+        
+        if ((altPartition != null) & (altSwitchover != null) && (altSwitchoverVar != null)){
+            try {
+                Integer valOfVar = new Integer(drmJobSubmission.getProperty(altSwitchoverVar));
+                //System.out.println("---- valOfVar "+ valOfVar);
+                
+                
+                Integer altSwitchoverPoint = new Integer(altSwitchover);
+               
+                if (valOfVar >= altSwitchoverPoint){
+                    partition = altPartition;
+                }
+            } catch (Exception e){
+                // swallow
+                log.error(e);
+            }
+        }
+        
         
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
