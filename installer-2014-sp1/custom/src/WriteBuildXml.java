@@ -81,6 +81,7 @@ public class WriteBuildXml extends CustomCodeAction {
         buff.append("<java classname=\"edu.mit.genome.gp.server.ZipTask\" fork=\"true\">\n");
         buff.append("<jvmarg value=\"-Dgenepattern.properties=${basedir}/../resources\"/>\n");
         buff.append("<jvmarg value=\"-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties\"/>\n");
+        buff.append("<jvmarg value=\"-Dlog4j2.configurationFile=${basedir}/webapps/gp/WEB-INF/classes/log4j2.xml\"/>\n");
         buff.append("<arg value=\"${basedir}/../" + zipDirName + "\"/>\n");
         buff.append("<classpath>\n");
         buff.append("<fileset dir=\"${basedir}/webapps/gp/WEB-INF/lib\">\n");
