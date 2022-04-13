@@ -248,6 +248,22 @@ public class UsageStatsResource {
                     }
                     writer.write(" ");
                     writer.flush();
+                    
+                    try {
+                        long t1 = System.currentTimeMillis();
+                        object.put("ModuleInstalls",ds.getModuleInstallsBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("ModuleInstalls et (ms): " + (t2-t1));
+                        System.out.println("ModuleInstalls et (ms): " + (t2-t1));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
+                    writer.write(" ");
+                    writer.flush();
+                    
+                    
+                    
                     try {
                          long t1 = System.currentTimeMillis();
                          object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));

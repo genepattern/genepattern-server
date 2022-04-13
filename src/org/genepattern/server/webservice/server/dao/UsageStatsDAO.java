@@ -119,6 +119,35 @@ public class UsageStatsDAO extends BaseDAO {
     }
     
     
+    public JSONArray getModuleInstallsBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
+        JSONArray users = new JSONArray();
+        ResultSet rs = null;
+        
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt = getSession().connection().prepareStatement("select TI.USER_ID, TI.LSID, TI.DATE_INSTALLED, TI.SOURCE_TYPE, TM.TASK_NAME from TASK_INSTALL as TI inner join TASK_MASTER as TM on TI.lsid = TM.lsid where (DATE_INSTALLED BETWEEN ? and ?)  ");
+        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+          
+        try {
+            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            while (rs.next()) {
+                JSONObject module = new JSONObject();
+                module.put("user_id",rs.getString(1));
+                module.put("task_name",rs.getString(5));
+                module.put("email",rs.getString(2));
+                module.put("date_installed",rs.getString(3));
+                module.put("source_type",rs.getString(4));
+                
+                users.put(module);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        return users;
+    }
+    
+    
     public int getTotalRegistrationCount(String userExclusionClause) throws Exception {
         Integer count = null;
         StringBuffer sqlBuff = new StringBuffer("select count(USER_ID) from gp_user where (USER_ID <> 'test') "+ userExclusionClause);
