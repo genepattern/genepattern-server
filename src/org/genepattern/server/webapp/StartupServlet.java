@@ -312,8 +312,9 @@ public class StartupServlet extends HttpServlet {
         try {
             final File logDirPath=initLogDirPath(servletConfig, gpHomeDir, gpWorkingDir);
             final File logDir=new File(GpConfig.normalizePath(logDirPath.getPath()));
-            final File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
-            return initLogger(logDir, log4jProps);
+            //final File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
+            final File log4j2Props=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j2.xml").getPath()));
+            return initLogger(logDir, log4j2Props);
         }
         catch (Throwable t) {
             System.err.println("Error initializing logger");
