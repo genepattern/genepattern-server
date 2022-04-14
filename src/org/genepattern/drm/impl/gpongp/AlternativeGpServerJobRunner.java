@@ -2,8 +2,10 @@ package org.genepattern.drm.impl.gpongp;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
@@ -53,6 +55,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -63,14 +66,14 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
     GpConfig config;
     HashMap<Integer,Integer> outputFileRetryCount;
-    HashMap<String,Boolean> failedFileDeletes;
-    
+    ConcurrentHashMap<String, Boolean> downloadsInProgress;
     
     ThreadPoolExecutor executor;
     
     public AlternativeGpServerJobRunner(){
         outputFileRetryCount = new HashMap<Integer,Integer>();
-        failedFileDeletes = new HashMap<String,Boolean>();
+        downloadsInProgress = new ConcurrentHashMap<String,Boolean>();
+        
         // 3 threads standing, one each for two output files, stdout, stderr
         executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
         executor.setKeepAliveTime(60, TimeUnit.SECONDS);
@@ -113,7 +116,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         ExternalFileManager externalFileManager = DataManager.getExternalFileManager(jobContext);
         
         try {
-            System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
+            log.info("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
              
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);           
             JobInfo ji = jobSubmission.getJobInfo();
@@ -504,10 +507,13 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     File outFile = new File(dir, outFileNameAndPath);
                     final String finalName = outFileNameAndPath;
                     
-                    System.out.println("Creating marker with >>" + dir+"<< and >>" + name);
-                    final File downloadMarker = new File(dir, ".marker." + name+".marker");
+                   
                     
-                    if ((!outFile.exists())  && (!downloadMarker.exists()) ){
+                    Boolean processFlag = downloadsInProgress.get(finalName);
+                    Boolean alreadyDownloading = ((processFlag != null) && (processFlag == true));
+                    
+                    
+                    if ((!outFile.exists())  && (!alreadyDownloading) ){
                         //
                         // Here we use a separate thread to download the files because for jobs with lots of
                         // files or large files, the download can take longer than the polling frequency and if we just
@@ -516,40 +522,46 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         // state until that is so.
                         //
                         
-                        if (!downloadMarker.exists()){
-                            downloadMarker.createNewFile();
+                        if (!alreadyDownloading){
+                            downloadsInProgress.put(finalName, true);
                             Future<Boolean> f=executor.submit(new Callable<Boolean>() {
                                 @Override
                                 public Boolean call() throws Exception {
-                                      
-                                        File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
+                                    File downloadedFile = null;
+                                    try {
+                                        downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
                                         // delay briefly because the file found later needs to be flushed
-                                        downloadMarker.delete();
-                                        if  (downloadMarker.exists()){
-                                            // delete failed, try harder
+                                    } catch (Exception e) {
+                                        log.error(e);
+                                        File errorFile = new File(dir, "remote_download_err.txt");
+                                        FileOutputStream fos = null;
+                                        try {
+                                            fos = new FileOutputStream(errorFile);
+                                            e.printStackTrace(new PrintStream(fos));
+                                        } catch (Exception ee){
+                                            //
+                                            // If we get here the user won't see the error but at least it will be in the server log
+                                            //
+                                            log.error(ee);
+                                        } finally {
                                             try {
-                                                Thread.currentThread().sleep(200);
-                                                FileDeleteStrategy.FORCE.delete(downloadMarker);
-                                                if (downloadMarker.exists()) failedFileDeletes.put(finalName, downloadMarker.exists());
-                                            } catch (IOException e){
-                                                failedFileDeletes.put(finalName, true);
-                                            }
+                                            if (fos != null) fos.close();
+                                            } catch (Exception eee){}
                                         }
-                                        return downloadedFile.exists();
+                                        
+                                    } finally {
+                                        downloadsInProgress.remove(finalName);
+                                    }
+                                    if (downloadedFile == null) return false;
+                                    else return downloadedFile.exists();
                                 }
                             });
                          }
     
-                    }  else if (outFile.exists() && (!downloadMarker.exists())){
+                    }  else if (outFile.exists() && (!alreadyDownloading)){
                         numOutputFilesRetrieved +=1;
-                    }  else if (outFile.exists() && (failedFileDeletes.get(finalName) == true)){
-                        numOutputFilesRetrieved +=1;
-                        failedFileDeletes.remove(finalName);
-                        try {
-                            FileDeleteStrategy.FORCE.delete(downloadMarker);
-                        } catch (Exception e){
-                            // one last try, belt and suspenders
-                        }
+                    }  else if (outFile.exists() && (alreadyDownloading)){
+                       // presumably the download is not yet complete
                     }
                 }
                 log.debug("    ---- Found "+numOutputFilesRetrieved+ " of " + outputFiles.size());
