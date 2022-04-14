@@ -3,6 +3,7 @@ package org.genepattern.drm.impl.gpongp;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
@@ -13,8 +14,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-
+import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.util.FileUtils;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -61,11 +63,14 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
     GpConfig config;
     HashMap<Integer,Integer> outputFileRetryCount;
+    HashMap<String,Boolean> failedFileDeletes;
+    
     
     ThreadPoolExecutor executor;
     
     public AlternativeGpServerJobRunner(){
         outputFileRetryCount = new HashMap<Integer,Integer>();
+        failedFileDeletes = new HashMap<String,Boolean>();
         // 3 threads standing, one each for two output files, stdout, stderr
         executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
         executor.setKeepAliveTime(60, TimeUnit.SECONDS);
@@ -413,17 +418,24 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
             
+            log.debug("Getting status for local: " + localJobId + " and remote: "+ drmJobId );
+            
+            
             final GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
-            String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
-            log.debug("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + "  -> " + status);
+            log.debug(statusJsonObj.toString());
+            String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
+            log.debug("              -----> " + status);
+            
             
             
             String startTime = null;
             try {
                 startTime = statusJsonObj.getAsJsonObject("status").get("startTime").getAsString();
-            } catch (Exception e){}
+            } catch (Exception e){
+         
+            }
             
             String submitTime = null;
             try {
@@ -433,8 +445,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             DrmJobState state = jobInfoStatusToDrmJobState(status);
             DrmJobStatus.Builder statusBuilder = new DrmJobStatus.Builder(drmJobId,state); 
             log.debug("  remote job state is " + state);
-            statusBuilder.startTime(getDate(startTime));
-            statusBuilder.submitTime(getDate(submitTime));
+            if ((startTime != null) &&(!startTime.isEmpty())) statusBuilder.startTime(getDate(startTime));
+            if ((submitTime != null) && (!submitTime.isEmpty())) statusBuilder.submitTime(getDate(submitTime));
              
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 log.debug("JOB IS DONE " + status + "  " + localJobId) ;
@@ -509,19 +521,36 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                             Future<Boolean> f=executor.submit(new Callable<Boolean>() {
                                 @Override
                                 public Boolean call() throws Exception {
+                                      
                                         File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
                                         // delay briefly because the file found later needs to be flushed
-                                        boolean markerGone = downloadMarker.delete();
+                                        downloadMarker.delete();
+                                        if  (downloadMarker.exists()){
+                                            // delete failed, try harder
+                                            try {
+                                                Thread.currentThread().sleep(200);
+                                                FileDeleteStrategy.FORCE.delete(downloadMarker);
+                                                if (downloadMarker.exists()) failedFileDeletes.put(finalName, downloadMarker.exists());
+                                            } catch (IOException e){
+                                                failedFileDeletes.put(finalName, true);
+                                            }
+                                        }
                                         return downloadedFile.exists();
                                 }
                             });
-                            
-                                  
-                        }
+                         }
     
                     }  else if (outFile.exists() && (!downloadMarker.exists())){
                         numOutputFilesRetrieved +=1;
-                    }         
+                    }  else if (outFile.exists() && (failedFileDeletes.get(finalName) == true)){
+                        numOutputFilesRetrieved +=1;
+                        failedFileDeletes.remove(finalName);
+                        try {
+                            FileDeleteStrategy.FORCE.delete(downloadMarker);
+                        } catch (Exception e){
+                            // one last try, belt and suspenders
+                        }
+                    }
                 }
                 log.debug("    ---- Found "+numOutputFilesRetrieved+ " of " + outputFiles.size());
                 
@@ -585,10 +614,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                 } else {
                     // leave it in RUNNING state while the files are downloading until they are all present
                     
-                    statusBuilder = new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING); 
-                    log.debug("  Remote job state is " + state + " but leaving it as running until output files retrieved.");
-                    statusBuilder.startTime(getDate(startTime));
-                    statusBuilder.submitTime(getDate(submitTime));
+                    // statusBuilder = new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING); 
+                    log.error("Job: "+localJobId+"  Remote "+drmJobId+" job state is " + state + " but only " +numOutputFilesRetrieved +" retrieved of "+outputFiles.size()+".");
+                    
+                    //statusBuilder.startTime(getDate(startTime));
+                    //statusBuilder.submitTime(getDate(submitTime));
                     
                 }
             }
