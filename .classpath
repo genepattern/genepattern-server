@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="slurm-src"/>
-	<classpathentry kind="src" path="website/WEB-INF/src"/>
+	<classpathentry excluding="log4j-1.2.17.jar" kind="src" path="website/WEB-INF/src"/>
 	<classpathentry kind="src" path="gp-jobrunner-awsbatch/src/main/java"/>
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="src" path="gp-macapp/src"/>
