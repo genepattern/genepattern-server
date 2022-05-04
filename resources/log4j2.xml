@@ -50,7 +50,7 @@
           <AppenderRef ref="Console"  />
     		</Root>
 
-        <Logger name="org.genepattern" additivity="false" level="debug">
+        <Logger name="org.genepattern" additivity="false" level="error">
             <AppenderRef ref="genepatternLog" />
 						<AppenderRef ref="webserverLog" />
             <AppenderRef ref="Console" />
@@ -61,7 +61,7 @@
             <AppenderRef ref="Console"  />
         </Logger>
 
-  			<Logger name="org.genepattern.server.executor.pipeline" additivity="true" level="trace"/>
+  	<Logger name="org.genepattern.server.executor.pipeline" additivity="true" level="trace"/>
 
     </Loggers>
 
