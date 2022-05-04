@@ -103,11 +103,23 @@ public class JobInputValueRecorder {
     public List<Integer> fetchMatchingJobs(final String inputValue) throws Exception {
         boolean inTransaction=mgr.isInTransaction();
         try {
-            final String hql = "select gpJobNo from "+JobInputValue.class.getName()+" where pvalue = :pvalue";
+            final String hql;
+            String modifiedInputValue;
+            // when passed a file path, we might see <GENEPATTERN_URL>/ or localhost/gp or 127.0.0.1/gp so if it starts
+            // with http instead of doing an exact match we want to do a like with what comes after the /gp
+            if (inputValue.startsWith("http") && (inputValue.indexOf("/gp/users/") >=5)){
+                hql = "select gpJobNo from "+JobInputValue.class.getName()+" where pvalue like :pvalue";
+                modifiedInputValue = "%" + inputValue.substring(inputValue.indexOf("/gp/users/"));
+            } else {
+                hql = "select gpJobNo from "+JobInputValue.class.getName()+" where pvalue = :pvalue";
+                modifiedInputValue = inputValue;
+            }
+            
+            
             mgr.beginTransaction();
             Session session = mgr.getSession();
             Query query = session.createQuery(hql);
-            query.setString("pvalue", inputValue);
+            query.setString("pvalue", modifiedInputValue);
             @SuppressWarnings("unchecked")
             final List<Integer> rval = query.list();
             return rval;
