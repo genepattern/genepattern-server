@@ -659,6 +659,10 @@ public class SlurmJobRunner implements JobRunner {
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
         
+        // this can get called before the job runner is initialized.  This prevents it from bailing on a running job
+        if (remotePrefix == null) return null;
+        
+        
         String[] remotePrefixArray = remotePrefix.split("\\s+");
         List<String> prefixArray = Arrays.asList(remotePrefixArray);
         ArrayList<String> commandArray = new ArrayList<String>();
@@ -696,7 +700,8 @@ public class SlurmJobRunner implements JobRunner {
             // It is likely that this job finished a long time ago, mark as failed
             log.error("Exception checking job status with squeue: " + e);
             Thread.currentThread().interrupt();
-            return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
+            
+            return null;
         }
     }
     
@@ -731,7 +736,8 @@ public class SlurmJobRunner implements JobRunner {
             String slurmStatusString = null;
             if (output.size() > 1) log.warn("Extra lines found in Slurm sacct status output");
             if (output.size() > 0) {
-                slurmStatusString = output.get(0);
+                // grab the last line
+                slurmStatusString = output.get(output.size());
             }
             return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
         }
@@ -739,7 +745,7 @@ public class SlurmJobRunner implements JobRunner {
             // It is likely that this job finished a long time ago, mark as failed
             log.error("Exception checking job status with sacct: " + e);
             Thread.currentThread().interrupt();
-            return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
+            return null;
         }
     }
     
