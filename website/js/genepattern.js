@@ -3506,12 +3506,13 @@ function populateJobResultsTable(settings, callback) {
         if (!(date instanceof Date && isFinite(date))) {
             return dateString;
         }
+        var year = $.datepicker.formatDate("yy", date);
         var month = $.datepicker.formatDate("M", date);
         var day = $.datepicker.formatDate("d", date);
         var hours = date.getHours() > 12 ? date.getHours() - 12 : (date.getHours() < 1 ? 12 : date.getHours());
         var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
         var time = hours + ":" + minutes + " " + (date.getHours() <= 11 ? "am" : "pm");
-        return month + " " + day + ", " + time;
+        return month + " " + day + ", " + time + " " + year;
     };
     var _buildChildJobDisplay = function(job, count, appendTo) {
         var child = $("<div></div>").addClass("jobresults-child");
