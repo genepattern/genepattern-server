@@ -323,6 +323,13 @@ public class StartupServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Initialize the GenePattern properties and start the database and other background threads.
+     * 
+     * Note that this initialization is copied in the org.genepattern.server.purger.impl02.Purger02
+     * to allow it to be run separately from the GenePattern server.  Refactoring of these two
+     * methods to eliminate duplicates is still TBD.
+     */
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
         this.webappDir=initWebappDir(servletConfig);

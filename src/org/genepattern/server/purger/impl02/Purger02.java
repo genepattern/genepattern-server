@@ -5,14 +5,23 @@
 package org.genepattern.server.purger.impl02;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
@@ -22,6 +31,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.process.JobPurgerUtil;
@@ -29,6 +39,7 @@ import org.genepattern.server.process.UserUploadPurger;
 import org.genepattern.server.purger.Purger;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 import javassist.tools.reflect.Loader;
@@ -55,7 +66,21 @@ public class Purger02 extends TimerTask {
         gpConfig=ServerConfigurationFactory.instance();
     }
 
-    
+    // Adding main method to allow purger to be run outside of the GenePattern server
+    // to allow manual cleanup of jobs when the nightly is not getting through everything
+    public static void main(String args[]) throws Exception {
+        File workdir = new File(args[0]);
+        File resourcesdir = new File(args[1]);
+        
+        SetupStandalonePurger setup = new SetupStandalonePurger(workdir, resourcesdir);
+        setup.loadProperties();
+        boolean dbRunning = setup.testDBConnection();
+        if (!dbRunning) setup.startDB();
+        Purger02 purger02 = new Purger02();
+        purger02.run();
+        System.out.println("One purge completed");
+        System.exit(0);
+    }
    
     
     
@@ -378,3 +403,185 @@ public class Purger02 extends TimerTask {
     }
 
 }
+
+/**
+ * SetupStandaloneServer copies most of the setup and configuration from the org.genepattern.server.webapp.StartupServlet
+ * init(ServletConfiguration c) method.  It eliminates the servlet specific starts but uses copied code to initialize the GP
+ * configuration and then start the database if its not already running.  It then does a single run of the purger
+ * 
+ * @author liefeld
+ *
+ */
+class SetupStandalonePurger {
+    private static final Logger log = Logger.getLogger(SetupStandalonePurger.class);
+    
+    protected File gpWorkingDir;
+    protected File gpResourcesDir;
+    Properties config;
+    
+    SetupStandalonePurger(File working, File resources){
+        gpWorkingDir = working;
+        gpResourcesDir = resources;
+       
+    }
+    
+    protected void startDB() throws Exception{
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        GpContext gpContext=GpContext.getServerContext();
+
+        if ("HSQL".equals(gpConfig.getDbVendor())) {
+            // automatically start the DB
+            try {
+                String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
+                log.info("\tstarting HSQL database...");
+                HsqlDbUtil.startDatabase(hsqlArgs);
+            }
+            catch (Throwable t) {
+                log.error("Unable to start HSQL Database!", t);
+                return;
+            }
+        }
+        
+        boolean connectOK = testDBConnection();
+        if (!connectOK){
+            throw new Exception("Error starting database, abandoning purger init, throwing  exception.");
+        }
+    }
+
+    protected boolean testDBConnection()  {
+        log.info("\tchecking database connection...");
+        try {
+            HibernateUtil.beginTransaction();
+            return true;
+        }
+        catch (Throwable t) {
+            log.debug("Error connecting to the database", t);
+            Throwable cause = t.getCause();
+            if (cause == null) {
+                cause = t;
+            }
+            log.error("Error connecting to the database: " + cause);
+            log.error("Error starting GenePatternServer, abandoning purger init, throwing  exception.", t);
+            return false;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+       
+    }
+    
+    
+    /**
+     * Set System properties to the union of all settings in:
+     * servlet init parameters
+     * resources/genepattern.properties
+     * resources/custom.properties
+     * 
+   
+     * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
+     * 
+     * @throws ServletException
+     */
+    protected void loadProperties() throws Exception {
+        File propFile = null;
+        File customPropFile = null;
+        FileInputStream fis = null;
+        FileInputStream customFis = null;
+        try {
+            
+           // ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
+
+     
+            ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
+            
+            ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
+           
+            
+            Properties sysProps = System.getProperties();
+            propFile = new File(this.gpResourcesDir, "genepattern.properties");
+            customPropFile = new File(this.gpResourcesDir, "custom.properties");
+            Properties props = new Properties();
+            
+            if (propFile.exists()) {
+                fis = new FileInputStream(propFile);
+                props.load(fis);
+                log.info("\tloaded GP properties from " + propFile.getCanonicalPath());
+            }
+            else {
+                log.error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+            }
+            if (customPropFile.exists()) {
+                customFis = new FileInputStream(customPropFile);
+                props.load(customFis);
+                log.info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
+            }
+
+            // copy all of the new properties to System properties
+            for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
+                String key = (String) iter.next();
+                String val = props.getProperty(key);
+                if (val.startsWith(".")) {
+                    //HACK: don't rewrite my value
+                    if (! key.equals(JobResultsFilenameFilter.KEY)) {
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
+                        val=GpConfig.normalizePath(val);
+                    }
+                }
+                sysProps.setProperty(key, val);
+            }
+
+            if (fis != null) {
+                fis.close();
+                fis = null;
+            }
+
+            // copy all of the new properties to System properties
+            for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
+                String key = (String) iter.next();
+                String val = props.getProperty(key);
+                if (key.equals("HSQL.args")) {
+                    //special-case for default path to the HSQL database
+                    //   replace 'file:../resources/GenePatternDB' with 'file:<workingDir>/resources/GenePatternDB'
+                    String dbPath=new File(this.gpWorkingDir,"../resources/GenePatternDB").getAbsolutePath();
+                    dbPath=GpConfig.normalizePath(dbPath);
+                    val = val.replace("file:../resources/GenePatternDB", "file:"+dbPath);
+                }
+                else if (val.startsWith(".")) {
+                    //HACK: don't rewrite my value
+                    if (! key.equals(JobResultsFilenameFilter.KEY)) {
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
+                        val=GpConfig.normalizePath(val);
+                    }
+                }
+                sysProps.setProperty(key, val);
+            }
+
+            TreeMap tmProps = new TreeMap(sysProps);
+            for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
+                String propName = (String) iProps.next();
+                String propValue = (String) tmProps.get(propName);
+                log.debug(propName + "=" + propValue);
+            }
+        } 
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+            String path = null;
+            try {
+                path = propFile.getCanonicalPath();
+            } 
+            catch (IOException ioe2) {
+            }
+            throw new Exception(path + " cannot be loaded.  " + ioe.getMessage());
+        } 
+        finally {
+            try {
+                if (fis != null)
+                    fis.close();
+            } 
+            catch (IOException ioe) {
+            }
+        }
+    }
+
+}
+
