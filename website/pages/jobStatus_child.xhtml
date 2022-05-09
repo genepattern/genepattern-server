@@ -23,6 +23,13 @@
                                 <img src="/gp/images/blank.gif" />
                             </h:outputText>
                         </t:dataList>
+                        <h:outputText rendered="#{not childJobInfo.deletedTask}">
+                    	<span class='purge_notice'>This module has been deleted from the server. It is not possible to reload or re-run this job unless it is re-installed.</span><br></br>
+                    	<script type="text/javascript">
+                    		$('#jobStatusMissingChildModuleWarning').show();
+                    	</script>
+                    	
+                    	</h:outputText>
                         <img src="/gp/images/darkArrow.gif" /> step #{childJobInfo.stepPath}: #{childJobInfo.taskName} [id: #{childJobInfo.jobNumber}] <br />
                         <span style="font-size: 9pt; color: #333333; font-weight: normal; margin-left: 25px;">
 	                        <strong>Source:</strong> 

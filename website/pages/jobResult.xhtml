@@ -22,6 +22,9 @@
 
         <script type="text/javascript">
 				
+        
+        
+        
                 //convert to tabbed pane if this is a pipeline with javascript visualization
                 var hasJavascript = #{jobStatusBean.jobInfo.hasJavascript};
                 var isPipeline = #{jobStatusBean.jobInfo.pipeline};
@@ -415,6 +418,9 @@
     </ui:define>
 
 	<ui:define name="body">
+	
+	<span id="jobStatusMissingChildModuleWarning" class='purge_notice' style="display:none">This pipeline contains a module that has been deleted from the server. It is not possible to reload or re-run this job unless it is re-installed.</span>
+	
     <h:outputText rendered="#{jobStatusBean.canViewJob and jobStatusBean.jobInfo.javascript and visualizerStatusBean.openVisualizers and !visualizerStatusBean.openNewWindow}">
         <script type="text/javascript">
             openJavascript('#{jobStatusBean.jobInfo.jobNumber}', '#{jobStatusBean.jobInfo.taskName}', '#{jobStatusBean.jobInfo.taskLSID}', '#{jobStatusBean.jobInfo.launchUrl}');

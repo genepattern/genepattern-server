@@ -719,6 +719,12 @@ public class JobInfoWrapper implements Serializable {
         return sourceInfo.getLabel();
     }
     
+    public boolean isDeletedTask(){
+        return taskInfo != null;
+    }
+    
+    
+    
     public String getSourceIcon() {
         lazyInitQualityInfo();
         return sourceInfo.getIconImgSrc();
