@@ -2878,14 +2878,14 @@ function createJobWidget(job) {
             "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
-
-    actionData.push({
-        "lsid": "",
-        "name": "Reload Job",
-        "description": "Reload this job using the same input parameters.",
-        "version": "<span class='glyphicon glyphicon-repeat' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
-    });
-
+    if (!(job.DELETED_MODULE == true)){
+	    actionData.push({
+	        "lsid": "",
+	        "name": "Reload Job",
+	        "description": "Reload this job using the same input parameters.",
+	        "version": "<span class='glyphicon glyphicon-repeat' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+	    });
+    }
     if (job.status.isFinished) {
         actionData.push({
             "lsid": "",
@@ -2935,12 +2935,29 @@ function createJobWidget(job) {
                 if (statusAction) {
                 	
                 	var module = all_modules_map[job.taskLsid];
-                	var categories = module.categories;
+                	// gp-8700 handle the case where a module was deleted
+                	
+                	var categories;
+                	if (module != null) {
+                		categories = module.categories;
+                	} else {
+                		var deletedIndex = all_categories.findIndex(element => { return element === "deleted"; });
+                		
+                	     
+                		categories = ['deleted'];
+                		if (deletedIndex < 0){
+                			cat = new Object();
+                			cat.name='deleted';
+                			cat.description='';
+                			cat.tags=[];
+                			all_categories.push(cat);
+                		}
+                	}
                 	var vizIndex = categories.findIndex(element => {
                 		  return element.toLowerCase() === "javascript".toLowerCase();
                 	});
                 	
-                    loadJobStatus(job.jobId, "true", vizIndex >= 0);
+                    loadJobStatus(job.jobId, "true", vizIndex >= 0, job.DELETED_MODULE);
                 }
 
                 else if (downloadAction) {
@@ -3389,7 +3406,7 @@ function loadJavascript(jobId, container, openInNewWindow) {
     });
 }
 
-function loadJobStatus(jobId, forceVisualizers, isVisualizer) {
+function loadJobStatus(jobId, forceVisualizers, isVisualizer, isDeleted) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
@@ -3470,6 +3487,13 @@ function loadJobStatus(jobId, forceVisualizers, isVisualizer) {
 	            var jobResults = $("#jobResults");
 	            jobResults.html(data);
 	            jobResults.show();
+	            if (isDeleted){
+	            	// let the user know the module is gone and thus reload
+	            	// is not an option
+	            	var deletedModule = $("<span class='purge_notice'>This module has been deleted from the server. It is not possible to reload or re-run this job unless it is re-installed.</span>");
+	            	jobResults.prepend(deletedModule);
+	            }
+	            
 	        },
 	        error: function(data) {
 	            if (typeof data === 'object') {

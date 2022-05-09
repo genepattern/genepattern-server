@@ -1044,8 +1044,20 @@ public class JobsResource {
             boolean includePermissions = false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeInputParams,
+                JSONObject jobObject; 
+                try {
+                    jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeInputParams,
                         includeOutputFiles, includePermissions, includeComments, includeTags);
+                } catch (org.genepattern.server.TaskIDNotFoundException tnfe){
+                    //
+                    // GP-8700 here is a case where the module for the job was deleted so we grab as much detail about
+                    // it as we can from the job object 
+                    //
+                    
+                    jobObject = getJobImpl.getDeletedJob(userContext, jobInfo, includeChildren, includeInputParams,
+                            includeOutputFiles, includePermissions, includeComments, includeTags);
+                    jobObject.put("DELETED", true);
+                }
                 jobs.put(jobObject);
             }
 

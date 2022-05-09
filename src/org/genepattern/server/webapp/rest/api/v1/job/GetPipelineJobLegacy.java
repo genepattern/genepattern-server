@@ -145,6 +145,26 @@ public class GetPipelineJobLegacy implements GetJob {
        return job;
     }
     
+    public JSONObject getDeletedJob(final GpContext userContext,
+            final JobInfo jobInfo,
+            final boolean includeChildren,
+            final boolean includeInputParams,
+            final boolean includeOutputFiles,
+            final boolean includePermissions,
+            final boolean includeComments,
+            final boolean includeTags) throws GetJobException {
+        JobRunnerJob jobStatusRecord = null;
+        try {
+             jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
+        }
+        return getDeletedJob( gpUrl,  jobInfo,  jobStatusRecord,
+                 includeInputParams,  includeOutputFiles, includeComments,
+                 includeTags);
+    }
+    
     public JSONObject getJob(final GpContext userContext,
                              final JobInfo jobInfo,
                              final boolean includeChildren,
@@ -254,7 +274,16 @@ public class GetPipelineJobLegacy implements GetJob {
                     ", taskLsid="+jobInfo.getTaskLSID(), t);
         }
         final boolean includeJobRunnerStatus=true; // default value
-        return initJsonObject(gpUrl, jobInfo, taskInfo, includeInputParams, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        JSONObject jobJSON = initJsonObject(gpUrl, jobInfo, taskInfo, includeInputParams, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+        
+        if (taskInfo == null){
+            try {
+                jobJSON.put("DELETED_MODULE", true);
+            } catch(Exception e){
+                log.error(e);
+            }
+        }
+        return jobJSON;
     }
 
     public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final TaskInfo taskInfo,
@@ -389,6 +418,115 @@ public class GetPipelineJobLegacy implements GetJob {
         return job;
     }
 
+    public static JSONObject getDeletedJob(final String gpUrl, final JobInfo jobInfo,  final JobRunnerJob jobStatusRecord,
+            final boolean includeInputParams, final boolean includeOutputFiles, final boolean includeComments,
+            final boolean includeTags) throws GetJobException {
+        final JSONObject job = new JSONObject();
+        try {
+            job.put("MODULE_DELETED", true);
+            job.put("jobId", ""+jobInfo.getJobNumber());
+            job.put("taskName", jobInfo.getTaskName());
+            job.put("taskLsid", jobInfo.getTaskLSID());
+            job.put("datetime", jobInfo.getDateSubmitted().toString());
+
+            job.put("dateSubmitted", DateUtil.toIso8601(jobInfo.getDateSubmitted()));
+            if (jobInfo.getDateCompleted() != null) {
+                job.put("dateCompleted", DateUtil.toIso8601(jobInfo.getDateCompleted()));
+            }
+
+            //job owner
+            job.put("userId", jobInfo.getUserId());
+
+            
+            if (includeInputParams) {
+                JSONArray inputParams = new JSONArray();
+                for (ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
+                    String paramName = pinfo.getName();
+                    if ("stderr.txt".equals(paramName) || "stdout.txt".equals(paramName) ||
+                            "gp_execution_log.txt".equals(paramName)) continue; // Don't include logs
+                    JSONObject param = new JSONObject();
+                    param.put(pinfo.getName(), pinfo.getValue());
+                    inputParams.put(param);
+                }
+                job.put("inputParams", inputParams);
+            }
+
+            //access permissions
+            //TODO: improve group permissions query
+            /*
+    select a.job_no, a.date_submitted, a.date_completed, a.user_id, a.task_lsid, a.task_name, j.group_id, j.permission_flag
+    from analysis_job a left outer join job_group j on a.job_no = j.job_no  
+    where a.user_id='{userId}'
+             */
+
+            //init resultFiles
+            //TODO: sort output files
+            String executionLogLocation=null;
+            String stderrLocation=null;
+            if (includeOutputFiles) {
+                final JSONArray outputFiles=new JSONArray();
+                final JSONArray logFiles=new JSONArray();
+                int numFiles=0;
+                for(final ParameterInfo pinfo : getOutputFiles(jobInfo)) {
+                    final GpFilePath outputFile = getOutputFile(jobInfo, pinfo);
+                    boolean isExecutionLog=GpOutputFile.isExecutionLog(pinfo);
+                    if (isExecutionLog) {
+                        try {
+                            JSONObject logFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
+                            logFiles.put(logFileJson);
+                            executionLogLocation=logFileJson.getJSONObject("link").getString("href");
+                        }
+                        catch (Exception e) {
+                            log.error("Error initializing executionLogLocation", e);
+                            throw new GetJobException("Error initializing executionLogLocation: "+e.getLocalizedMessage());
+                        }
+                    }
+                    else {
+                        ++numFiles;
+                        try {
+                            JSONObject outputFileJson=GpOutputFile.fromGpfilePath(gpUrl, outputFile, pinfo).toJson();
+                            outputFiles.put(outputFileJson);
+                            if (pinfo._isStderrFile()) {
+                                stderrLocation=outputFileJson.getJSONObject("link").getString("href");
+                            }
+                        }
+                        catch (Exception e) {
+                            final String message="Error serializing JSON object for jobId="+jobInfo.getJobNumber();
+                            log.error(message, e);
+                            throw new GetJobException(message);
+                        }
+                    }
+                }
+                job.put("numOutputFiles", numFiles);
+                job.put("outputFiles", outputFiles);
+                job.put("logFiles", logFiles);
+
+                final JSONObject jobStatus = initJobStatusJson(jobInfo, jobStatusRecord, executionLogLocation, stderrLocation); 
+                job.put("status", jobStatus);
+            }
+
+            if(includeComments)
+            {
+                List<JobComment> jobComments = JobCommentManager.selectAllJobComments(jobInfo.getJobNumber());
+                job.put("comments", JobCommentManager.createJobCommentBundle(jobInfo.getUserId(), jobComments));
+            }
+
+            if(includeTags)
+            {
+                List<JobTag> jobTags = JobTagManager.selectAllJobTags(jobInfo.getJobNumber());
+                job.put("tags", JobTagManager.createJobTagBundle(jobTags));
+            }
+        }
+        catch (JSONException e) {
+            log.error("Error initializing JSON representation for jobId="+jobInfo.getJobNumber(), e);
+            throw new GetJobException("Error initializing JSON representation for jobId="+jobInfo.getJobNumber()+
+                    ": "+e.getLocalizedMessage());
+        }
+        return job;
+    }
+    
+    
+    
     private static JSONObject initJobStatusJson(final JobInfo jobInfo, final JobRunnerJob jobStatusRecord, String executionLogLocation, String stderrLocation) throws JSONException  {
         Status status=new Status.Builder()
             .jobInfo(jobInfo)

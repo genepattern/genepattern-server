@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobPermissions;
 import org.genepattern.server.JobPermissionsFactory;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
@@ -22,6 +23,7 @@ import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 
 public class GpContext {
@@ -77,12 +79,40 @@ public class GpContext {
             jobInfo = dao.getJobInfo(jobNumber);
             jobInput = new JobInputValueRecorder(mgr).fetchJobInput(jobNumber);
             jobInput.setLsid(jobInfo.getTaskLSID());
-            taskInfo=TaskInfoCache.instance().getTask(mgr, jobInfo.getTaskLSID());
+            TaskInfo ti;
+            try {
+                ti=TaskInfoCache.instance().getTask(mgr, jobInfo.getTaskLSID());
+                
+            } catch (TaskLSIDNotFoundException ex) {
+                // GP-8700 we have a job for a deleted module. We need to fake up as much as
+                //  we can so the user can still get analysis results (but not rereun etc)
+                
+                ti = new TaskInfo();
+                TaskInfoAttributes tia = new TaskInfoAttributes();
+                ti.setName(jobInfo.getTaskName() );
+                tia.put("LSID", jobInfo.getTaskLSID());
+                tia.put("DELETED_MODULE", true);
+                ti.setTaskInfoAttributes(tia);
+                
+            }
+            
+            taskInfo = ti;
             taskName=taskInfo.getName();
             if (log.isDebugEnabled()) {
                 log.debug("taskName=" + taskName);
             }
-            taskLibDir=libdirStrategy.getLibdir(taskInfo.getLsid());
+            
+            File tld;
+            try {
+                tld=libdirStrategy.getLibdir(taskInfo.getLsid());
+            } catch (Exception e){
+                if (ti.getTaskInfoAttributes().containsKey("DELETED_MODULE")){
+                    tld = File.createTempFile("deleted_module", "libdir");
+                } else {
+                    throw e;
+                }
+            }
+            taskLibDir = tld;
             
             // JTL 03/19/2020  Add in the values set for cpu and memory
             JobRunnerJobDao jobrunnerjobdao = new JobRunnerJobDao();
