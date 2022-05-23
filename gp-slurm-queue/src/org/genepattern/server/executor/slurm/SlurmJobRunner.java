@@ -242,7 +242,7 @@ public class SlurmJobRunner implements JobRunner {
         
         // the value in the config file is a default and also a floor for nGPU
         String nGPU_job = drmJobSubmission.getProperty("job.gpuCount");
-        System.out.println("============= nGPU_job " + nGPU_job );
+        
         if (nGPU != null){
             Integer n_gpu = new Integer(nGPU);
             if (nGPU_job != null){
@@ -296,7 +296,7 @@ public class SlurmJobRunner implements JobRunner {
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
                             "#SBATCH --no-requeue \n" +
-                            "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
+                            "#SBATCH --job-name="+gpJobId+"_gp\n" +
                             "#SBATCH -D " + workDirPath  + "\n" +
                             "#SBATCH --output="+workDirPath+"/stdout.txt\n" +
                             "#SBATCH --error="+workDirPath+"/stderr.txt\n" +
@@ -448,7 +448,7 @@ public class SlurmJobRunner implements JobRunner {
             buff.append(s);
             buff.append(" ");
         }
-        log.error("slurm job command: " + buff.toString());
+        log.debug("slurm job command: " + buff.toString());
         
         try {
             output = commandRunner.runCmd(commandArray);
@@ -466,10 +466,10 @@ public class SlurmJobRunner implements JobRunner {
         String extJobId = null;
         try {
             for (String s: output){
-                log.error("slurm job output: " + s);
+                log.debug("slurm job output: " + s);
             }
             extJobId = extractExternalID(output);
-            log.error("slurm job id: " + extJobId);
+            log.debug("slurm job id: " + extJobId);
         }
         catch (Exception e) {
             
@@ -501,7 +501,7 @@ public class SlurmJobRunner implements JobRunner {
             // so if there are >3 lines we will try for the last one
             int idx = output.size()-1;
             StringTokenizer tokenizer = new StringTokenizer(output.get(idx));
-            log.error("--Parsing slurm status from: " + output.get(idx));
+            log.debug("--Parsing slurm status from: " + output.get(idx));
             
             if (tokenizer.countTokens() < 5) {
                 log.warn("Missing tokens from Slurm status output");
@@ -510,7 +510,8 @@ public class SlurmJobRunner implements JobRunner {
                 
                 int count = 1;
                 while (count != 5) {
-                    tokenizer.nextToken();
+                    String tok = (String)tokenizer.nextToken();
+                    log.debug(tok);
                     count++;
                 }
                 slurmStatusString = tokenizer.nextToken();
@@ -521,6 +522,8 @@ public class SlurmJobRunner implements JobRunner {
         return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
     }
     private DrmJobStatus slurmStatusToDrmStatus(String extJobId, File stderr, String slurmStatusString) throws CommandExecutorException {
+        // just in case its ever not all caps already
+        slurmStatusString = slurmStatusString.toUpperCase();
         
         // Build the correct status from the string, and return
         if (slurmStatusString == null) {
@@ -536,10 +539,13 @@ public class SlurmJobRunner implements JobRunner {
         else if (slurmStatusString.compareToIgnoreCase("SUSPEND") == 0 || slurmStatusString.compareToIgnoreCase("SUSPENDED") == 0) {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.SUSPENDED).build();
         }
-        else if (slurmStatusString.compareToIgnoreCase("CANCELLI") == 0 || slurmStatusString.compareToIgnoreCase("CANCELLED") == 0) {
+        else if (slurmStatusString.startsWith("CANCEL")  ) {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.CANCELLED).build();
         }
-        else if (slurmStatusString.compareToIgnoreCase("COMPLETI") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETING") == 0) {
+        else if ( slurmStatusString.compareToIgnoreCase("CANCELLED") == 0) {
+            return new DrmJobStatus.Builder(extJobId, DrmJobState.CANCELLED).build();
+        }
+        else if (slurmStatusString.indexOf("COMPLET") >= 0 ) {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
@@ -568,6 +574,9 @@ public class SlurmJobRunner implements JobRunner {
         else if (slurmStatusString.compareToIgnoreCase("NODE_FAI") == 0 || slurmStatusString.compareToIgnoreCase("NODE_FAIL") == 0) {
             Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
+        } else if (slurmStatusString.indexOf("Invalid job id specif") >= 0){
+            Thread.currentThread().interrupt();
+            return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();      
         }
         else {
             log.error("Unknown Slurm status string: " + slurmStatusString);
@@ -629,6 +638,7 @@ public class SlurmJobRunner implements JobRunner {
             }
             
         } catch (Exception e){
+            e.printStackTrace();
             
             log.error(e);
         } finally {
@@ -646,6 +656,8 @@ public class SlurmJobRunner implements JobRunner {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), state)
             .endTime(new Date())
         .build();
+        
+        
         return status;
     }
     
@@ -735,15 +747,21 @@ public class SlurmJobRunner implements JobRunner {
         
             String slurmStatusString = null;
             if (output.size() > 1) log.warn("Extra lines found in Slurm sacct status output");
+         
+            for (int i=0; i< output.size(); i++){
+                log.error(output.get(i));
+            }
+            
             if (output.size() > 0) {
                 // grab the last line
-                slurmStatusString = output.get(output.size());
+                slurmStatusString = output.get(output.size()-1);
             }
             return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
         }
         catch (Exception e) {
             // It is likely that this job finished a long time ago, mark as failed
             log.error("Exception checking job status with sacct: " + e);
+            
             Thread.currentThread().interrupt();
             return null;
         }
