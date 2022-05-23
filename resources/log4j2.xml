@@ -42,6 +42,17 @@
             <DefaultRolloverStrategy max="10"/>
         </RollingFile>
 
+        <RollingFile name="executionTimingLog" fileName="${APP_LOG_ROOT}/executionTiming.log"
+            filePattern="${APP_LOG_ROOT}/app-error-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="200MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+
+
+
     </Appenders>
 
     <Loggers>
@@ -52,7 +63,7 @@
 
         <Logger name="org.genepattern" additivity="false" level="error">
             <AppenderRef ref="genepatternLog" />
-						<AppenderRef ref="webserverLog" />
+	    <AppenderRef ref="webserverLog" />
             <AppenderRef ref="Console" />
         </Logger>
 
@@ -62,6 +73,11 @@
         </Logger>
 
   	<Logger name="org.genepattern.server.executor.pipeline" additivity="true" level="trace"/>
+
+        <Logger name="org.genepattern.server.JobInfoManager.JobElapsedTimeLog" additivity="false" level="trace">
+            <AppenderRef ref="executionTimingLog" />
+        </Logger>
+
 
     </Loggers>
 

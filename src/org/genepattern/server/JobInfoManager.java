@@ -5,18 +5,27 @@ package org.genepattern.server;
 
 import static org.genepattern.util.GPConstants.TASKLOG;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
@@ -30,6 +39,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFileManager;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.JavascriptHandler;
@@ -57,7 +68,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
  */
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
-
+    private static Logger elapsedTimeLog = Logger.getLogger("org.genepattern.server.JobInfoManager.JobElapsedTimeLog");
+    
     //cache pipeline status so we don't need to make so many DB queries
     private static Map<Integer, Boolean> isPipelineCache = new ConcurrentHashMap<Integer, Boolean>();
 
@@ -447,11 +459,18 @@ public class JobInfoManager {
         }
     }
 
+    
+    public static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss.S"); 
+    
     public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper)
             throws IOException {
-        writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
-        writer.write("\n# Job: " + jobInfoWrapper.getJobNumber());
-
+        writer.write("\n# Job: " + jobInfoWrapper.getJobNumber() );
+        writer.write("\n# User: " + jobInfoWrapper.getUserId());
+        writer.write("\n# Submitted: " + jobInfoWrapper.getDateSubmitted());
+        writer.write("\n# Completed: " + dateFormatter.format(new Date()) );
+        
+        writer.write("\n# ET(ms): "  +jobInfoWrapper.getElapsedTimeMillis());
+        
         String GP_URL = ServerConfigurationFactory.instance().getGpUrl();
         if (GP_URL != null) {
             writer.write("    server:  ");
@@ -494,6 +513,7 @@ public class JobInfoManager {
                 //    displayValue = substitutedValue + " (" + value + ")";
                 //}
                 writer.write(displayValue);
+            
             }
             //special case for input files
             else {
@@ -509,16 +529,195 @@ public class JobInfoManager {
                     }
                     writer.write(inputParam.getDisplayValue() + "   " + GP_URL + link);
                 }
-                //case 3: an input which is part of the pipeline created from an output of a previous job with an uploaded file
+                 //case 3: an input which is part of the pipeline created from an output of a previous job with an uploaded file
                 //case 4: an output from a previous step in a pipeline
                 else {
+                    
                     writer.write(inputParam.getDisplayValue() + "   " + link);
                 }
+             }
+            // GP-8093 
+            // get the file (if local drive) or external file URL (if S3) to get the file size
+            try {
+                String fileSize = getFileSize(inputParam, matchFileUploadPrefix);
+               
+                // avoid building the message if its not gonna be recorded
+                // record TaskName jobNumber, elapsed, filename, bytes, rows (optional), cols (optional)
+                if (elapsedTimeLog.isTraceEnabled() || elapsedTimeLog.isDebugEnabled()){
+                    writer.write(" # file size " + fileSize);
+                    StringBuffer logMsg = new StringBuffer(jobInfoWrapper.getTaskName());
+                    logMsg.append("\t");
+                    logMsg.append(jobInfoWrapper.getJobNumber() );
+                    logMsg.append("\t");
+                    logMsg.append(jobInfoWrapper.getElapsedTimeMillis());
+                    logMsg.append("\t");
+                    logMsg.append(inputParam.getDisplayValue());
+                    logMsg.append("\t");
+                    logMsg.append(fileSize);
+                    elapsedTimeLog.trace(logMsg.toString());
+                }
+                
+            } catch (Exception e){
+                
             }
         }
         writer.write("\n");
     }
 
+    public static String getFileSize(ParameterInfoWrapper inputParam, String matchFileUploadPrefix) throws IOException{
+        String link = inputParam.getLink();
+        //case 1: an external URL
+        if (link.equals(inputParam.getDisplayValue())) {
+           // external file
+            if (link.toLowerCase().endsWith(".gct")){
+                return getGctFileSize( link);
+            } else {
+                try {
+                    int size = getFileSize(new URL(link));
+                    return "\t" + size ;
+                } catch (IOException e){
+                    // let it flow through to the no size found clause
+                }
+            }
+        }
+        //case 2: an uploaded input file
+        else if (link.startsWith(matchFileUploadPrefix)) {
+            // uploaded input
+            try {
+                GpConfig gpConfig = ServerConfigurationFactory.instance();
+                GpFilePath inputFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, link);
+                long byteLength = inputFilePath.getFileLength();
+                if (inputFilePath.getExtension().equalsIgnoreCase("gct")){
+                    // for a gct lets see if we can get the matrix size
+                    ExternalFileManager extFileManager = DataManager.getExternalFileManager(GpContext.getServerContext());
+                    if (extFileManager != null){
+                        String extUrl = extFileManager.getDownloadURL(GpContext.getServerContext(), inputFilePath.getServerFile());
+                        return getGctFileSize( extUrl);
+                    } else {
+                        File f = inputFilePath.getServerFile();
+                        return getGctFileSize( f);
+                    }
+                }  else {
+                    return "\t length = " + byteLength + " bytes";
+                }
+            } catch (Exception ee){
+                // let it flow through
+            }
+        }
+        //case 3: an input which is part of the pipeline created from an output of a previous job with an uploaded file
+        //case 4: an output from a previous step in a pipeline
+        else {
+            // uploaded input
+            try {
+                GpConfig gpConfig = ServerConfigurationFactory.instance();
+                GpFilePath inputFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, link);
+                long byteLength = inputFilePath.getFileLength();
+                if (inputFilePath.getName().endsWith("gct")){
+                    // for a gct lets see if we can get the matrix size
+                    ExternalFileManager extFileManager = DataManager.getExternalFileManager(GpContext.getServerContext());
+                    if (extFileManager != null){
+                        String extUrl = extFileManager.getDownloadURL(GpContext.getServerContext(), inputFilePath.getServerFile());
+                        return getGctFileSize( extUrl);
+                    } else {
+                        File f = inputFilePath.getServerFile();
+                        return getGctFileSize( f);
+                    }
+                } else {
+                    return "\t length = " + byteLength + " bytes";
+                }
+            } catch (Exception ee){
+                // let it flow through
+            }
+        }
+        
+        return "\t# file size not available";
+    }
+    
+    private static int getFileSize(URL url) {
+        URLConnection conn = null;
+        try {
+            conn = url.openConnection();
+            if(conn instanceof HttpURLConnection) {
+                ((HttpURLConnection)conn).setRequestMethod("HEAD");
+            }
+            conn.getInputStream();
+            return conn.getContentLength();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(conn instanceof HttpURLConnection) {
+                ((HttpURLConnection)conn).disconnect();
+            }
+        }
+    }
+    
+    
+    public static String getGctFileSize(String link){
+        BufferedReader in =null;
+        try {
+            URL anUrl = new URL(link);
+            
+            String nBytes = ""+getFileSize(anUrl);
+            
+            in = new BufferedReader(
+                    new InputStreamReader(
+                    anUrl.openStream()));
+    
+            String inputLine;
+    
+            int i=2; /* number lines */
+            String sizeLine = null;
+            while (i>0 && (inputLine = in.readLine()) != null) {
+                sizeLine = inputLine;
+                i--;
+            }   
+            in.close();
+            // expect nBytes\tnrows\tncols
+            return "\t " + nBytes + "\t" + sizeLine;
+        } catch (Exception e){
+            return "\t# file size not available";
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException ioe){
+                    log.error(ioe);
+                }
+            }   
+        }
+    }
+    public static String getGctFileSize(File  gctFile){
+        BufferedReader in =null;
+        try {
+           
+            String nBytes = ""+ gctFile.length();
+           
+            in = new BufferedReader( new FileReader(gctFile));
+    
+            String inputLine;
+    
+            int i=2; /* number lines */
+            String sizeLine = null;
+            while (i>0 && (inputLine = in.readLine()) != null) {
+                sizeLine = inputLine;
+                i--;
+            }   
+            in.close();
+            return "\t" + nBytes + "\t"+ sizeLine;
+        } catch (Exception e){
+            return "\t# file size not available";
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException ioe){
+                    log.error(ioe);
+                }
+            }   
+        }
+    }
+    
+    
     public static File writePipelineExecutionLog(File jobDir, JobInfoWrapper jobInfo) {
         File logFile = new File(jobDir, jobInfo.getTaskName() + "_execution_log.html");
         WritePipelineExecutionLog w = new WritePipelineExecutionLog(logFile, jobInfo);
@@ -589,3 +788,4 @@ public class JobInfoManager {
     }
     
 }
+
