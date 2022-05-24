@@ -539,24 +539,26 @@ public class JobInfoManager {
             // GP-8093 
             // get the file (if local drive) or external file URL (if S3) to get the file size
             try {
-                String fileSize = getFileSize(inputParam, matchFileUploadPrefix);
-               
-                // avoid building the message if its not gonna be recorded
-                // record TaskName jobNumber, elapsed, filename, bytes, rows (optional), cols (optional)
-                if (elapsedTimeLog.isTraceEnabled() || elapsedTimeLog.isDebugEnabled()){
-                    writer.write(" # file size " + fileSize);
-                    StringBuffer logMsg = new StringBuffer(jobInfoWrapper.getTaskName());
-                    logMsg.append("\t");
-                    logMsg.append(jobInfoWrapper.getJobNumber() );
-                    logMsg.append("\t");
-                    logMsg.append(jobInfoWrapper.getElapsedTimeMillis());
-                    logMsg.append("\t");
-                    logMsg.append(inputParam.getDisplayValue());
-                    logMsg.append("\t");
-                    logMsg.append(fileSize);
-                    elapsedTimeLog.trace(logMsg.toString());
+                if (inputParam.getParameterInfo().getAttributes().get("type").equals("java.io.File")){
+                    
+                    String fileSize = getFileSize(inputParam, matchFileUploadPrefix);
+                   
+                    // avoid building the message if its not gonna be recorded
+                    // record TaskName jobNumber, elapsed, filename, bytes, rows (optional), cols (optional)
+                    if (elapsedTimeLog.isTraceEnabled() || elapsedTimeLog.isDebugEnabled()){
+                        writer.write(" # file size " + fileSize);
+                        StringBuffer logMsg = new StringBuffer(jobInfoWrapper.getTaskName());
+                        logMsg.append("\t");
+                        logMsg.append(jobInfoWrapper.getJobNumber() );
+                        logMsg.append("\t");
+                        logMsg.append(jobInfoWrapper.getElapsedTimeMillis());
+                        logMsg.append("\t");
+                        logMsg.append(inputParam.getDisplayValue());
+                        logMsg.append("\t");
+                        logMsg.append(fileSize);
+                        elapsedTimeLog.trace(logMsg.toString());
+                    }
                 }
-                
             } catch (Exception e){
                 
             }
@@ -638,7 +640,8 @@ public class JobInfoManager {
         try {
             conn = url.openConnection();
             if(conn instanceof HttpURLConnection) {
-                ((HttpURLConnection)conn).setRequestMethod("HEAD");
+                ((HttpURLConnection)conn).setRequestMethod("GET");
+                ((HttpURLConnection)conn).setRequestProperty("Range","bytes=1");
             }
             conn.getInputStream();
             return conn.getContentLength();
