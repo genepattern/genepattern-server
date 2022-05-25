@@ -85,6 +85,7 @@ else
         cp ./resources_${now}/GenePatternDB.properties ./resources/
         cp ./resources_${now}/GenePatternDB.script ./resources/
         cp ./resources_${now}/userGroups.xml ./resources/
+
         if [ -f ./resources_${now}/database_custom.properties ]; then
             cp resources_${now}/database_custom.properties ./resources/
         fi
@@ -94,6 +95,7 @@ else
     else
         echo "Did not find resources_${now}"
         docker cp tmpserver:/opt/genepattern/resources  ./resources
+        docker cp tmpserver:/opt/genepattern/StartGenePatternServer.lax ./resources/StartGenePatternServer.lax 
     fi
     docker stop tmpserver
     docker rm tmpserver
@@ -106,7 +108,11 @@ else
     mkdir -p jobResults
     mkdir -p users
     mkdir -p taskLib
+
+    # bypass registration
+    echo "registeredServer=true" >> resources/StartGenePatternServer.lax
+
     echo "Starting new GenePattern server container with name $name"
-    docker run -v $PWD:$PWD -v /var/run/docker.sock:/var/run/docker.sock -w $PWD -v $PWD/resources:/opt/genepattern/resources  -v $PWD/taskLib:/opt/genepattern/taskLib -v $PWD/jobResults:/opt/genepattern/jobResults -v $PWD/users:/opt/genepattern/users  -p 8888:8888 -p 8080:8080  -d --name "$name" genepattern/genepattern-server:$VERSION /opt/genepattern/StartGenePatternServer
+    docker run -v $PWD:$PWD -v /var/run/docker.sock:/var/run/docker.sock -w $PWD  --mount type=bind,source=$PWD/resources/StartGenePatternServer.lax,target=/opt/genepattern/StartGenePatternServer.lax   -v $PWD/resources:/opt/genepattern/resources  -v $PWD/taskLib:/opt/genepattern/taskLib -v $PWD/jobResults:/opt/genepattern/jobResults -v $PWD/users:/opt/genepattern/users  -p 8888:8888 -p 8080:8080  -d --name "$name" genepattern/genepattern-server:$VERSION /opt/genepattern/StartGenePatternServer
 fi
 
