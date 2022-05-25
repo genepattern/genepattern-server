@@ -32,16 +32,20 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
@@ -69,6 +73,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
     private static Logger elapsedTimeLog = Logger.getLogger("org.genepattern.server.JobInfoManager.JobElapsedTimeLog");
+  
     
     //cache pipeline status so we don't need to make so many DB queries
     private static Map<Integer, Boolean> isPipelineCache = new ConcurrentHashMap<Integer, Boolean>();
@@ -543,15 +548,22 @@ public class JobInfoManager {
                     
                     String fileSize = getFileSize(inputParam, matchFileUploadPrefix);
                    
+                    JobRunnerJob jrj=new JobRunnerJobDao().selectJobRunnerJob(HibernateUtil.instance(), jobInfoWrapper.getJobNumber());
+                    long queued =  (jrj.getStartTime().getTime() - jrj.getSubmitTime().getTime());
+                    
+                    long elapsed =  (jrj.getEndTime().getTime() - jrj.getStartTime().getTime());
+                    
                     // avoid building the message if its not gonna be recorded
-                    // record TaskName jobNumber, elapsed, filename, bytes, rows (optional), cols (optional)
+                    // record TaskName jobNumber, elapsed, queued, filename, bytes, rows (optional), cols (optional)
                     if (elapsedTimeLog.isTraceEnabled() || elapsedTimeLog.isDebugEnabled()){
                         writer.write(" # file size " + fileSize);
                         StringBuffer logMsg = new StringBuffer(jobInfoWrapper.getTaskName());
                         logMsg.append("\t");
                         logMsg.append(jobInfoWrapper.getJobNumber() );
                         logMsg.append("\t");
-                        logMsg.append(jobInfoWrapper.getElapsedTimeMillis());
+                        logMsg.append(elapsed);
+                        logMsg.append("\t");
+                        logMsg.append(queued);
                         logMsg.append("\t");
                         logMsg.append(inputParam.getDisplayValue());
                         logMsg.append("\t");
@@ -625,7 +637,18 @@ public class JobInfoManager {
                         return getGctFileSize( f);
                     }
                 } else {
-                    return "\t length = " + byteLength + " bytes";
+                    if (byteLength <=0){
+                        ExternalFileManager extFileManager = DataManager.getExternalFileManager(GpContext.getServerContext());
+                        if (extFileManager != null){
+                            String extUrl = extFileManager.getDownloadURL(GpContext.getServerContext(), inputFilePath.getServerFile());
+                            return "\t"+ getFileSize(new URL( extUrl));
+                        } else {
+                            File f = inputFilePath.getServerFile();
+                            return "\t"+f.length();
+                        }
+                        
+                    }
+                    return "\t"+ byteLength ;
                 }
             } catch (Exception ee){
                 // let it flow through
