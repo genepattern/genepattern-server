@@ -36,8 +36,9 @@ To install Docker  ...
 
 if [[  $VERSION == "NULL"  ]]
 then
-    echo "No GenePattern version provided with the -v flag.  Using default of v3.9_21.04.05_b325"
+    echo "No GenePattern version provided with the -v flag.  Using default of v3.9_22.02_b377"
     VERSION="v3.9_21.04.05_b325"
+    VERSION="v3.9_22.02_b377"
 fi
 
 
