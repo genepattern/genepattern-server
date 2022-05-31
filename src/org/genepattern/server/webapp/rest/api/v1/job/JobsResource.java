@@ -52,6 +52,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
@@ -622,6 +623,21 @@ public class JobsResource {
             JSONObject job=null;
             job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeInputParams,
                     includeOutputFiles, includePermissions, includeComments, includeTags);
+            
+            if (includeInputParams){
+                JobInput reloadJobInput = null;
+                try {
+                    final GpContext reloadJobContext=GpContext.createContextForJob(new Integer(jobId));
+                    reloadJobInput = reloadJobContext.getJobInput();
+                    JSONObject detailedInputs = LoadModuleHelper.asJsonV2(reloadJobInput);
+                    job.put("inputParameters", detailedInputs);
+                    
+                } catch (Throwable e){
+                    log.error(e);
+                }
+            }
+            
+            
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }

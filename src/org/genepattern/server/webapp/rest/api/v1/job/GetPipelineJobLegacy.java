@@ -23,6 +23,9 @@ import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.LoadModuleHelper;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
@@ -332,6 +335,8 @@ public class GetPipelineJobLegacy implements GetJob {
             }
 
             if (includeInputParams) {
+                
+                
                 JSONArray inputParams = new JSONArray();
                 for (ParameterInfo pinfo : jobInfo.getParameterInfoArray()) {
                     String paramName = pinfo.getName();
@@ -339,6 +344,8 @@ public class GetPipelineJobLegacy implements GetJob {
                             "gp_execution_log.txt".equals(paramName)) continue; // Don't include logs
                     JSONObject param = new JSONObject();
                     param.put(pinfo.getName(), pinfo.getValue());
+                   
+                    
                     inputParams.put(param);
                 }
                 job.put("inputParams", inputParams);
