@@ -2382,14 +2382,17 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
         toggleImg.attr("src", imageSrc);
     });
 
+    var outerGroups = {};
+    
     for (var i = 0; i < run_task_info.parameterGroups.length; i++) {
         //check if any parameters were found in the group
         //if so then do nothing and continue
         if (parameterGroups[i].parameters === undefined || parameterGroups[i].parameters === null
             || parameterGroups[i].parameters.length === 0) {
-            continue;
+        	outerGroups[parameterGroups[i].name] = parameterGroups[i];
+        	continue;
         }
-
+        
         var pGroupName = parameterGroups[i].name;
 
         if (pGroupName === undefined || pGroupName === null) {
@@ -2434,10 +2437,27 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
                 headerTitleDiv.append(headings[h]);
 
-                //add a description if this is the last heading item
-                if (h === headings.length - 1 && (parameterGroups[i].description !== undefined && parameterGroups[i].description !== null
+                //add a description if present
+                if ( h === headings.length - 1 && (parameterGroups[i].description !== undefined && parameterGroups[i].description !== null
                     && parameterGroups[i].description.length > 0)) {
                     newHeaderDiv.prepend("<div class='pHeaderDescription'>" + parameterGroups[i].description + "</div>");
+                   
+                } else {
+                	// its a outer group not the last one so see if there is a mid-level description to use
+                	var namez = "";
+                	for (var j=0; j<=h; j++){
+                		if (j != 0) namez = namez + "/";
+                		namez = namez + headings[j]
+                	}
+                	var outerGroup = outerGroups[namez]; 
+                	if (outerGroup != null){
+	                	if ((outerGroup.description !== undefined && outerGroup.description !== null
+	                            && outerGroup.description.length > 0)){
+	                       newHeaderDiv.prepend("<div class='pHeaderDescription'>" + outerGroup.description + "</div>");
+	                                
+	                		
+	                	}
+                	}
                 }
             }
 
