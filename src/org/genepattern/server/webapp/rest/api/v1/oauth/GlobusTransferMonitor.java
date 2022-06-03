@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.CopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
@@ -581,6 +582,17 @@ class TransferInWaitThread extends TransferWaitThread {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath(file), (LSID)null);
             newFile.renameTo(uploadFilePath.getServerFile());
+            boolean moveSuccess = newFile.renameTo(uploadFilePath.getServerFile());
+            if (!moveSuccess){
+                CopyOption options =  StandardCopyOption.REPLACE_EXISTING ;
+                Path copy = Files.copy(newFile.toPath(), uploadFilePath.getServerFile().toPath(), options);
+                if (!copy.toFile().exists()){
+                    throw new Exception("File from Globus could not be transferred to GenePattern with local copy. On disk at " + newFile.getAbsolutePath()+" but could not copy to  " + uploadFilePath.getServerFile().getAbsolutePath());
+                    
+                }
+            }
+            
+            
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
             
             hib.beginTransaction();
