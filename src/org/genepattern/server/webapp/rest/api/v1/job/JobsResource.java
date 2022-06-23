@@ -954,6 +954,57 @@ public class JobsResource {
 
         return Response.ok().build();
     }
+    
+    /**
+     * Sets the correct download headers and serves up the zip file for the job
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Path("/{jobId}/gpunit")
+    public Response gpUnitDownloadJob(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId) {
+        final GpContext userContext = Util.getUserContext(request);
+        
+        final String contextPath = request.getContextPath();
+        final String cookie = request.getHeader("Cookie");
+        final int id = Integer.parseInt(jobId);
+        final GpContext jobContext  = Util.getJobContext(request, jobId);
+        
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream out) throws IOException, WebApplicationException {
+                try {
+                   
+
+                    JobInfoManager manager = new JobInfoManager();
+                    JobInfoWrapper wrapper = manager.getJobInfo(cookie, contextPath, userContext.getUserId(), id);
+
+                   
+                    JobInfoManager.writeGpUnitYamlToStream(out, wrapper, userContext, jobContext);
+                   
+                    out.flush();
+                    out.close();
+                }
+                catch (Throwable t) {
+                    String message = "Error downloading output files for job " + id + ": " + t.getLocalizedMessage();
+                    throw new WebApplicationException(message);
+                    
+                }
+                } 
+            }; 
+            
+            response.setHeader("Content-Disposition", "attachment; filename=" + jobId + ".yaml.zip" + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+            return Response.ok(stream).build();
+      
+    }
+
+    
 
     private static ExecutorService executor = Executors.newFixedThreadPool(10);
 

@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.OutputFile;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 
 /**
  * Helper class for writing all output files for a job to a zip file.
@@ -55,18 +56,41 @@ public class JobInfoZipFileWriter {
     
     public void writeOutputFilesToZip(ZipOutputStream zos) throws IOException {
         for(OutputFile outputFile : jobInfo.getOutputFiles()) {
-            addFileToZip(zos, ""+jobInfo.getJobNumber(), outputFile);
+            addFileToZip(zos, ""+jobInfo.getJobNumber(), outputFile.getOutputFile(), outputFile.getName());
         }
         for(JobInfoWrapper step : jobInfo.getAllSteps()) {
             for(OutputFile outputFile : step.getOutputFiles()) {
-                addFileToZip(zos, ""+step.getJobNumber(), outputFile);
+                addFileToZip(zos, ""+step.getJobNumber(), outputFile.getOutputFile(), outputFile.getName());
             }
         }
         zos.close();
     }
     
-    private void addFileToZip(ZipOutputStream zos, String jobId, OutputFile outputFile) {
-        File attachment = outputFile.getOutputFile();
+    public void writeAllFilesToZip(ZipOutputStream zos) throws IOException {
+        for(InputFile inputFile : jobInfo.getInputFiles()) {
+            addFileToZip(zos, "inputs", inputFile.getInputFile(), inputFile.getName());
+        }
+        for(JobInfoWrapper step : jobInfo.getAllSteps()) {
+            for(InputFile inputFile : step.getInputFiles()) {
+                addFileToZip(zos, "inputs", inputFile.getInputFile(), inputFile.getName());
+            }
+        }
+        // now add the outputs
+        for(OutputFile outputFile : jobInfo.getOutputFiles()) {
+            addFileToZip(zos, "outputs", outputFile.getOutputFile(), outputFile.getName());
+        }
+        for(JobInfoWrapper step : jobInfo.getAllSteps()) {
+            for(OutputFile outputFile : step.getOutputFiles()) {
+                addFileToZip(zos, "outputs", outputFile.getOutputFile(), outputFile.getName());
+            }
+        }
+          
+        zos.close();
+    }
+    
+    
+    public void addFileToZip(ZipOutputStream zos, String jobId, File attachment, String fileName) {
+        // File attachment = outputFile.getOutputFile();
         if (attachment == null || !attachment.canRead()) {
             log.error("File not added to zip entry, jobId="+jobId+", outputFile="+attachment);
             return;
@@ -75,7 +99,7 @@ public class JobInfoZipFileWriter {
         FileInputStream is = null;
         try {
             is = new FileInputStream(attachment);
-            String entryName = jobId + "/" + outputFile.getName();
+            String entryName = jobId + "/" + fileName;
             ZipEntry zipEntry = new ZipEntry(entryName);
             zipEntry.setTime(attachment.lastModified());
             zipEntry.setSize(attachment.length());
@@ -87,11 +111,11 @@ public class JobInfoZipFileWriter {
             zos.closeEntry();
         }
         catch (FileNotFoundException e) {
-            log.error("FileNotFoundException thrown for file: "+attachment.getPath()  + "  job:" +jobId + "  output file: " + outputFile.getName(), e);
+            log.error("FileNotFoundException thrown for file: "+attachment.getPath()  + "  job:" +jobId + "  output file: " + fileName, e);
             return;
         }
         catch (IOException e) {
-            log.error("Error in addFileToZip: "+e.getLocalizedMessage() + "  job:" +jobId + "  output file: " + outputFile.getName() , e);
+            log.error("Error in addFileToZip: "+e.getLocalizedMessage() + "  job:" +jobId + "  output file: " + fileName , e);
         }
         finally {
             if (is != null) {

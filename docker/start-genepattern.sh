@@ -36,9 +36,9 @@ To install Docker  ...
 
 if [[  $VERSION == "NULL"  ]]
 then
-    echo "No GenePattern version provided with the -v flag.  Using default of v3.9_22.02_b377"
+    echo "No GenePattern version provided with the -v flag.  Using default of v3.9_22.06_b384"
     VERSION="v3.9_21.04.05_b325"
-    VERSION="v3.9_22.02_b377"
+    VERSION="v3.9_22.06_b384"
 fi
 
 
@@ -93,10 +93,14 @@ else
         if [ -f resources_${now}/GenePatternDB.log ]; then
         	cp resources_${now}/GenePatternDB.log ./resources/
         fi 
+        docker cp tmpserver:/opt/genepattern/StartGenePatternServer.lax ./resources/StartGenePatternServer.lax
+        echo "registeredServer=true" >> resources/StartGenePatternServer.lax
+
     else
         echo "Did not find resources_${now}"
         docker cp tmpserver:/opt/genepattern/resources  ./resources
         docker cp tmpserver:/opt/genepattern/StartGenePatternServer.lax ./resources/StartGenePatternServer.lax 
+        echo "registeredServer=true" >> resources/StartGenePatternServer.lax
     fi
     docker stop tmpserver
     docker rm tmpserver
@@ -111,7 +115,7 @@ else
     mkdir -p taskLib
 
     # bypass registration
-    echo "registeredServer=true" >> resources/StartGenePatternServer.lax
+    #echo "registeredServer=true" >> resources/StartGenePatternServer.lax
 
     echo "Starting new GenePattern server container with name $name"
     docker run -v $PWD:$PWD -v /var/run/docker.sock:/var/run/docker.sock -w $PWD  --mount type=bind,source=$PWD/resources/StartGenePatternServer.lax,target=/opt/genepattern/StartGenePatternServer.lax   -v $PWD/resources:/opt/genepattern/resources  -v $PWD/taskLib:/opt/genepattern/taskLib -v $PWD/jobResults:/opt/genepattern/jobResults -v $PWD/users:/opt/genepattern/users  -p 8888:8888 -p 8080:8080  -d --name "$name" genepattern/genepattern-server:$VERSION /opt/genepattern/StartGenePatternServer

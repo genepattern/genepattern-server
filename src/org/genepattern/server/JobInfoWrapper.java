@@ -28,6 +28,8 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -426,6 +428,7 @@ public class JobInfoWrapper implements Serializable {
         private Boolean isInternalLink = null;
         private Boolean isExternalLink = null;
         private Boolean isServerFilePath = null;
+        private  File inputFile;
         
         public Boolean isUrl() {
             return isUrl;
@@ -495,6 +498,15 @@ public class JobInfoWrapper implements Serializable {
         InputFile(TaskInfo taskInfo, JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
             initLinkValue(taskInfo, jobInfo.getJobNumber(), contextPath, paramValue);
+            try {
+                GpConfig jobConfig = ServerConfigurationFactory.instance();
+                GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(jobConfig, paramValue);
+                inputFile = gpfp.getServerFile();
+                System.out.println("---------- " + inputFile.getAbsolutePath()+ "   --  " + inputFile.exists());
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            
         }
 
         /**
@@ -530,6 +542,7 @@ public class JobInfoWrapper implements Serializable {
             //      a) allow.input.file.paths=true
             //      b) allow.input.file.paths=false, handle error 
             //      c) allow.input.file.paths=true, but path is to a restricted area
+            
             
             String origValue = value;
             String genePatternUrl = UIBeanHelper.getServer();
@@ -624,7 +637,7 @@ public class JobInfoWrapper implements Serializable {
             }
             
             //case C: server file path
-            File inputFile = new File(value);
+            inputFile = new File(value);
             if (displayFileInfo && inputFile.exists()) {
                 //directory = inputFile.getParentFile().getName();
                 setSize(inputFile.length());
@@ -636,6 +649,8 @@ public class JobInfoWrapper implements Serializable {
             String displayValue = inputFile.getName();
             
             File inputFileParent = inputFile.getParentFile();
+            
+            
             boolean isWebUpload = FileUtil.isWebUpload(inputFile);
             boolean isSoapUpload = false;
             boolean isInLibdir = taskLibDir != null;

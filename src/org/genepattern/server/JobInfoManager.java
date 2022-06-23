@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpConfig;
@@ -751,7 +752,101 @@ public class JobInfoManager {
         return logFile;
     }
 
+    public static void writeGpUnitYamlToStream(OutputStream os, JobInfoWrapper jobInfo, GpContext gpContext, GpContext jobContext) throws IOException {
+        List<ParameterInfoWrapper> params = jobInfo.getInputParameters();
+        List<OutputFile> outputFiles = jobInfo.getOutputFiles();
+        List<InputFile> inputFiles = jobInfo.getInputFiles();
+        syncOutputFilesToLocal(jobInfo, gpContext);
+        syncInputFilesToLocal(jobInfo, gpContext, jobContext);
+        ZipOutputStream zipStream = new ZipOutputStream(os);
+        
+        
+        File yamlFile = generateGpUnitYaml(jobInfo);
+        JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
+        w.addFileToZip(zipStream, "", yamlFile, "gpunit_" +jobInfo.getJobNumber()+".yaml");
+        
+        w.writeAllFilesToZip(zipStream);
+        
+    }
+    
+    public static File generateGpUnitYaml(JobInfoWrapper jobInfoWrapper) throws IOException{
+        File yaml = File.createTempFile("gpunit", ".yaml");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(yaml));
+        writer.write("\nname: gpunit_" + jobInfoWrapper.getJobNumber() );
+        writer.write("\ndescription: created from job " + jobInfoWrapper.getJobNumber());
+        writer.write("\n# ET(ms): "  +jobInfoWrapper.getElapsedTimeMillis());
+        
+        String GP_URL = ServerConfigurationFactory.instance().getGpUrl();
+        if (GP_URL != null) {
+            writer.write("# from server:  ");
+            writer.write(GP_URL);
+        }
+        writer.write("\nmodule: " + jobInfoWrapper.getTaskName());
+        writer.write("\n# lsid: " + jobInfoWrapper.getTaskLSID());
+
+        writer.write("\nparams: ");
+
+        //case 2: pattern match for uploaded input file
+        final String matchFileUploadPrefix = jobInfoWrapper.getServletContextPath() + "/getFile.jsp?file=";
+
+        for (ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
+            writer.write("\n\t" + inputParam.getName() + ": ");
+
+            String link = inputParam.getLink();
+            if (link == null) {
+                String displayValue = inputParam.getDisplayValue();
+                writer.write("\""+displayValue+"\"");
+            }
+            //special case for input files
+            else {
+                //case 1: an external URL
+                if (link.equals(inputParam.getDisplayValue())) {
+                    writer.write("\""+link+"\"");
+                }
+                //case 2: an uploaded input file
+                else if (link.startsWith(matchFileUploadPrefix)) {
+                    link = link.substring(jobInfoWrapper.getServletContextPath().length(), link.length());
+                    if (GP_URL.endsWith("/")) {
+                        link = link.substring(1);
+                    }
+                    writer.write("\"" + inputParam.getDisplayValue()+"\"");
+                }
+                //case 3: an input which is part of the pipeline created from an output of a previous job with an uploaded file
+                //case 4: an output from a previous step in a pipeline
+                else {
+                    
+                    writer.write("\"" + inputParam.getDisplayValue()+"\"");
+                }
+             }
+            
+        }
+        writer.write("\n");
+        writer.write("\nassertions: ");
+        writer.write("\n\tjobStatus: success");
+        writer.write("\n\tfiles: ");
+        for(OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
+            writer.write("\n\t\t");
+            writer.write("outputs/"+outputFile.getName()+": !!null");
+            
+        }
+        
+        
+        
+        writer.close();
+        return yaml;
+    }
+    
+    
     public static void writeOutputFilesToZipStream(OutputStream os, JobInfoWrapper jobInfo, GpContext gpContext) throws IOException {
+        syncOutputFilesToLocal(jobInfo, gpContext);
+        
+        
+        ZipOutputStream zipStream = new ZipOutputStream(os);
+        JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
+        w.writeOutputFilesToZip(zipStream);
+    }
+
+    private static void syncOutputFilesToLocal(JobInfoWrapper jobInfo, GpContext gpContext) throws IOException {
         if (DataManager.isUseS3NonLocalFiles(gpContext)) {
             ExternalFileManager externalFileManager = DataManager.getExternalFileManager(gpContext);
             // if an ExternalFileManager is in play, we need to make sure that all of the desired 
@@ -772,13 +867,40 @@ public class JobInfoManager {
                 }
             }
         }
-        
-        
-        ZipOutputStream zipStream = new ZipOutputStream(os);
-        JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
-        w.writeOutputFilesToZip(zipStream);
     }
 
+    private static void syncInputFilesToLocal(JobInfoWrapper jobInfo, GpContext gpContext, GpContext jobContext) throws IOException {
+        if (DataManager.isUseS3NonLocalFiles(gpContext)) {
+            
+            ExternalFileManager externalFileManager = DataManager.getExternalFileManager(gpContext);
+            // if an ExternalFileManager is in play, we need to make sure that all of the desired 
+            // files are local because we cannot be certain (e.g. S3) that the files can be zipped 
+            // wherever they actually are
+          
+         
+            
+            for(InputFile inputFile : jobInfo.getInputFiles()) {
+                System.out.println("====== gpunit input ??=== " + inputFile.getInputFile());
+               if (inputFile.getInputFile() != null){
+                   System.out.println("====== gpunit input ===== " + inputFile.getInputFile().getAbsolutePath());
+                   System.out.println("====== gpunit input exists ===== " + inputFile.getInputFile().exists());
+                if (!inputFile.getInputFile().exists())
+                    externalFileManager.syncRemoteFileToLocal(gpContext, inputFile.getInputFile());
+                
+                }
+            }
+            for(JobInfoWrapper step : jobInfo.getAllSteps()) {
+                for(InputFile inputFile : step.getInputFiles()) {
+                    if (inputFile.getInputFile() != null){
+                        if (!inputFile.getInputFile().exists())
+                            externalFileManager.syncRemoteFileToLocal(gpContext, inputFile.getInputFile());
+                    }
+                }
+            }
+        }
+    }
+    
+    
     /** @deprecated */
     public static String getLaunchUrl(final int jobNumber) throws IOException {
         GpConfig gpConfig = ServerConfigurationFactory.instance();

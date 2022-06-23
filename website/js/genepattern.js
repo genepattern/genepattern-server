@@ -2878,6 +2878,14 @@ function createJobWidget(job) {
             "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
+    if ((job.status.isFinished) ){
+        actionData.push({
+            "lsid": "",
+            "name": "GPUnit",
+            "description": "Download a zip containing a gpunit yaml of this job, all input and result files.",
+            "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+        });
+    }
     if (!(job.DELETED_MODULE == true)){
 	    actionData.push({
 	        "lsid": "",
@@ -2924,6 +2932,7 @@ function createJobWidget(job) {
             click: function(event) {
                 var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Job Status") === 0;
                 var downloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Download") === 0;
+                var gpunitAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("GPUnit") === 0;
                 var reloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Reload") === 0;
                 var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") === 0;
                 var terminateAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Terminate") === 0;
@@ -2978,6 +2987,47 @@ function createJobWidget(job) {
                 				
                 				 var req = new XMLHttpRequest();
                 			     req.open("GET", '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', true);
+                			     req.responseType = "blob";
+                			     req.onload = function (event) {
+                			    	 
+                			         var blob = req.response;
+                			         var fileName = req.getResponseHeader("fileName") //if you have the fileName header available
+                			         var link=document.createElement('a');
+                			         link.href=window.URL.createObjectURL(blob);
+                			         link.download= ""+job.jobId +".zip";
+                			         link.click();
+                			         
+                			         $("body").css("cursor", "default");
+                			         $(aDlg).dialog("close");
+                			     };
+
+                			     req.send();
+                     		   
+                     		   
+                     		   
+                			});
+                    
+                    
+                    $(".search-widget:visible").searchslider("hide");
+                }
+
+                else if (gpunitAction) {
+                	
+                	
+                	$("body").css("cursor", "progress");
+                    var a = document.createElement("a");
+                    a.href = '/gp/rest/v1/jobs/' + job.jobId + '/gpunit';
+                    a.setAttribute("download", job.jobId + ".yaml.zip");
+                    
+                   
+                	var dlg = showDialog("Prepare zip","Preparing the job result zip file, this may take a moment.",
+                			{},
+                			9999,
+                			function (aDlg){
+                				$("body").css("cursor", "progress");
+                				
+                				 var req = new XMLHttpRequest();
+                			     req.open("GET", '/gp/rest/v1/jobs/' + job.jobId + '/gpunit', true);
                 			     req.responseType = "blob";
                 			     req.onload = function (event) {
                 			    	 
