@@ -472,7 +472,7 @@ public class JobInfoWrapper implements Serializable {
         
         public File getInputFile() {
             // TODO: Get a File reference to the input file itself
-            return null;
+            return inputFile;
         }
 
         /**

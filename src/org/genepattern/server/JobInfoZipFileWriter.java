@@ -68,7 +68,7 @@ public class JobInfoZipFileWriter {
     
     public void writeAllFilesToZip(ZipOutputStream zos) throws IOException {
         for(InputFile inputFile : jobInfo.getInputFiles()) {
-            addFileToZip(zos, "inputs", inputFile.getInputFile(), inputFile.getName());
+            addFileToZip(zos, "inputs", inputFile.getInputFile(), inputFile.getInputFile().getName());
         }
         for(JobInfoWrapper step : jobInfo.getAllSteps()) {
             for(InputFile inputFile : step.getInputFiles()) {

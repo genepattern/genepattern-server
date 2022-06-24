@@ -773,7 +773,7 @@ public class JobInfoManager {
         File yaml = File.createTempFile("gpunit", ".yaml");
         BufferedWriter writer = new BufferedWriter(new FileWriter(yaml));
         writer.write("\nname: gpunit_" + jobInfoWrapper.getJobNumber() );
-        writer.write("\ndescription: created from job " + jobInfoWrapper.getJobNumber());
+        writer.write("\n# description: created from job " + jobInfoWrapper.getJobNumber());
         writer.write("\n# ET(ms): "  +jobInfoWrapper.getElapsedTimeMillis());
         
         String GP_URL = ServerConfigurationFactory.instance().getGpUrl();
@@ -790,7 +790,7 @@ public class JobInfoManager {
         final String matchFileUploadPrefix = jobInfoWrapper.getServletContextPath() + "/getFile.jsp?file=";
 
         for (ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
-            writer.write("\n\t" + inputParam.getName() + ": ");
+            writer.write("\n    \"" + inputParam.getName() + "\": ");
 
             String link = inputParam.getLink();
             if (link == null) {
@@ -815,18 +815,18 @@ public class JobInfoManager {
                 //case 4: an output from a previous step in a pipeline
                 else {
                     
-                    writer.write("\"" + inputParam.getDisplayValue()+"\"");
+                    writer.write("\"inputs/" + inputParam.getDisplayValue()+"\"");
                 }
              }
             
         }
         writer.write("\n");
         writer.write("\nassertions: ");
-        writer.write("\n\tjobStatus: success");
-        writer.write("\n\tfiles: ");
+        writer.write("\n    jobStatus: success");
+        writer.write("\n    files: ");
         for(OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
-            writer.write("\n\t\t");
-            writer.write("outputs/"+outputFile.getName()+": !!null");
+            writer.write("\n        ");
+            writer.write(""+outputFile.getName()+": !!null");
             
         }
         
