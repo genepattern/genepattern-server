@@ -2878,12 +2878,12 @@ function createJobWidget(job) {
             "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
-    if ((job.status.isFinished) ){
+    if ((job.status.isFinished) && (createTaskAllowed) ){
         actionData.push({
             "lsid": "",
             "name": "GPUnit",
             "description": "Download a zip containing a gpunit yaml of this job, all input and result files.",
-            "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-download-alt' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
     if (!(job.DELETED_MODULE == true)){
