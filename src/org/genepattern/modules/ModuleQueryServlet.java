@@ -825,8 +825,14 @@ public class ModuleQueryServlet extends HttpServlet {
             String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo.getName(), newLsid, username);
 
             if (taskLibDir != null) {
+                
                 deleteRemovedFiles(filesToDelete, new File(taskLibDir));
-                moveSupportFiles(supportFiles, new File(taskLibDir));
+                
+               
+                
+                
+                moveSupportFiles(supportFiles, filesToDelete, new File(taskLibDir));
+                
             } else {
                 sendError(response, "Unable to copy support files");
                 return;
@@ -858,19 +864,16 @@ public class ModuleQueryServlet extends HttpServlet {
         for (String path : files)
         {
             File file = new File(copyTo, path);
-            if (!file.exists()) {
-                throw new Exception("Attempting to delete a file that does not exist: " + path);
-            }
-
-            //Delete file from directory
-            boolean success = file.delete();
+           
+            //Delete file from directory, ignore it if its already gone
+            boolean success = file.delete() | (!file.exists());
             if (!success) {
                 throw new Exception("Unable to delete file: " + file.getName());
             }
         }
     }
 
-    private void moveSupportFiles(String[] files, File copyTo) throws Exception {
+    private void moveSupportFiles(String[] files, String[] filesToDelete, File copyTo) throws Exception {
 
        if (copyTo == null || !copyTo.isDirectory()) {
             throw new Exception("Attempting to copy files to a location that is not a directory");
@@ -881,6 +884,14 @@ public class ModuleQueryServlet extends HttpServlet {
             File target = new File(copyTo, file.getName());
             
             if (!file.exists()) {
+                boolean ignoreItItsDeleted = false;
+                for(String deletedPath: filesToDelete){
+                    if (path.equals(deletedPath)){
+                        ignoreItItsDeleted = true;
+                        break;
+                    }
+                }
+                
                 throw new Exception("Attempting to move a file that does not exist: " + path);
             }
 
