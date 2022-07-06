@@ -2149,7 +2149,7 @@ function updatedefaultcontainers()
 {
     $.ajax({
         type: "POST",
-        url: "/gp/ModuleCreator/containers",
+        url: "/gp/ModuleCreator/containersAndJobOptions",
         success: function(response) {
             var error = response["ERROR"];
             if (error !== undefined) {
@@ -2165,7 +2165,25 @@ function updatedefaultcontainers()
                     
                  }
             	
+            	var memory =  $.parseJSON( response["job.memory"]);
             	
+            	$("#jobMemoryDefaults").empty();
+            	for (var i in memory) {
+            		if (memory[i].length > 0){
+            			$("<option value='"+ memory[i] + "'/>").appendTo("#jobMemoryDefaults");
+            		}
+                    
+                 }
+            	
+            	var cpu =  $.parseJSON( response["job.cpuCount"]);
+            	
+            	$("#jobCpuDefaults").empty();
+            	for (var i in cpu) {
+            		if (cpu[i].length > 0){
+            			$("<option value='"+ cpu[i] + "'/>").appendTo("#jobCpuDefaults");
+            		}
+                    
+                 }
             	
             }
         },
@@ -2495,10 +2513,17 @@ function loadModuleInfo(module)
     if(module["job.memory"] !== undefined)
     {
         $('input[name="jobMemory"]').val(module["job.memory"]);
+        
+    	if (module["job.memory"].length > 0){
+    		$("<option value='"+ module["job.memory"] + "'/>").appendTo("#jobMemoryDefaults");
+    	}
     }
     if(module["job.cpuCount"] !== undefined)
     {
         $('input[name="jobCpuCount"]').val(module["job.cpuCount"]);
+        if (module["job.cpuCount"].length > 0){
+    		$("<option value='"+ module["job.cpuCount"] + "'/>").appendTo("#jobCpuDefaults");
+    	}
     }
     if(module["job.walltime"] !== undefined)
     {

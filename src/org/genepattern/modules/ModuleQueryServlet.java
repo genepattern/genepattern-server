@@ -49,6 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
@@ -62,6 +63,7 @@ import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.RangeValues;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -91,6 +93,8 @@ public class ModuleQueryServlet extends HttpServlet {
     public static final String MODULE_CATEGORIES = "/categories";
     public static final String OUTPUT_FILE_FORMATS = "/fileformats";
     public static final String DEFAULT_CONTAINERS = "/containers";
+    public static final String DEFAULT_CONTAINERS_AND_JOB_OPTIONS = "/containersAndJobOptions";
+    
     public static final String UPLOAD = "/upload";
     public static final String SAVE = "/save";
     public static final String LOAD = "/load";
@@ -105,6 +109,8 @@ public class ModuleQueryServlet extends HttpServlet {
             getModuleCategories(request, response);
         } else if (DEFAULT_CONTAINERS.equals(action)) {
             getDefaultContainers(request, response);
+        } else if (DEFAULT_CONTAINERS_AND_JOB_OPTIONS.equals(action)) {
+            getDefaultContainersAndJobOptions(request, response);
         } else if (OUTPUT_FILE_FORMATS.equals(action)) {
             getOutputFileFormats(response);
         } else if (LOAD.equals(action)) {
@@ -258,6 +264,54 @@ public class ModuleQueryServlet extends HttpServlet {
         } else {
             message.addChild("containers", "");
         }
+        this.write(response, message);
+    }
+    public void getDefaultContainersAndJobOptions(HttpServletRequest request, HttpServletResponse response) {
+        String username = (String) request.getSession().getAttribute("userid");
+        if (username == null) {
+            sendError(response, "No GenePattern session found.  Please log in.");
+            return;
+        }
+        GpContext userContext = GpContext.getContextForUser(username);
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String containers = gpConfig.getGPProperty(userContext, 
+                "moduleIntegratorDefaultContainers", 
+                "genepattern/docker-perl52:0.2  genepattern/docker-java17:0.12  genepattern/docker-python36:0.4");
+        
+        ResponseJSON message = new ResponseJSON();
+        if (containers != null && containers.length() > 0) {
+            JSONArray carray = new JSONArray();
+            String c[] = containers.split(" ");
+            for (int i=0; i< c.length; i++ ){
+                carray.put(c[i]);
+            }
+            
+            message.addChild("containers", carray.toString());
+            
+            
+        } else {
+            message.addChild("containers", "");
+        }
+        
+        JobConfigParams jobConfig = JobConfigParams.initJobConfigParams( gpConfig, userContext);
+        ParameterInfo pMem = jobConfig.getParam("job.memory");
+       
+        JSONArray memArray = new JSONArray();
+        for (String val: pMem.getChoices().values() ){
+            memArray.put(val);
+        }
+        
+        ParameterInfo pCpu = jobConfig.getParam("job.cpuCount");
+        
+        JSONArray cpuArray = new JSONArray();
+        for (String val: pCpu.getChoices().values() ){
+            cpuArray.put(val);
+        }
+        message.addChild("job.memory", memArray.toString());
+        message.addChild("job.cpuCount", cpuArray.toString());
+        
+        
+        
         this.write(response, message);
     }
     
