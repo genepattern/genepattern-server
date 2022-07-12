@@ -465,7 +465,8 @@ function updateJobStatusPage() {
 
 function updateJobResultsDisplay(){
 	var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
-    if (isJobResultsOpen) {
+	var isUpdatePaused = $(".jobresults-pause-checkbox-master").prop('checked');
+    if (isJobResultsOpen && ! isUpdatePaused) {
     	 var filter = getJobFilter();
          if (!filter) filter = true;
          loadJobResults(filter);
@@ -4082,6 +4083,21 @@ function buildJobResultsPage() {
         .appendTo(container);
 
 
+    var navigationSpan = $("<span ></span>")
+	    .addClass("jobresults-navigation")
+	    .attr("id", "jobresults-navigation-span")
+	    .text("Filter: ")
+	    .append(
+		    $("<select></select>")
+		        .attr("id", "jobresults-filter")
+		        .attr("name", "show")
+		        .change(function() {
+		            var filter = $(this).val();
+		            setJobFilter(filter);
+		            loadJobResults(filter);
+		        })
+	    ) ;
+    
     //Add the job table search controls
     var searchControls = $("<div></div>").attr("id", "jobTableSearch").addClass("float-left")
         .append($("<input type='search'/>").attr("id", "jobSearchText")
@@ -4090,19 +4106,9 @@ function buildJobResultsPage() {
                 .search( $(this).val() )
                 .draw();
         }))
-        .append($("<span ></span>")
-            .addClass("jobresults-navigation")
-            .text("Filter: ")
-            .append(
-            $("<select></select>")
-                .attr("id", "jobresults-filter")
-                .attr("name", "show")
-                .change(function() {
-                    var filter = $(this).val();
-                    setJobFilter(filter);
-                    loadJobResults(filter);
-                })
-        ))
+        
+        .append( navigationSpan)
+       
         .append($("<label></label>")
             .append($("<input type='radio' name='jobSearch' checked='checked'/>")
                 .attr("id", "jobSearchModule"))
@@ -4123,7 +4129,26 @@ function buildJobResultsPage() {
             .append($("<label></label>")
                 .append($("<input type='radio' name='jobSearch' />")
                     .attr("id", "jobSearchOwner"))
-                .append("Owner"))
+                .append("Owner"));
+        
+        
+        navigationSpan.append($("<span ></span>")
+        		.addClass("jobresults-pause")
+        		.text("pause reload: ")
+        		.append(
+        				$("<input/>")
+        				.addClass("jobresults-pause-checkbox-master")
+        				.attr("type", "checkbox")
+        				.attr("id", "jobresults-pause-checkbox")
+        				.click(function() {
+        					var isChecked = $(".jobresults-pause-checkbox-master").prop('checked');
+        					$(".jobresults-pause-checkbox").prop('checked', isChecked);
+        				})
+        		))
+        
+        
+       
+        
     }
 
     // Build the table
@@ -5418,4 +5443,177 @@ function createGlobusWidget(){
 
     $("#menus-globus").append(widget);
 }
+
+//
+// Just a method to force the error from GPAT 2689 from na js console
+//
+
+var gpat2689JobSpec = `{ 
+	  "lsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:5.1", 
+	  "params": [ 
+	    { 
+	      "name": "input.filename", 
+	      "values": [   
+	        "https://datasets.genepattern.org/data/all_aml/all_aml_test.gct"  
+	      ], 
+	      "batchParam": false,  
+	      "groupId": "" 
+	    },  
+	    {   
+	      "name": "threshold.and.filter",
+	      "values": [
+	        "1"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "floor",
+	      "values": [
+	        "20"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "ceiling",
+	      "values": [
+	        "20000"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "min.fold.change",
+	      "values": [
+	        "3"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "min.delta",
+	      "values": [
+	        "100"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "num.outliers.to.exclude",
+	      "values": [
+	        "0"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "row.normalization",
+	      "values": [
+	        "0"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "row.sampling.rate",
+	      "values": [
+	        "1"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "threshold.for.removing.rows",
+	      "values": [
+	        ""
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "number.of.columns.above.threshold",
+	      "values": [
+	        ""
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "log2.transform",
+	      "values": [
+	        "0"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "output.file.format",
+	      "values": [
+	        "3"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "output.file",
+	      "values": [
+	        "<input.filename_basename>.preprocessed"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "job.memory",
+	      "values": [
+	        "3 Gb"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "job.walltime",
+	      "values": [
+	        "02:00:00"
+	      ],
+	      "batchParam": false,
+	      "groupId": ""
+	    },
+	    {
+	      "name": "job.cpuCount",
+	      "values": [
+	        "3"
+	      ],
+	      "batchParam": false,  "groupId": "" }
+	  ]
+	 }`;
+
+function testSubmission(spec){
+	 if (spec == null) spec = gpat2689JobSpec;
+	
+	//console.log(gpat2689JobSpec);
+	
+	 $.ajax({
+        type : "POST",
+        url : '/gp/rest/v1/jobs/',
+        data : spec,
+        dataType : "text",
+        contentType : "application/json",
+        withCredentials: true,
+        success : function(data, textStatus, jqXHR) {
+            alert('Success');
+        },
+        error : function(data, textStatus, jqXHR) {
+            
+            alert('Error ' + jqXHR.status);
+        }
+    });
+	
+	
+	return 1;
+	
+}
+
+
+
 

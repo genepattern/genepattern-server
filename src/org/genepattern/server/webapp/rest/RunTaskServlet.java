@@ -42,6 +42,7 @@ import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineUtil;
+import org.genepattern.drm.Memory;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -66,6 +67,7 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
@@ -804,6 +806,83 @@ public class RunTaskServlet extends HttpServlet
         return false;
     }
     
+    
+   
+    
+
+    private String validateAllowedParameter(String value,  ParameterInfo jcpPi, Map<String, String> allowedChoices) throws GpServerException {
+            
+        String av = allowedChoices.get(value);
+        Boolean isAGoodValue = false;
+        for (String allowedValue : allowedChoices.values()) {
+            if (allowedValue.replaceAll("\\s+","").equalsIgnoreCase(value.replaceAll("\\s+",""))) {
+                isAGoodValue = true;
+                break;
+            }
+        }
+        
+        // GPAT-2689 - for job.memory and job.cpu allow it if its less than the max they could have asked for
+        // or the top value but let it run
+        if ( ("job.cpuCount".equalsIgnoreCase(jcpPi.getName()))&& !isAGoodValue ){
+            int numericV = new Integer(value.replaceAll("[^0-9]", ""));
+            int maxAllowed= 1;
+            
+            for (String key : allowedChoices.keySet()) {
+                String allowedValue = allowedChoices.get(key);
+                int numericAllowed = new Integer(allowedValue.replaceAll("[^0-9]", ""));
+                if (numericAllowed >= numericV){
+                    isAGoodValue = true;
+                    break;
+                }
+                maxAllowed = Math.max(maxAllowed,  numericAllowed);
+            }
+            if (!isAGoodValue){
+                isAGoodValue = true;
+                return ""+maxAllowed;
+            }
+        }
+        
+        // GPAT-2689 - for job.memory and job.cpu allow it if its less than the max they could have asked for
+        // or the top value but let it run
+        if ( ("job.memory".equalsIgnoreCase(jcpPi.getName())) && !isAGoodValue ){
+            Memory requestedMem = Memory.fromString(value);
+            //int numericV = new Integer(v.getValue().replaceAll("[^0-9]", ""));
+            Memory maxAllowed= Memory.fromString("1 G");
+            
+            for (String key : allowedChoices.keySet()) {
+                Memory allowedValue = Memory.fromString(allowedChoices.get(key));
+                
+                if ( allowedValue.numGb() >= requestedMem.numGb()){
+                    isAGoodValue = true;
+                    break;
+                }
+                if (maxAllowed.numGb() <  allowedValue.numGb()){
+                    maxAllowed = allowedValue;
+                }
+            }
+            if (!isAGoodValue){
+                isAGoodValue = true;
+                return ""+maxAllowed.getDisplayValue();
+            }
+        }
+        
+        
+        if ((av == null) && !isAGoodValue ){
+            // we got here because the user is not an admin, but has somehow submitted a job requesting
+            // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+            // the job from running GP-8347
+            
+           
+            throw new GpServerException("Job config parameter '" + jcpPi.getName() +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+            
+        } else {
+            return value;
+        }
+        
+            
+    }
+
+    
     /**
      * Added this in 3.8.1 release to enable additional job configuration input parameters.
      * @param jobSubmitInfo
@@ -862,14 +941,20 @@ public class RunTaskServlet extends HttpServlet
                         if (jcpPi != null){
                             Map<String,String> allowedChoices = jcpPi.getChoices();
                             if (allowedChoices.size() > 0){
-                                String av = allowedChoices.get(value);
-                                Boolean aValidVal = allowedChoices.containsValue(value);
-                                if ((av == null) && !aValidVal) {
-                                    // we got here because the user is not an admin, but has somehow submitted a job requesting
-                                    // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
-                                    // the job from tunning GP-8371
-                                    throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
-                                }
+                                
+                                String okVal = validateAllowedParameter( value,   jcpPi, allowedChoices);
+//                                String av = allowedChoices.get(value);
+//                                Boolean aValidVal = allowedChoices.containsValue(value);
+//                                if ((av == null) && !aValidVal) {
+//                                    // we got here because the user is not an admin, but has somehow submitted a job requesting
+//                                    // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+//                                    // the job from tunning GP-8371
+//                                    throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+//                                }
+                           
+                            
+                            
+                            
                             }
                         }
                         

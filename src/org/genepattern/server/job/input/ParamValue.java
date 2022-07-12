@@ -18,6 +18,10 @@ public class ParamValue {
         return value;
     }
     
+    public void overrideValue(String newValOverride){
+        value = newValOverride;
+    }
+    
     @Override
     public int hashCode() {
         return Objects.hashCode(value);
