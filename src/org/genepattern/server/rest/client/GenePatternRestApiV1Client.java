@@ -31,8 +31,9 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClients;
-
+import org.apache.http.impl.client.RedirectLocations;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -40,6 +41,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 
 public class GenePatternRestApiV1Client {
@@ -321,7 +324,20 @@ public class GenePatternRestApiV1Client {
         HttpResponse response;
         try {
             System.out.println("Getting >" + outFileHref+"< ");
-            response = client.execute(fileGet);
+            HttpContext context = new BasicHttpContext();
+            response = client.execute(fileGet, context);
+            if (response.getStatusLine().getStatusCode() >= 400){
+                // S3 redirects can fail because of the basic auth headers so
+                // if we get a 400 error, try again going to the redirect 
+                // without setting basic auth first
+                RedirectLocations locations = (RedirectLocations) context.getAttribute(DefaultRedirectStrategy.REDIRECT_LOCATIONS);
+                if (locations != null) {
+                    URI finalUrl = locations.getAll().get(locations.getAll().size() - 1);
+                    System.out.println("Redirected to " + finalUrl.toASCIIString());
+                    fileGet = new HttpGet(finalUrl);
+                    response = client.execute(fileGet, context);
+                }
+            }
             System.out.println(response.toString());
         }
         catch (ClientProtocolException e) {

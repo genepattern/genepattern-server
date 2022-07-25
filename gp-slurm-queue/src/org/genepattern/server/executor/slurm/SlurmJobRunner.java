@@ -574,7 +574,13 @@ public class SlurmJobRunner implements JobRunner {
         else if (slurmStatusString.compareToIgnoreCase("NODE_FAI") == 0 || slurmStatusString.compareToIgnoreCase("NODE_FAIL") == 0) {
             Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
-        } else if (slurmStatusString.indexOf("Invalid job id specif") >= 0){
+        } else if (slurmStatusString.toUpperCase().startsWith("OUT_OF_ME")) {
+            Thread.currentThread().interrupt();
+            appendToStdErr(stderr, "Out of memory failure.  Retry with more memory allocated.");
+            return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).jobStatusMessage("Out of memory failure.  Retry with more memory allocated.").build();
+        }
+        
+        else if (slurmStatusString.indexOf("Invalid job id specif") >= 0){
             Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();      
         }
@@ -582,6 +588,19 @@ public class SlurmJobRunner implements JobRunner {
             log.error("Unknown Slurm status string: " + slurmStatusString);
             throw new CommandExecutorException("Unknown Slurm status string: " + slurmStatusString);
         }
+    }
+    
+    private void appendToStdErr(File stderr, String message){
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(stderr, true));
+            writer.append("\n");
+            writer.append(message);
+            
+            writer.close();
+        } catch (IOException ioe){
+            log.error("Failed writing message to stderr: " + message, ioe);
+        }
+        
     }
 
     /**
@@ -699,6 +718,13 @@ public class SlurmJobRunner implements JobRunner {
             
         }
         catch (Throwable e) {
+            if (output != null){
+                for (int j=0; j< output.size(); j++){
+                    log.error("  --- _getStatus:  slurm getStatus out:  " + output.get(j));
+                }
+            } else {
+                log.error(" --- _getStatus:  slurm getStatus out: NULL");
+            }
             log.error("Error getting status for slurm job with squeue: " + extJobId + "  " +  e.getMessage());
             return this.altGetStatus(drmJobRecord);
         }
@@ -740,10 +766,13 @@ public class SlurmJobRunner implements JobRunner {
                 buff.append(s);
                 buff.append(" ");
             }
-            log.error("slurm getStatus command: " + buff.toString());
+            log.error("  --- ALT:  slurm getStatus command: " + buff.toString());
             
             
             output = commandRunner.runCmd(commandArray);
+            for (int j=0; j< output.size(); j++){
+                log.error("  --- ALT:  slurm getStatus out:  " + output.get(j));
+            }
         
             String slurmStatusString = null;
             if (output.size() > 1) log.warn("Extra lines found in Slurm sacct status output");

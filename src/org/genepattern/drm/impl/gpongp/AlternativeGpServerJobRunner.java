@@ -150,7 +150,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                   serverFile = gpfp.getServerFile();
                   //
                   // When an external file manager is in use, its still possible that a file is local (legacy files and a few
-                  // otehr cases) so we make sure its not local first.
+                  // other cases) so we make sure its not local first.
                   //
                   if (serverFile.exists()) {
                       value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
@@ -165,7 +165,22 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               } 
               paramsJsonArray.add(P);               
            }
-            
+            if (jobSubmission.getCpuCount() != null){
+                JsonObject pCpu = gpRestClient.createParameterJsonObject("job.cpuCount", jobSubmission.getCpuCount()); 
+                paramsJsonArray.add(pCpu); 
+            }
+            if (jobSubmission.getMemory() != null) {
+                JsonObject pMem = gpRestClient.createParameterJsonObject("job.memory",jobSubmission.getMemory().getDisplayValue());
+                paramsJsonArray.add(pMem);
+            }
+            //JsonObject pWalltime = gpRestClient.createParameterJsonObject(JobRunner.PROP_WALLTIME,jobSubmission.getWalltime().toString());
+            if (jobSubmission.getWalltime()  == null){
+                JsonObject pWalltime = gpRestClient.createParameterJsonObject(JobRunner.PROP_WALLTIME,"08:00:00");
+                paramsJsonArray.add(pWalltime); 
+            } else {
+                JsonObject pWalltime = gpRestClient.createParameterJsonObject(JobRunner.PROP_WALLTIME,jobSubmission.getWalltime().toString());
+                paramsJsonArray.add(pWalltime); 
+            }
            
            final JsonObject jobJsonObj=new JsonObject();
            jobJsonObj.addProperty("lsid", ji.getTaskLSID()); 
@@ -628,7 +643,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     
                     // statusBuilder = new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING); 
                     log.error("Job: "+localJobId+"  Remote "+drmJobId+" job state is " + state + " but only " +numOutputFilesRetrieved +" retrieved of "+outputFiles.size()+".");
-                    
+                    DrmJobState runState = jobInfoStatusToDrmJobState("RUNNING");
+                    statusBuilder = new DrmJobStatus.Builder(drmJobId,runState); 
+                    log.debug("  remote job state is " + state + " but leaving as running waiting for downloads.");
+                    if ((startTime != null) &&(!startTime.isEmpty())) statusBuilder.startTime(getDate(startTime));
+                    if ((submitTime != null) && (!submitTime.isEmpty())) statusBuilder.submitTime(getDate(submitTime));
                     //statusBuilder.startTime(getDate(startTime));
                     //statusBuilder.submitTime(getDate(submitTime));
                     

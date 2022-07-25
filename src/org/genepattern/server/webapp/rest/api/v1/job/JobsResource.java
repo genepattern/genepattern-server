@@ -38,6 +38,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
@@ -339,6 +340,34 @@ public class JobsResource {
                             isAGoodValue = true;
                             v.overrideValue(""+maxAllowed.getDisplayValue());
                         }
+                    }
+                    
+                    try {
+                    if ( ("job.walltime".equalsIgnoreCase(jcpPi.getName())) && !isAGoodValue ){
+                        Walltime requestedTime = Walltime.fromString(v.getValue());
+                        Walltime maxAllowed= Walltime.fromString("02:00:00");
+                        
+                        for (String key : allowedChoices.keySet()) {
+                            Walltime allowedValue = Walltime.fromString(allowedChoices.get(key));
+                            if (allowedValue == null){
+                                // do nothing
+                            } else if ( allowedValue.asMillis() >= requestedTime.asMillis()){
+                                isAGoodValue = true;
+                                break;
+                            }
+                            if (allowedValue != null){
+                                if (maxAllowed.asMillis() <  allowedValue.asMillis()){
+                                    maxAllowed = allowedValue;
+                                }
+                            }
+                        }
+                        if (!isAGoodValue){
+                            isAGoodValue = true;
+                            v.overrideValue("Failed to set non-standard walltime for job "+maxAllowed.toString());
+                        }
+                    }
+                    } catch (Exception e){
+                        log.error("", e);
                     }
                     
                     
