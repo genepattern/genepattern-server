@@ -523,7 +523,7 @@ public class SlurmJobRunner implements JobRunner {
     }
     private DrmJobStatus slurmStatusToDrmStatus(String extJobId, File stderr, String slurmStatusString) throws CommandExecutorException {
         // just in case its ever not all caps already
-        slurmStatusString = slurmStatusString.toUpperCase();
+        slurmStatusString = slurmStatusString.toUpperCase().trim();
         
         // Build the correct status from the string, and return
         if (slurmStatusString == null) {
@@ -545,9 +545,9 @@ public class SlurmJobRunner implements JobRunner {
         else if ( slurmStatusString.compareToIgnoreCase("CANCELLED") == 0) {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.CANCELLED).build();
         }
-        else if (slurmStatusString.indexOf("COMPLET") >= 0 ) {
-            return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
-        }
+      //  else if (slurmStatusString.indexOf("COMPLET") >= 0 ) {
+      //      return new DrmJobStatus.Builder(extJobId, DrmJobState.DONE).build();
+      //  }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
             if (failIfStderr && (stderr != null && stderr.exists() && stderr.length() != 0) ) {
                 Thread.currentThread().interrupt();
@@ -613,7 +613,8 @@ public class SlurmJobRunner implements JobRunner {
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
         DrmJobStatus status = _getStatus(drmJobRecord);
         
-        status = updateJobRunnerJobDetails(drmJobRecord, status);
+        if (status != null)
+            status = updateJobRunnerJobDetails(drmJobRecord, status);
         
         
         return status;
@@ -634,20 +635,19 @@ public class SlurmJobRunner implements JobRunner {
             if (oldStatus.getJobState().equals(status.getJobState())){
                 return finalStatus;
             }
-            
             if (oldStatus.getJobState().equals(DrmJobState.GP_PENDING) 
                                         && status.getJobState().equals(DrmJobState.GP_PROCESSING)){
                     finalStatus = initStatusStartedOnSlurm(drmJobRecord, status.getJobState());
                     statusMap.put(gpJobNo, status);
             }
 
-            
+        
             // job is done.  Make sure to remove it 
             if (status.getJobState().equals(DrmJobState.TERMINATED)) {
                 statusMap.remove(gpJobNo);
                 status = initStatusFinishedOnSlurm(drmJobRecord, status.getJobState());
             }
-            
+         
             // look for when it changes from pending to started so that we can record the 
             // actual time spent running (roughly)
             if (oldStatus.getJobState().equals(DrmJobState.QUEUED) 
@@ -655,10 +655,10 @@ public class SlurmJobRunner implements JobRunner {
                 finalStatus = initStatusStartedOnSlurm(drmJobRecord, status.getJobState());
                 statusMap.put(gpJobNo, status);
             }
-            
+           
         } catch (Exception e){
             e.printStackTrace();
-            
+         
             log.error(e);
         } finally {
             return finalStatus;
@@ -784,6 +784,7 @@ public class SlurmJobRunner implements JobRunner {
             if (output.size() > 0) {
                 // grab the last line
                 slurmStatusString = output.get(output.size()-1);
+                log.error("SLURM STATUS FOR JOB " +drmJobRecord.getGpJobNo() + " is " + slurmStatusString);
             }
             return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
         }

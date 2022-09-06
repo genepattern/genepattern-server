@@ -2967,7 +2967,9 @@ function createJobWidget(job) {
                 		  return element.toLowerCase() === "javascript".toLowerCase();
                 	});
                 	
-                    loadJobStatus(job.jobId, "true", vizIndex >= 0, job.DELETED_MODULE);
+                	var isDeletedModule = (all_modules_map[job.taskLsid] == null) || job.DELETED_MODULE;
+                	
+                    loadJobStatus(job.jobId, "true", vizIndex >= 0, isDeletedModule);
                 }
 
                 else if (downloadAction) {
