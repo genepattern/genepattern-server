@@ -11,8 +11,15 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,22 +39,32 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.GpFilePathException;
+import org.genepattern.server.dm.Node;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webapp.rest.api.v1.job.GpLink;
 import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCache;
+import org.genepattern.server.webapp.uploads.UploadFileServlet;
+import org.genepattern.server.webapp.uploads.UploadFilesBean;
+import org.genepattern.server.webapp.uploads.UploadTreeJSON;
 import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.genepattern.server.webapp.uploads.UploadTreeJSON;
 /**
  * RESTful implementation of the /data resource.
  * 
@@ -240,6 +257,71 @@ public class DataResource {
         }
     }
 
+    /**
+     * 
+     * GP-9217 return representation of a user's files tab for use/display
+     * 
+     *  * Example usage:
+     * <pre>
+     *  curl -u test:test http://127.0.0.1:8080/gp/rest/v1/data/userfilesjson
+     *  </pre>
+     * @param request
+     * @return
+     */
+    @GET
+    @Path("/user/files")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUser(@Context HttpServletRequest request, @Context HttpServletResponse response) throws JSONException {
+        GpContext userContext = Util.getUserContext(request);
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        JSONObject object = new JSONObject();
+        final HibernateSessionManager mgr=HibernateUtil.instance();
+        try {
+            GpDirectoryNode treeNode = UserUploadManager.getFileTree(mgr, gpConfig, userContext);
+            JSONObject treeJson = makeFileJSON(request, treeNode);
+            
+            object = treeJson;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return Response.ok().entity(object.toString()).build();
+    }
+
+    protected static JSONObject makeFileJSON(final HttpServletRequest request, final Node<GpFilePath> node) throws Exception {
+        
+        JSONObject attr = new JSONObject();
+        final String href=UrlUtil.getHref(request, node.getValue());
+        attr.put("href", href);
+        attr.put("name", node.getValue().getName());
+
+        // Add the Kind data
+        String kind = node.getValue().getKind();
+        attr.put("kind", kind);
+
+       
+        Collection <Node<GpFilePath>> childNodes = node.getChildren();
+        if (node.getValue().isDirectory()) {
+            attr.put("isDirectory", true);
+            List<JSONObject> children = new ArrayList<JSONObject>();
+            for (Node<GpFilePath> child : childNodes) {
+               
+                JSONObject childJSON = makeFileJSON(request, child);
+                children.add(childJSON);
+              
+            }
+            attr.put("children", children);
+        } else {
+            // add file size and date
+            attr.put("isDirectory", false);
+            attr.put("size", node.getValue().getFileLength());
+            attr.put("lastModified", node.getValue().getLastModified());
+            attr.put("extension",node.getValue().getExtension()  );         
+            
+        }
+        return attr;
+    }
+
+    
     /**
      * Download endpoint for DataResource
      * Currently only downloading directories is implemented.
