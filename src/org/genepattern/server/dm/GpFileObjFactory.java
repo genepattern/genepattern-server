@@ -145,6 +145,12 @@ public class GpFileObjFactory {
         if (relativePath.startsWith("./") || relativePath.startsWith("."+File.separator)) {
             relativePath = relativePath.substring(2);
         }
+        
+        log.error("XXX JTL GpObjectFileFact         uploadFile abs is " + uploadFile.getAbsolutePath());
+       
+        log.error("XXX JTL GpObjectFileFact         relativePath is " + relativePath);
+        
+        
         //1) construct a file reference to the server file
         //   e.g. serverFile=<user.upload.dir>/relativePath
         File serverFile = new File(userUploadDir, relativePath);
