@@ -57,11 +57,6 @@ public class UserUploadDao extends BaseDAO {
         if (rval != null && rval.size() == 1) {
             return rval.get(0);
         } else if (relativePath.equals("tmp") && rval.size() > 1) {
-            // should delete rval.get(1)
-            for (int i=1; i< rval.size(); i++){
-                deleteUserUpload(rval.get(i).getId(), userId, relativePath);
-            }
-            
             return rval.get(0);
         } else {
             return null;
@@ -185,7 +180,7 @@ public class UserUploadDao extends BaseDAO {
     
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {
         String relativePath = gpFileObj.getRelativePath();
-
+       
         String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and (uu.path = :path  or uu.path = :path2   ) ";
         Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
@@ -196,15 +191,15 @@ public class UserUploadDao extends BaseDAO {
         return numDeleted;
     }
 
-    public int deleteUserUpload(Long uploadId, String userId, GpFilePath gpFileObj) {
-        String relativePath = gpFileObj.getRelativePath();
+    public int deleteUserUpload(Long uploadId, String userId, String path) {
+       
 
-        String hql = "delete "+UserUpload.class.getName()+" uu where uu.id = :id uu.userId = :userId and (uu.path = :path  or uu.path = :path2   ) ";
+        String hql = "delete "+UserUpload.class.getName()+" uu where uu.id = :anid uu.userId = :userId and (uu.path = :path  or uu.path = :path2   ) ";
         Query query = mgr.getSession().createQuery( hql );
-        query.setLong("id", uploadId);
+        query.setLong("anid", uploadId);
         query.setString("userId", userId);
-        query.setString("path", relativePath);
-        query.setString("path2", "./"+relativePath);
+        query.setString("path", path);
+        query.setString("path2", "./"+path);
         
         int numDeleted = query.executeUpdate();
         return numDeleted;
