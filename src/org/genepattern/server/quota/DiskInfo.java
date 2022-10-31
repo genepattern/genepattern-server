@@ -52,6 +52,11 @@ public class DiskInfo
 
     final static public HashMap<String, Long> userNotifications = new HashMap<String, Long>(); 
 
+    public DiskInfo() {
+        // no-arg constructor to quiet jaxb exceptions
+        this.userId = null;
+    }
+    
     public DiskInfo(final String userId) {
         this.userId=userId;
     }
