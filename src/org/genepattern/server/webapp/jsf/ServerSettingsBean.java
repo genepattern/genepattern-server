@@ -458,6 +458,12 @@ public class ServerSettingsBean implements Serializable {
     private void addRepositoryURL(String currentRepositoryName, String repositoryNames) {
         String currentRepositoryURL = settings.getProperty(currentRepositoryName);
         String repositoryURLs = settings.getProperty(repositoryNames);
+        if (repositoryURLs == null) {
+            if (currentRepositoryURL != null)
+                settings.put(repositoryNames, currentRepositoryURL);
+            return;
+        }
+        
         String[] result = repositoryURLs.split(",");
         boolean exist = false;
         for (int i = 0; i < result.length; i++) {
