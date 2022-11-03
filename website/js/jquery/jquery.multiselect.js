@@ -313,6 +313,10 @@
 
       // grab select width before hiding it
       this._selectWidth = $element.outerWidth();
+      //if (this.options.minWidth) {
+    //	  this._selectWidth = (this.options.minWidth-95)+'px';
+     // }
+      
       $element.hide();
 
       // Convert null/falsely option values to empty arrays for fewer problems
@@ -500,7 +504,10 @@
       if (this.options.groupColumnsWidth) {
         item.style.width = this.options.groupColumnsWidth+'px';
       }
-
+      if (this.options.minWidth) {
+          item.style.minWidth = (this.options.minWidth-30)+'px';
+      }
+      
       item.appendChild(label);
 
       return item;
@@ -550,7 +557,10 @@
           if (self.options.groupColumnsWidth) {
             $optGroupItem.css('width', self.options.groupColumnsWidth+'px');
           }
-
+          if (this.options.minWidth) {
+              item.style.minWidth = this.options.minWidth+'px';
+          }
+          
           list.push($optGroupItem);
         } else {
           list.push(self._makeOption(elem));
@@ -1133,10 +1143,15 @@
       if (this._savedMenuWidth && !recalc) {
          return;
       }
-
+      
+      
       // Note that it is assumed that the button width was set prior.
       var width = !!this.options.listbox ? this._selectWidth : (this._savedButtonWidth || this._getBCRWidth( this.$button ));
-
+      
+      if (this.options.minWidth) {
+          width = Math.max(width, this.options.minWidth);
+      }
+      
       var menuWidth = this.options.menuWidth || '';
       if ( /\d/.test(menuWidth) ) {
          var parsed = parse2px(menuWidth, this.element);

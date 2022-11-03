@@ -226,7 +226,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
         var noneSelectedText = "Select an option";
 
-        var cMinWidth = Math.log(longChars) * 90;
+        var cMinWidth = Math.log(longChars) * 100;
 
         if(cMinWidth == 0)
         {
@@ -321,6 +321,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             },
             minWidth: cMinWidth,
+            menuWidth: cMinWidth,
+            
             noneSelectedText: noneSelectedText,
             classes: 'mSelect',
             checkAll: function() {
