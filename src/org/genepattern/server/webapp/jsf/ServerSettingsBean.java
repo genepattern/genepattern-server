@@ -395,10 +395,14 @@ public class ServerSettingsBean implements Serializable {
     private String getLogHeader(File logFile, String name) {
         StringBuffer buf = new StringBuffer();
         if ((logFile == null || !logFile.exists())) {
-            buf.append("Log not found.");
+            buf.append("Log, ");
+            buf.append(logFile.getAbsolutePath());
+            buf.append(" not found.");
         } 
         else {
-            buf.append(name + " log file from ");
+            buf.append(name + " log file, ");
+            buf.append(logFile.getAbsolutePath());
+            buf.append(" from ");
             buf.append(UIBeanHelper.getServer() + " on ");
             buf.append(cal.getTime());
 
