@@ -121,7 +121,7 @@ public class TestFileDownloaderConfig {
         assertEquals("selectedChoices[0].value",
                 selectedDirValue, 
                 downloader.getFilesToCache().get(0).getUrl().toString());
-        assertEquals("cachedFile instanceof CachedFtpDir", true, downloader.getFilesToCache().get(0) instanceof CachedFtpDir);
+        assertEquals("cachedFile instanceof CachedFtpDir " + downloader.getFilesToCache().get(0), true, downloader.getFilesToCache().get(0) instanceof CachedFtpDir);
     }
     
     @SuppressWarnings("unchecked")
