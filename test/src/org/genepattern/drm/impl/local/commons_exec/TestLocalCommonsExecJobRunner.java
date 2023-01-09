@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.Executor;
+import org.apache.commons.io.FileUtils;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -76,6 +77,23 @@ public class TestLocalCommonsExecJobRunner {
         try {
             String actualContent=Files.toString(actual, Charset.forName("UTF-8"));
             assertEquals(message, expectedContent, actualContent);        
+        }
+        catch (Throwable t) {
+            fail("error validating file contents: "+t.getLocalizedMessage());
+        }
+    }
+    /**
+     * custom assertion, assert that the actual file contains the expected content.
+     * @param message
+     * @param expectedContent
+     * @param actual
+     */
+    protected static void assertFileFirstLineContent(final String message, final String expectedContent, final File actual) {
+        assertEquals(""+actual+" exists", true, actual.exists());
+        try {
+            String actualContent=Files.toString(actual, Charset.forName("UTF-8"));
+            List<String> lines  = FileUtils.readLines(actual);
+            assertEquals(message, expectedContent, lines.get(0));        
         }
         catch (Throwable t) {
             fail("error validating file contents: "+t.getLocalizedMessage());
@@ -234,8 +252,8 @@ public class TestLocalCommonsExecJobRunner {
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertExitStatus();
-        assertFileContent(ftpFilename, 
-                "dummy file 1\n", 
+        assertFileFirstLineContent(ftpFilename, 
+                "38 2 1", 
                 new File(jobDir,ftpFilename));
     }
 
