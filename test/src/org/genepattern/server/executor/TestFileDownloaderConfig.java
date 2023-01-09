@@ -53,8 +53,8 @@ public class TestFileDownloaderConfig {
 
     private String choiceDir=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
     private String selectedValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.cls";
-    private String choiceDir_dirListing="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
-    private String selectedDirValue=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls";
+    private String choiceDir_dirListing="ftp://ftp.broadinstitute.org/pub/genepattern/";
+    private String selectedDirValue=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
 
     
     /**
