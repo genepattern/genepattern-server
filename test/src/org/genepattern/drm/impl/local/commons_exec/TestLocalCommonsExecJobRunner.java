@@ -220,10 +220,10 @@ public class TestLocalCommonsExecJobRunner {
      */
     @Test
     public void antFtpTask() throws ExecutionException, IOException, InterruptedException {
-        // ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt
-        final String ftpServer="gpftp.broadinstitute.org"; 
-        final String ftpRemotedir="example_data/gpservertest/DemoFileDropdown/input.file"; 
-        final String ftpFilename="dummy_file_1.txt";
+        // ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/aml_aml_train.cls
+        final String ftpServer="ftp.broadinstitute.org"; 
+        final String ftpRemotedir="pub/genepattern/all_aml"; 
+        final String ftpFilename="all_aml_train.cls";
         final File libdir=new File("test/data/taskLib/AntFtp/").getAbsoluteFile();
         final List<String> args = parseCmd("<ant> -f "+libdir+"/build-ftptest.xml "+
                 "-Dftp.server="+ftpServer+
