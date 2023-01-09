@@ -142,7 +142,7 @@ default.properties:
     # cache.externalUrlDirs: [ "!*" ]
     # ## cache data files from ftp server
     # cache.externalUrlDirs: [ 
-    #     "ftp://gpftp.broadinstitute.org/",
+    #     "https://datasets.genepattern.org/",
     #     "ftp://ftp.broadinstitute.org/" ] 
 
     ##############################################################
@@ -153,7 +153,7 @@ default.properties:
     # # direct access to broad ftp server files
     # local.choiceDirs: {
     #     "ftp://ftp.broadinstitute.org/pub/genepattern/": "/srv/ftp/pub/genepattern/",
-    #     "ftp://gpftp.broadinstitute.org/": "/srv/ftp/gpftp/pub/",
+    #     "https://datasets.genepattern.org/": "/srv/ftp/ftp/pub/",
     # }
     #
 
