@@ -7,12 +7,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.io.FileUtils;
 import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -29,6 +34,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.io.Files;
+
 /**
  * junit tests for the FileDownloader class.
  * @author pcarr
@@ -44,11 +51,31 @@ public class TestFileDownloaderConfig {
     private JobInfo jobInfo;
     private JobInput jobInput;
 
-    private String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
-    private String selectedValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
-    private String choiceDir_dirListing="ftp://gpftp.broadinstitute.org/demo/dir/";
-    private String selectedDirValue="ftp://gpftp.broadinstitute.org/demo/dir/A/";
+    private String choiceDir="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
+    private String selectedValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.cls";
+    private String choiceDir_dirListing="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
+    private String selectedDirValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls";
 
+    
+    /**
+     * custom assertion, assert that the actual file contains the expected content.
+     * @param message
+     * @param expectedContent
+     * @param actual
+     */
+    protected static void assertFileFirstLineContent(final String message, final String expectedContent, final File actual) {
+        assertEquals(""+actual+" exists", true, actual.exists());
+        try {
+            String actualContent=Files.toString(actual, Charset.forName("UTF-8"));
+            List<String> lines  = FileUtils.readLines(actual);
+            assertEquals(message, expectedContent, lines.get(0));        
+        }
+        catch (Throwable t) {
+            fail("error validating file contents: "+t.getLocalizedMessage());
+        }
+    }
+    
+    
     // for testing external cache config
     private Value cacheExternalDirs=new Value(Arrays.asList(
             "ftp://gpftp.broadinstitute.org/",
