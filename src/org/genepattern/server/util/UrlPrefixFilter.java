@@ -26,7 +26,7 @@ import org.genepattern.webservice.TaskInfo;
  * For example, 
  * <pre>
  * # match all files in the Broad hosted FTP server
-   cache.externalUrlDirs: [ "ftp://gpftp.broadinstitute.org/" ]
+   cache.externalUrlDirs: [ "ftp://ftp.broadinstitute.org/" ]
  * </pre>
  * 
  * @author pcarr
@@ -44,8 +44,8 @@ public class UrlPrefixFilter {
      cache.externalUrlDirs: [ "*" ]
      # accept none
      cache.externalUrlDirs: [ "!*" ]
-     # cache all files from gpftp server
-     cache.externalUrlDirs: [ "ftp://gpftp.broadinstitute.org/" ]
+     # cache all files from ftp server
+     cache.externalUrlDirs: [ "ftp://ftp.broadinstitute.org/" ]
      * </pre>
      */
     public static final String PROP_CACHE_EXTERNAL_URL = "cache.externalUrlDirs";
@@ -244,7 +244,7 @@ public class UrlPrefixFilter {
      * Special case, "*" means accept all externalUrl;
      * Special case, "!*" means ignore all externalUrl;
      * Recommended to append a 'directory', e.g.
-     *     "ftp://gpftp.broadinstitute.org/"
+     *     "ftp://ftp.broadinstitute.org/"
      * @param urlPrefix
      */
     public void addUrlPrefix(String urlPrefix) {
