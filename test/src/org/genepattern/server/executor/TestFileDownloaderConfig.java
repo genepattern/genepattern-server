@@ -51,10 +51,10 @@ public class TestFileDownloaderConfig {
     private JobInfo jobInfo;
     private JobInput jobInput;
 
-    private String choiceDir="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
+    private String choiceDir=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
     private String selectedValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.cls";
     private String choiceDir_dirListing="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
-    private String selectedDirValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls";
+    private String selectedDirValue=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls";
 
     
     /**
@@ -78,8 +78,7 @@ public class TestFileDownloaderConfig {
     
     // for testing external cache config
     private Value cacheExternalDirs=new Value(Arrays.asList(
-            "ftp://ftp.broadinstitute.org/",
-            "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/"));
+            "ftp://ftp.broadinstitute.org/"));
 
     @Before
     public void setUp() throws ExecutionException {

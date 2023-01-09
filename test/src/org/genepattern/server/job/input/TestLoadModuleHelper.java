@@ -354,7 +354,7 @@ public class TestLoadModuleHelper {
                 groupObj.getJSONArray("values").get(1));
         Assert.assertEquals("group[0].value[2]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.cls", 
                 groupObj.getJSONArray("values").get(2));
-        Assert.assertEquals("group[0].value[3]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml/all_aml_train.gct", 
+        Assert.assertEquals("group[0].value[3]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.gct", 
                 groupObj.getJSONArray("values").get(3));
     }
 
