@@ -156,8 +156,7 @@ public class TestFileDownloaderConfig {
         // run through a few tests
         assertEquals("accept from ftp.broadinstitute.org", true, 
                 filter.accept("ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"));
-        assertEquals("accept from gpftp.broadinstitute.org", true, 
-                filter.accept("ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct"));
+        
     }
 
     @Test
@@ -173,13 +172,13 @@ public class TestFileDownloaderConfig {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
                 ParameterInfoUtil.initFileParam("input.file", "", "an input file") 
         });
-        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct"); 
+        jobInput.addValue("input.file", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct"); 
         when(gpConfig.getValue(jobContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL)).thenReturn(cacheExternalDirs);
 
         FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext); 
         assertEquals("hasFilesToDownload", true, downloader.hasFilesToCache());
         assertEquals("filesToDownload[0].value",
-                "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct", 
                 downloader.getFilesToCache().get(0).getUrl().toString());
     } 
 

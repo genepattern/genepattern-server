@@ -20,7 +20,7 @@ import org.junit.Test;
  */
 public class TestJobInput {
     public static final String GP_URL="http://127.0.0.1:8080/gp/";
-    public static final String DATA_URL="ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/";
+    public static final String DATA_URL="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
     private static final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00006:0.7";
 
 

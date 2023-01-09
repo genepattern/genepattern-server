@@ -15,7 +15,7 @@ taskDoc=doc.html
 
 p1_MODE=IN
 p1_TYPE=FILE
-p1_choiceDir=ftp\://gpftp.broadinstitute.org/module_support_files/annotation/gtf/
+p1_choiceDir=s3://datasets-genepattern-org/gpftp/module_support_files/annotation/gtf/
 p1_choiceDirFilter=*.gtf
 p1_default_value=
 p1_description=A GTF file (v. 2.2 or higher) or GFF3 file containing a list of gene model annotations. TopHat will first extract the transcript sequences and align them to this virtual transcriptome first. Only the reads that do not fully map to the transcriptome will then be mapped on the genome. The reads that did map on the transcriptome will be converted to genomic mappings (spliced as needed) and merged with the novel mappings.
@@ -35,7 +35,7 @@ p2_prefix_when_specified=
 p2_type=java.io.File
 p2_value=
 
-p3_choiceDir=ftp\://gpftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/
+p3_choiceDir=s3://datasets-genepattern-org/gpftp/module_support_files/bowtie2/index/by_genome/
 p3_choiceDirFilter=type=dir
 p3_MODE=IN
 p3_TYPE=FILE

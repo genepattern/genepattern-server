@@ -46,16 +46,16 @@ import org.junit.rules.TemporaryFolder;
 public class TestFileDownloader {
     
     //large file on gpftp site (3147288982 b, ~3.0G)
-    private static final String largeFile="ftp://gpftp.broadinstitute.org/module_support_files/sequence/whole_genome/Homo_sapiens_GRCh37_Ensembl.fa";
+    private static final String largeFile="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/sequences/Homo_sapiens_assembly18.fasta";
     private static long largeFile_expectedLength=3147288982L;
     
     //tiny file on gpftp site
-    final String smallFileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_2.txt";
+    final String smallFileUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/a.txt";
     final long smallFile_expectedLength=13L;
-    final String smallFile_expectedName="dummy_file_2.txt";
+    final String smallFile_expectedName="a.txt";
     
-    final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
-    final String fileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt";
+    final String dirUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/";
+    final String fileUrl="ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/b.txt";
     
     // this class creates tmp dirs, but cleans up after itself. 
     @Rule
@@ -146,22 +146,7 @@ public class TestFileDownloader {
         assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
     
-    @Test
-    public void testDownloadFromGpFtp() throws MalformedURLException, InterruptedException, DownloadException {
-        final URL fromUrl=new URL(smallFileUrl);
-        final File toFile=new File(tmpDir, fromUrl.getFile());
-        try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(mgr, gpConfig, fromUrl.toExternalForm());
-            cachedFtpFile.downloadFile(fromUrl, toFile);
-        }
-        catch (IOException e) {
-            fail("IOException downloading file: "+e.getLocalizedMessage());
-        }
-        
-        //size check
-        assertEquals("name check", smallFile_expectedName, toFile.getName());
-        assertEquals("size check", smallFile_expectedLength, toFile.length());
-    }
+    
     
     @Test
     public void testDownload_apacheCommons() throws MalformedURLException {
@@ -287,10 +272,9 @@ public class TestFileDownloader {
         final List<FtpEntry> files=cachedFtpDir.getFilesToDownload();
         
         final List<FtpEntry> expected=new ArrayList<FtpEntry>();
-        expected.add(new FtpEntry("01.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt"));
-        expected.add(new FtpEntry("02.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/02.txt"));
-        expected.add(new FtpEntry("03.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/03.txt"));
-        expected.add(new FtpEntry("04.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/04.txt"));
+        expected.add(new FtpEntry("01.txt", "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/a.txt"));
+        expected.add(new FtpEntry("02.txt", "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/b.txt"));
+        expected.add(new FtpEntry("03.txt", "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/genomes/menuTest/c.txt"));
         
         assertEquals("filesToDownload", expected, files);
     }
