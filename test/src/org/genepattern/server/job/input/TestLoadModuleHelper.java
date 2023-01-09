@@ -348,7 +348,7 @@ public class TestLoadModuleHelper {
         JSONObject groupObj=groupArray.getJSONObject(0);
         Assert.assertEquals("group[0].groupid", "", groupObj.getString("groupid"));
         Assert.assertEquals("group[0].length", 4, groupObj.getJSONArray("values").length());
-        Assert.assertEquals("group[0].value[0]", "ftp://ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls", 
+        Assert.assertEquals("group[0].value[0]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls", 
                 groupObj.getJSONArray("values").get(0));
         Assert.assertEquals("group[0].value[1]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct", 
                 groupObj.getJSONArray("values").get(1));
@@ -376,7 +376,7 @@ public class TestLoadModuleHelper {
         JSONObject groupObj=groupArray.getJSONObject(0);
         Assert.assertEquals("group[0].groupid", groupId.getGroupId(), groupObj.getString("groupid"));
         Assert.assertEquals("group[0].length", 4, groupObj.getJSONArray("values").length());
-        Assert.assertEquals("group[0].value[0]", "ftp://ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls", 
+        Assert.assertEquals("group[0].value[0]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls", 
                 groupObj.getJSONArray("values").get(0));
         Assert.assertEquals("group[0].value[1]", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct", 
                 groupObj.getJSONArray("values").get(1));

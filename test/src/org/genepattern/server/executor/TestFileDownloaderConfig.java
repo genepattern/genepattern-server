@@ -78,7 +78,7 @@ public class TestFileDownloaderConfig {
     
     // for testing external cache config
     private Value cacheExternalDirs=new Value(Arrays.asList(
-            "ftp://gpftp.broadinstitute.org/",
+            "ftp://ftp.broadinstitute.org/",
             "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/"));
 
     @Before
