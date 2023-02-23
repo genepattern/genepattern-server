@@ -56,7 +56,7 @@ public class UserUploadDao extends BaseDAO {
         List<UserUpload> rval = query.list();
         if (rval != null && rval.size() == 1) {
             return rval.get(0);
-        } else if (relativePath.equals("tmp") && rval.size() > 1) {
+        } else if (rval.size() > 1) {
             return rval.get(0);
         } else {
             return null;
