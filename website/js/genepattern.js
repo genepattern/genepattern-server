@@ -4957,15 +4957,23 @@ function globusAddToOrUpdateToaster(file, directoryUrl, openEvenIfEmpty, isDirec
 			var size = file.size;
 			var percent = Math.floor((transferred/size) * 100);
 			
-			progressbar.progressbar("value", percent);
-			if (percent == 100) {
-				cleanGlobusToaster(); 
-				$.ajax({
-		             cache: false,
-		             type: "GET",
-		             url: "/gp/rest/v1/globus/clearCompletedTask?submissionID="+file.id,
-		             dataType: "json"
-		     	});
+			if (!isNaN(percent)){
+				progressbar.progressbar("value", percent);
+				if (percent == 100) {
+					cleanGlobusToaster(); 
+					$.ajax({
+			             cache: false,
+			             type: "GET",
+			             url: "/gp/rest/v1/globus/clearCompletedTask?submissionID="+file.id,
+			             dataType: "json"
+			     	});
+				}
+			} else {
+				// sometimes globus doesn't give the file size so we cannot alculate percent
+				progressbar.progressbar( "option", "value", false );
+				progressbar.find(".globus-toaster-file-progress-label").text("in progress...");
+				progressbar.find(".globus-toaster-file-progress-label").addClass("barber");
+				
 			}
 		} else {
 			// directories are indeterminate
