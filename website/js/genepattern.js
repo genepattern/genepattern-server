@@ -1656,6 +1656,7 @@ function appendToUploadToaster(file){
                 complete: function() {
                     $(this).find(".upload-toaster-file-progress-label").text("Complete!");
                     $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+                	$(this).find(".globus-toaster-file-progress-label").removeClass("barber");
                 }
             })
             .append(
@@ -1713,6 +1714,7 @@ function initUploadToaster(filelist) {
                     complete: function() {
                         $(this).find(".upload-toaster-file-progress-label").text("Complete!");
                         $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+                    	$(this).find(".globus-toaster-file-progress-label").removeClass("barber");
                     }
                 })
                 .append(
@@ -5146,8 +5148,10 @@ function appendToGlobusToaster(file, isDirectory){
                     $(this).find(".globus-toaster-file-progress-label").text($(this).progressbar("value") + "%");
                 },
                 complete: function() {
+
                     $(this).find(".globus-toaster-file-progress-label").text("Complete!");
                     $(this).parent().find(".globus-toaster-file-cancel").button("disable");
+                	$(this).find(".globus-toaster-file-progress-label").removeClass("barber");
                 }
             })
             .append(
@@ -5211,6 +5215,7 @@ function initGlobusToaster(filelist) {
                     complete: function() {
                         $(this).find(".globus-toaster-file-progress-label").text("Complete!");
                         $(this).parent().find(".globus-toaster-file-cancel").button("disable");
+                    	$(this).find(".globus-toaster-file-progress-label").removeClass("barber");
                     }
                 })
                 .append(
