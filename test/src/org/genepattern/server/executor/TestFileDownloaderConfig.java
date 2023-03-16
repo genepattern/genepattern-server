@@ -7,12 +7,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.io.FileUtils;
 import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -29,6 +34,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.io.Files;
+
 /**
  * junit tests for the FileDownloader class.
  * @author pcarr
@@ -44,15 +51,34 @@ public class TestFileDownloaderConfig {
     private JobInfo jobInfo;
     private JobInput jobInput;
 
-    private String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
-    private String selectedValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
-    private String choiceDir_dirListing="ftp://gpftp.broadinstitute.org/demo/dir/";
-    private String selectedDirValue="ftp://gpftp.broadinstitute.org/demo/dir/A/";
+    private String choiceDir=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
+    private String selectedValue="ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.cls";
+    private String choiceDir_dirListing="ftp://ftp.broadinstitute.org/pub/genepattern/";
+    private String selectedDirValue=    "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/";
 
+    
+    /**
+     * custom assertion, assert that the actual file contains the expected content.
+     * @param message
+     * @param expectedContent
+     * @param actual
+     */
+    protected static void assertFileFirstLineContent(final String message, final String expectedContent, final File actual) {
+        assertEquals(""+actual+" exists", true, actual.exists());
+        try {
+            String actualContent=Files.toString(actual, Charset.forName("UTF-8"));
+            List<String> lines  = FileUtils.readLines(actual);
+            assertEquals(message, expectedContent, lines.get(0));        
+        }
+        catch (Throwable t) {
+            fail("error validating file contents: "+t.getLocalizedMessage());
+        }
+    }
+    
+    
     // for testing external cache config
     private Value cacheExternalDirs=new Value(Arrays.asList(
-            "ftp://gpftp.broadinstitute.org/",
-            "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/"));
+            "ftp://ftp.broadinstitute.org/"));
 
     @Before
     public void setUp() throws ExecutionException {
@@ -95,7 +121,7 @@ public class TestFileDownloaderConfig {
         assertEquals("selectedChoices[0].value",
                 selectedDirValue, 
                 downloader.getFilesToCache().get(0).getUrl().toString());
-        assertEquals("cachedFile instanceof CachedFtpDir", true, downloader.getFilesToCache().get(0) instanceof CachedFtpDir);
+        assertEquals("cachedFile instanceof CachedFtpDir " + downloader.getFilesToCache().get(0), true, downloader.getFilesToCache().get(0) instanceof CachedFtpDir);
     }
     
     @SuppressWarnings("unchecked")
@@ -129,8 +155,7 @@ public class TestFileDownloaderConfig {
         // run through a few tests
         assertEquals("accept from ftp.broadinstitute.org", true, 
                 filter.accept("ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"));
-        assertEquals("accept from gpftp.broadinstitute.org", true, 
-                filter.accept("ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct"));
+        
     }
 
     @Test
@@ -146,13 +171,13 @@ public class TestFileDownloaderConfig {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
                 ParameterInfoUtil.initFileParam("input.file", "", "an input file") 
         });
-        jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct"); 
+        jobInput.addValue("input.file", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct"); 
         when(gpConfig.getValue(jobContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL)).thenReturn(cacheExternalDirs);
 
         FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext); 
         assertEquals("hasFilesToDownload", true, downloader.hasFilesToCache());
         assertEquals("filesToDownload[0].value",
-                "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct", 
                 downloader.getFilesToCache().get(0).getUrl().toString());
     } 
 

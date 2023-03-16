@@ -77,7 +77,7 @@ public class FTPDownloader {
 
     public static void main(String[] args) {
         try {
-            URL url = new URL("ftp://gpftp.broadinstitute.org/gpunit/ComparativeMarkerSelection/v10/all_aml_test.cls");
+            URL url = new URL("ftp://ftp.broadinstitute.org/genepattern/all_aml/all_aml_test.cls");
             
             FTPDownloader ftpDownloader =
                 new FTPDownloader(url.getHost(), "anonymous", "genepattern@ucsd.edu");

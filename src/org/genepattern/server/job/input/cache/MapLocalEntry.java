@@ -34,7 +34,7 @@ public class MapLocalEntry {
     #
     local.choiceDirs: {
         "ftp://ftp.broadinstitute.org/pub/genepattern/": "/web/ftp/pub/genepattern/", 
-        "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/",
+        "ftp://ftp.broadinstitute.org/": "/xchip/gpdev/ftp/pub/",
     }    
      * </pre>
      * 
@@ -236,14 +236,14 @@ public class MapLocalEntry {
     /**
      * We want to use the remote URL as a the value in the drop-down menu. This helper method converts
      * the local file path back to the remote URL value. E.g.
-     *     localPathActual /Volumes/xchip_gpdev/gpftp/pub/test/file_1.txt
-     *     externalUrlRoot ftp://gpftp.broadinstitute.org/
-     *     localPathRoot   /Volumes/xchip_gpdev/gpftp/pub/
+     *     localPathActual /Volumes/xchip_gpdev/ftp/pub/test/file_1.txt
+     *     externalUrlRoot ftp://ftp.broadinstitute.org/
+     *     localPathRoot   /Volumes/xchip_gpdev/ftp/pub/
      *     
-     *     actualValue: ftp://gpftp.broadinstitute.org/test/file_1.txt
+     *     actualValue: ftp://ftp.broadinstitute.org/test/file_1.txt
      *      
      *     Drop localPathRoot from the beginning of localPathActual to get 'test/file_1.txt'
-     *     Then append externalUrlRoot to that result to get ftp://gpftp.broadinstitute.org/test/file_1.txt.
+     *     Then append externalUrlRoot to that result to get ftp://ftp.broadinstitute.org/test/file_1.txt.
      */
     public String initUrlValue(final File localFile) {
         final String localPath=FilenameUtils.separatorsToUnix(localFile.getPath());

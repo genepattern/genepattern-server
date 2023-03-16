@@ -30,7 +30,7 @@ import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 /**
  * For sync'ing a remote directory.
  * Example use-case, a user selects a remote ftp directory from a dynamic drop-down menu, e.g.
- *     bowtie.index=ftp://gpftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/Mus_musculus_UCSC_mm10
+ *     bowtie.index=ftp://ftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/Mus_musculus_UCSC_mm10
  * @author pcarr
  *
  */

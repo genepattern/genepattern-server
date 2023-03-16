@@ -571,7 +571,10 @@ public class AWSBatchJobRunner implements JobRunner {
             log.debug("+"+PROP_DOCKER_IMAGE+"'="+dockerImage);
         }
         if (Strings.isNullOrEmpty(dockerImage)) {
-            log.warn("'"+PROP_DOCKER_IMAGE+"' not set");
+            log.warn("'"+PROP_DOCKER_IMAGE+"' not set.  ");
+            final String defaultImage = (GpConfig.lookupJobDockerImageValue(gpJob.getGpConfig(), gpJob.getJobContext())).getValue();
+            log.warn(" \t\t using default docker image:  "+ defaultImage);
+            cmdEnv.put("GP_JOB_DOCKER_IMAGE", defaultImage);
         }
         else {
             cmdEnv.put("GP_JOB_DOCKER_IMAGE", dockerImage);

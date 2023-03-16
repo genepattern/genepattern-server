@@ -4,7 +4,7 @@
     <!-- Logging Properties -->
     <Properties>
         <Property name="LOG_PATTERN">[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</Property>
-	<Property name="APP_LOG_ROOT">${sys:gp.log:-default/opt/genepattern/logs}</Property>
+	    <Property name="APP_LOG_ROOT">${sys:gp.home:-..}/logs</Property>
     </Properties>
 
     <Appenders>

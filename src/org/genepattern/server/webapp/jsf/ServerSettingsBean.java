@@ -395,10 +395,14 @@ public class ServerSettingsBean implements Serializable {
     private String getLogHeader(File logFile, String name) {
         StringBuffer buf = new StringBuffer();
         if ((logFile == null || !logFile.exists())) {
-            buf.append("Log not found.");
+            buf.append("Log, ");
+            buf.append(logFile.getAbsolutePath());
+            buf.append(" not found.");
         } 
         else {
-            buf.append(name + " log file from ");
+            buf.append(name + " log file, ");
+            buf.append(logFile.getAbsolutePath());
+            buf.append(" from ");
             buf.append(UIBeanHelper.getServer() + " on ");
             buf.append(cal.getTime());
 
@@ -458,6 +462,12 @@ public class ServerSettingsBean implements Serializable {
     private void addRepositoryURL(String currentRepositoryName, String repositoryNames) {
         String currentRepositoryURL = settings.getProperty(currentRepositoryName);
         String repositoryURLs = settings.getProperty(repositoryNames);
+        if (repositoryURLs == null) {
+            if (currentRepositoryURL != null)
+                settings.put(repositoryNames, currentRepositoryURL);
+            return;
+        }
+        
         String[] result = repositoryURLs.split(",");
         boolean exist = false;
         for (int i = 0; i < result.length; i++) {

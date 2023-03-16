@@ -1641,22 +1641,24 @@ public class GenePatternAnalysisTask {
                         }
                     }
                     try {
-                        final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
-                        if (gpFilePaths != null) {
-                            int j=0;
-                            for(final GpFilePath gpFilePath : gpFilePaths) {
-                                File localPath=gpFilePath.getServerFile();
-                                log.debug("        localPath["+(j++)+"]"+localPath);
-                                if (localPath!=null) {
-                                    inputFilePaths.add(localPath.getPath());
-                                    if (!localPath.exists()){
-                                        
-                                        URI uri = fileUrlMap.get(localPath.getAbsolutePath());
-                                        
-                                        if ((uri != null) && (writer != null) ){
-                                            writer.newLine();
-                                            writer.write(uri + "\t" + localPath.getAbsolutePath());
+                        if (actualValues != null){
+                            final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
+                            if (gpFilePaths != null) {
+                                int j=0;
+                                for(final GpFilePath gpFilePath : gpFilePaths) {
+                                    File localPath=gpFilePath.getServerFile();
+                                    log.debug("        localPath["+(j++)+"]"+localPath);
+                                    if (localPath!=null) {
+                                        inputFilePaths.add(localPath.getPath());
+                                        if (!localPath.exists()){
                                             
+                                            URI uri = fileUrlMap.get(localPath.getAbsolutePath());
+                                            
+                                            if ((uri != null) && (writer != null) ){
+                                                writer.newLine();
+                                                writer.write(uri + "\t" + localPath.getAbsolutePath());
+                                                
+                                            }
                                         }
                                     }
                                 }

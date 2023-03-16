@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author pcarr
  *
  */
-
 @XmlRootElement
 public class Memory {
     private static final Logger log = Logger.getLogger(Memory.class);
@@ -32,6 +31,15 @@ public class Memory {
         numberFormat.setMaximumFractionDigits(1);
     }
 
+    // used only for WADL generation, no-arg constructor to eliminate error messages
+    private Memory(){
+        numBytes = 0L;
+        unit = Unit.values()[0];
+        value = 0;
+        displayValue = "0MB";        
+    }
+    
+    
     /**
      * A unit of memory in bytes, based on a 1024 scale factor.
      *     1kb == 1024b, 1mb == 1024kb and so on.

@@ -89,7 +89,7 @@ public class TestAnalysisDAO {
         JobInput jobInput=new JobInput();
         jobInput.setLsid(cleLsid);
         jobInput.addValue("input.filename", 
-                "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls");
+                "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.cls");
         boolean initDefault=true;
         int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, jobContext, jobInput, parentJobId, initDefault);
         return jobNo;

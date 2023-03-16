@@ -18,9 +18,9 @@ import org.genepattern.server.job.input.cache.MapLocalEntry;
 /**
  * Helper class for by-passing a remote choiceDir with a local directory path.
  * For a module input file parameter that has a dynamically generated drop-down menu from an ftp site, e.g.
- *    ftp://gpftp.broadinstitute.org/
+ *    ftp://ftp.broadinstitute.org/
  * If the ftp files are accessible via a local file path, e.g.
- *   /xchip/gpdev/gpftp/pub/
+ *   /xchip/gpdev/ftp/pub/
  * you can configure your server to avoid making the FTP calls to list and download the files.
  * 
  * To do so, make an edit to the config.yaml file for your server. Define a 'local.choiceDirs' 
@@ -45,21 +45,21 @@ default.properties:
     # create a map of "<externalDir>": "<localDir>"
     #
     local.choiceDirs: {
-        "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/"
+        "ftp://ftp.broadinstitute.org/": "/xchip/gpdev/ftp/pub/"
     }
 </pre>
  *
  * For an example module, 'demoDropdown' with a 'genome' File field with a dynamic drop-down.
 <pre>
-    p1_choiceDir=ftp://gpftp.broadinstitute.org/rna_seq/whole_genomes
+    p1_choiceDir=ftp://ftp.broadinstitute.org/rna_seq/whole_genomes
 </pre>
 
-  Because there is a matching entry in 'local.choiceDirs', the matching local directory would be, '/xchip/gpdev/gpftp/pub/rna_seq/whole_genomes'.
+  Because there is a matching entry in 'local.choiceDirs', the matching local directory would be, '/xchip/gpdev/ftp/pub/rna_seq/whole_genomes'.
   The server generates a list of 'virtual' URL values into the drop-down. Each value is an FTP url, e.g.
-      ftp://gpftp.broadinstitute.org/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
+      ftp://ftp.broadinstitute.org/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
   When job is run, the GP server will find the matching local path to the file, thus avoiding the FTP download.
   The command line value would be,
-      /xchip/gpdev/gpftp/pub/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
+      /xchip/gpdev/ftp/pub/rna_seq/whole_genomes/Arabidopsis_thaliana_Ensembl_TAIR10.fa
 
   Caveats: Duplicate matching keys in the 'local.choiceDirs' map are not allowed. E.g.
   <pre>
@@ -73,8 +73,8 @@ default.properties:
   It's possible to map two different external urls to the same local path. E.g.
   <pre>
     local.choiceDirs: {
-        "ftp://ftp.broadinstitute.org/pub/genepattern/": "/xchip/gpdev/gpftp/pub/",
-        "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/"
+        "ftp://ftp.broadinstitute.org/pub/genepattern/": "/xchip/gpdev/ftp/pub/",
+        "ftp://ftp.broadinstitute.org/": "/xchip/gpdev/ftp/pub/"
     }
   </pre>
  * 

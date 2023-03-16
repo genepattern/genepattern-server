@@ -504,7 +504,7 @@ public class UrlUtil {
         String path=uri.getPath();
         path=path.substring(contextPath.length());
         if (path.length()>0 && !path.startsWith("/")) {
-            throw new IllegalArgumentException("servletPath must be the empty String (\"\") or start with \"/\"");
+            throw new IllegalArgumentException("servletPath must be the empty String (\"\") or start with \"/\" -->" + path + "<--");
         }
         
         //special-case for empty string or '/'

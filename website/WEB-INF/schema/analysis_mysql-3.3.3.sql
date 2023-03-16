@@ -2,7 +2,7 @@
 create table USER_UPLOAD (
     id bigint not null auto_increment,
     user_id varchar(255),
-    path varchar(4000),
+    path varchar(1200),
     name varchar(512),
     last_modified datetime,
     file_length bigint unsigned,
@@ -10,10 +10,8 @@ create table USER_UPLOAD (
     kind varchar(255),
     num_parts integer,
     num_parts_recd integer,
-    primary key (id)
-    -- ,
-    -- Can't enfore uniqueness constraint with large column
-    -- unique (user_id, path)
+    primary key (id),
+    unique (user_id, path)
     );
 
 -- for GenomeSpace integration, link GP user account to GS user account
