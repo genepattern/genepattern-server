@@ -446,6 +446,7 @@ public class JobInfoManager {
 
     public static File writeExecutionLog(File outDir, JobInfoWrapper jobInfoWrapper) {
         File gpExecutionLog = new File(outDir, TASKLOG);
+        
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(gpExecutionLog));
@@ -470,10 +471,15 @@ public class JobInfoManager {
     
     public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper)
             throws IOException {
+        Status jobStatus= new Status.Builder().gpJobNo(jobInfoWrapper.getJobNumber()).build();
+        Status jobStatus2 = jobInfoWrapper.getJobStatus();
+        
         writer.write("\n# Job: " + jobInfoWrapper.getJobNumber() );
         writer.write("\n# User: " + jobInfoWrapper.getUserId());
         writer.write("\n# Submitted: " + jobInfoWrapper.getDateSubmitted());
-        writer.write("\n# Completed: " + dateFormatter.format(new Date()) );
+        writer.write("\n# Started Running: " + jobStatus.getStartTime());
+        writer.write("\n# Finished Running: " + jobStatus.getEndTime());
+        writer.write("\n# Completed: " +  new Date() );
         
         writer.write("\n# ET(ms): "  +jobInfoWrapper.getElapsedTimeMillis());
         
