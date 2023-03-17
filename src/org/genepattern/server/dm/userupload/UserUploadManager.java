@@ -435,12 +435,12 @@ public class UserUploadManager {
         ParameterInfo[] params = ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo());
         GpConfig config = ServerConfigurationFactory.instance();
         JobInputValueRecorder jobInputRecorder = new JobInputValueRecorder(mgr);
-        
+        String filePath = null; // declare out here so we can print filename if an error
         for (int i=0; i< params.length; i++){
             try {
             ParameterInfo aParam = params[i];
             if ("java.io.File".equals(aParam.getAttributes().get("type"))){
-                String filePath = aParam.getValue();
+                filePath = aParam.getValue();
                 
                 GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, filePath);
                 
@@ -460,7 +460,7 @@ public class UserUploadManager {
             }
             } catch (Exception e){
                 // ignore it and hope the purger gets the file later
-                log.error("Could not delete uploaded file with job deletion.", e);
+                log.error("Could not delete uploaded file with job deletion. job: " + aJob.getJobNo() + "  file: " +filePath , e);
             }
             
         }      
