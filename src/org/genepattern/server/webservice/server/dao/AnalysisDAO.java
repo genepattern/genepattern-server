@@ -992,7 +992,8 @@ public class AnalysisDAO extends BaseDAO {
             postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
         } catch (Throwable e){
             e.printStackTrace();
-            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+            
+            log.error("a. Problem encountered with post job delete script: " +postJobDeleteScript + "  job: " + aJob.getJobNo() ,e);
         }
         
         deleteJobDir(jobDir);
@@ -1020,7 +1021,7 @@ public class AnalysisDAO extends BaseDAO {
             
         } catch (Throwable e){
             e.printStackTrace();
-            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+            log.error("b. Problem encountered with post job delete script: " +postJobDeleteScript+ "  job: " + jobId ,e);
         }
     }
 
