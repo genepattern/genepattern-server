@@ -81,9 +81,9 @@ public class ServerSettingsBean implements Serializable {
             modes.put("Proxy", new String[] { 
                     "http.proxyHost", "http.proxyPort", "http.proxyUser","http.proxyPassword", "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
             modes.put("Programming Languages", new String[] { "java", "R2.5", "R" });
-            modes.put("Advanced", new String[] { 
-                    "num.threads" 
-            });
+            //modes.put("Advanced", new String[] { 
+            //        "num.threads" 
+            // });
             modes.put("Custom", null);
             modes.put("Shut Down Server", null);
             modes.put("System Message", null);
