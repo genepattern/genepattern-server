@@ -44,6 +44,8 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
@@ -56,6 +58,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.WritePipelineExecutionLog;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -471,14 +474,16 @@ public class JobInfoManager {
     
     public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper)
             throws IOException {
-        Status jobStatus= new Status.Builder().gpJobNo(jobInfoWrapper.getJobNumber()).build();
-        Status jobStatus2 = jobInfoWrapper.getJobStatus();
+        
+        final Status status = new JobStatusLoaderFromDb(HibernateUtil.instance(), jobInfoWrapper.getLaunchUrl()).loadJobStatus(Util.getJobContext(jobInfoWrapper.getUserId(), ""+jobInfoWrapper.getJobNumber()));
         
         writer.write("\n# Job: " + jobInfoWrapper.getJobNumber() );
         writer.write("\n# User: " + jobInfoWrapper.getUserId());
+        if (status != null){
         writer.write("\n# Submitted: " + jobInfoWrapper.getDateSubmitted());
-        writer.write("\n# Started Running: " + jobStatus.getStartTime());
-        writer.write("\n# Finished Running: " + jobStatus.getEndTime());
+            if (status.getStartTime() != null)   writer.write("\n# Started Running: " + status.getStartTime());
+            if (status.getEndTime() != null)writer.write("\n# Finished Running: " + status.getEndTime());
+        }
         writer.write("\n# Completed: " +  new Date() );
         
         writer.write("\n# ET(ms): "  +jobInfoWrapper.getElapsedTimeMillis());

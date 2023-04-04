@@ -151,6 +151,69 @@ public class Util {
         });
     }
     
+    public static GpContext getJobContext(final String userId, final String jobId) { 
+        return doInTransaction(new Callable<GpContext> () {
+            @Override
+            public GpContext call() throws Exception { 
+               
+                if (userId==null || userId.length()==0) {
+                    log.debug("user not logged in, 403 - Forbidden");
+                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                }
+
+                final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+
+                GpContext.Builder b=new GpContext.Builder();
+                b.userId(userId);
+                b.isAdmin(isAdmin);
+
+                // validate job id
+                if (jobId==null) {
+                    throw new IllegalArgumentException("jobId==null");
+                }
+                final int jobNumber;
+                try {
+                    jobNumber=Integer.parseInt(jobId);
+                }
+                catch (Throwable t) {
+                    String message="Incorrectly formatted jobId="+jobId;
+                    log.debug(message);
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.NOT_FOUND).entity(message).build());
+                }
+
+                //check jobInfo
+                JobInfo jobInfo=null;
+                try {
+                    jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+                }
+                catch (Throwable t) {
+                    log.debug("Error initializing jobInfo from db, jobNumber="+jobNumber, t);
+                }
+                if (jobInfo==null) {
+                    final String message="No job with jobId="+jobId;
+                    log.debug(message);
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.NOT_FOUND).entity(message).build());
+                }
+
+                // check permissions
+                PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
+                if (!perm.canReadJob()) { 
+                    final String message="User does not have permission to view job";
+                    log.debug(message);
+                    throw new WebApplicationException(
+                            Response.status(Response.Status.FORBIDDEN).entity(message).build());
+                }
+
+                b.jobInfo(jobInfo);
+                return b.build();
+            }
+        });
+    }
+    
+    
+    
     private static GpContext doInTransaction(Callable<GpContext> c) {
         boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
