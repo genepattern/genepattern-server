@@ -17,7 +17,7 @@ import org.junit.Test;
 @SuppressWarnings("unchecked")
 public class TestChoiceInfo {
     public static final String pname="input.file";
-    public static final String dropDownDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+    public static final String dropDownDir="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/";
     
     @Test
     public void testFtpPassiveMode_default() {

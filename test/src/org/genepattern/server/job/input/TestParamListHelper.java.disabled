@@ -39,7 +39,7 @@ import org.junit.rules.TemporaryFolder;
 public class TestParamListHelper {
     
     private static final String userId="testUser";
-    private static final String ftpValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
+    private static final String ftpValue="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
     private static final String httpValue="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls";
 
     private HibernateSessionManager mgr;
@@ -78,7 +78,7 @@ public class TestParamListHelper {
     /**
      * Simulate server configured cache.
      * <pre>
-     *     cache.externalUrlDirs: ftp://gpftp.broadinstitute.org/
+     *     cache.externalUrlDirs: https://datasets.genepattern.org/gpftp
      * </pre>
      * @return
      */
@@ -88,7 +88,7 @@ public class TestParamListHelper {
         GpConfig gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)
             .webappDir(new File("website"))
-            .addProperty(UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL, "ftp://gpftp.broadinstitute.org/")
+            .addProperty(UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL, "https://datasets.genepattern.org/gpftp")
         .build();
         return gpConfig;
     }
@@ -145,7 +145,7 @@ public class TestParamListHelper {
         .build();
         final Value value=cachedConfig.getValue(userContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL);
         assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
-        assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
+        assertEquals("https://datasets.genepattern.org/gpftp", value.getValues().get(0));
         
         //final boolean downloadExternalUrl=true;
         final ParamListValue record=ParamListHelper.initFromValue(mgr, cachedConfig, userContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
@@ -178,7 +178,7 @@ public class TestParamListHelper {
 
         Value value=cachedConfig.getValue(mockContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL);
         assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
-        assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
+        assertEquals("https://datasets.genepattern.org/gpftp", value.getValues().get(0));
 
         ParamListValue record=ParamListHelper.initFromValue(mgr, cachedConfig, mockContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());

@@ -20,7 +20,7 @@ import org.junit.Test;
 public class TestMapLocalEntry {
     private static File localDir;
     private static File expectedLocalFile;
-    private final static String remoteUrl="ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml";
+    private final static String remoteUrl="https://datasets.genepattern.org/gpftp/example_data/datasets/all_aml";
     private final static String expectedFilename="all_aml_test.cls";
     
     @BeforeClass
@@ -67,7 +67,7 @@ public class TestMapLocalEntry {
     
     @Test 
     public void testNoMatch() {
-        MapLocalEntry obj=new MapLocalEntry("ftp://gpftp.broadinstitute.org/", "/Volumes/xchip_gpdev/gpftp/pub/");
+        MapLocalEntry obj=new MapLocalEntry("https://datasets.genepattern.org/gpftp", "/Volumes/xchip_gpdev/gpftp/pub/");
         File localFile=obj.initLocalValue("ftp://ftp.broadinstitute.org/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf");
         Assert.assertNull("No match, should return null", localFile);
     }

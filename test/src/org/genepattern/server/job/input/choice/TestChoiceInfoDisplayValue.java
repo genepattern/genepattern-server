@@ -75,12 +75,12 @@ public class TestChoiceInfoDisplayValue {
     public void getDisplayValue_skipDynamicDropDown() {
         //         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         HashMap attributes=new HashMap();
-        attributes.put(ChoiceInfo.PROP_CHOICE_DIR, "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/");
+        attributes.put(ChoiceInfo.PROP_CHOICE_DIR, "https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.file/");
         formalParam=new ParameterInfo();
         formalParam.setAttributes(attributes);
 
         assertEquals(null,
-            ChoiceInfo.getDisplayValueForActualValue("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt", 
+            ChoiceInfo.getDisplayValueForActualValue("https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt", 
                 formalParam));
     }
     

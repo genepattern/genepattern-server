@@ -38,7 +38,7 @@ public class TestChoiceInfoToJson {
     public void dynamicDropDown() throws JSONException {
         final String lsid=Demo.cleLsid;
         final String pname="my.parameter";
-        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
+        final String choiceDir="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.file/";
         final String baseHref="http://127.0.0.1:8080/gp";
         final String taskHref=baseHref + "/rest/"+TasksResource.URI_PATH+"/"+lsid;
         when(choiceInfo.getChoiceDir()).thenReturn(choiceDir);
