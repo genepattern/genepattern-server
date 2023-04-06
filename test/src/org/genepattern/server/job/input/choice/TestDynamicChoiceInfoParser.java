@@ -48,7 +48,7 @@ public class TestDynamicChoiceInfoParser {
     private File webappDir;
     private GpConfig gpConfig=null;
     private GpContext gpContext=null;
-    private static final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+    private static final String choiceDir="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/";
     
     @BeforeClass
     public static void initClass() {
@@ -445,7 +445,7 @@ public class TestDynamicChoiceInfoParser {
     @Test
     @SuppressWarnings("unchecked")
     public void testChoiceInfoGetValue_noTrailingSlash() {
-        final String valueNoSlash="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
+        final String valueNoSlash="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/A";
         final String choiceDirFilter="type=dir";
         final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
@@ -461,7 +461,7 @@ public class TestDynamicChoiceInfoParser {
     @Test
     @SuppressWarnings("unchecked")
     public void testChoiceInfoGetValue_withTrailingSlash() {
-        final String value="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+        final String value="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
         final String choiceDirFilter="type=dir";
         final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);

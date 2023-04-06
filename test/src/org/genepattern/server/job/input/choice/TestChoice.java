@@ -13,9 +13,9 @@ import org.junit.Test;
  *
  */
 public class TestChoice {
-    final String value="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
+    final String value="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
     final String dirLabel="A";
-    final String dirValueNoSlash="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
+    final String dirValueNoSlash="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/A";
     final String dirValue=dirValueNoSlash+"/";
     
     @Test

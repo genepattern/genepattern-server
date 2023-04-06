@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  */
 public class TestCachedFtpDir {
-    final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+    final String dirUrl="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
     final FtpEntry[] expectedFtpEntries=new FtpEntry[] {
             new FtpEntry("01.txt", dirUrl+"01.txt"), new FtpEntry("02.txt", dirUrl+"02.txt"), new FtpEntry("03.txt", dirUrl+"03.txt"), new FtpEntry("04.txt", dirUrl+"04.txt") };
     

@@ -734,7 +734,7 @@ for text fields but the command line values must be urls in ftp, http, or https 
 Dynamic drop-down lists are drop-down lists that are populated using files available on an ftp directory URL or S3 pseudo-directory URI. For example:
 <br>
 <p>
-FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
+FTP directory:  <span class="example">https://datasets.genepattern.org/gpftp/pub/rna_seq/referenceAnnotation/gtf/</span>
 
 <form>
     <table>
@@ -843,9 +843,9 @@ For file parameters that have a dynamic drop-down list, the default value can on
 For example:
 <br/>
 <ul><li>
-    FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
+    FTP directory:  <span class="example">https://datasets.genepattern.org/gpftp/pub/rna_seq/referenceAnnotation/gtf/</span>
     <br>
-    Default value: <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
+    Default value: <span class="example">https://datasets.genepattern.org/gpftp/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
 </li></ul>
 
 <a name="Range"></a><h4>Range</h4>

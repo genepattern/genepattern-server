@@ -17,7 +17,7 @@ import org.junit.Test;
  *
  */
 public class TestEdtFtpJDirLister {
-    final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+    final String dirUrl="https://datasets.genepattern.org/gpftp/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
     
     private FtpDirLister dirLister;
     
