@@ -203,7 +203,7 @@ public class SlurmJobRunner implements JobRunner {
         String sbatchPrefix = config.getGPProperty(jobContext, "slurm.sbatch.prefix", "");
         String sbatchExtra = config.getGPProperty(jobContext, "slurm.additional.command", "");
      
-        String partition = drmJobSubmission.getQueue("shared");
+        String partition = null;
         String account =  config.getGPProperty(jobContext, "slurm.account", "WHO_PAYS_FOR_THIS");
         String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
         
@@ -225,7 +225,10 @@ public class SlurmJobRunner implements JobRunner {
             if (memRequested.getNumBytes() < gpuMinMem.getNumBytes()) memRequested = gpuMinMem;
         }
         
-     
+        String nNumNodesStr = drmJobSubmission.getProperty("job.numNodes");
+        if (nNumNodesStr != null){
+            nNodes = nNumNodesStr;
+        } 
         
         String nCPUStr = drmJobSubmission.getProperty("job.cpuCount.per.task");
         Integer nCPU = null;
@@ -255,41 +258,9 @@ public class SlurmJobRunner implements JobRunner {
         String ntasksPerNode = drmJobSubmission.getProperty("job.numTasksPerNode");
         if (ntasksPerNode == null) ntasksPerNode =  ntasksPerNodeDefault;
         
-        
-        // the partition can override the default IFF nGPU >= 4
-        // this is for the SDSC expanse system where you cannot use the gpu-shared
-        // queue for 4 or more GPU but the GPU-shared is cheaper and we want to use that when we can
-        //
-        // to use in config specify a drmSubmission variable name and a value and an alt queue name
-        //     job.alt.queue: "gpu"
-        //     job.alt.queue.switchover.var: "job.gpuCount"
-        //     job.alt.queue.switchover.val: "4"
-        //
-        // with this it will switch to the queue/partition named 'gpu' if job.gpuCount >= 4
-        
-        String altPartition = config.getGPProperty(jobContext, "job.alt.queue", null);
-        String altSwitchover = config.getGPProperty(jobContext, "job.alt.queue.switchover.val", null);
-        String altSwitchoverVar = config.getGPProperty(jobContext, "job.alt.queue.switchover.var", null);
-
-//        System.out.println("---- altPartition "+ altPartition);
-//        System.out.println("---- altSwitchover "+ altSwitchover);
-//        System.out.println("---- altSwitchoverVar "+ altSwitchoverVar);
-        
-        if ((altPartition != null) & (altSwitchover != null) && (altSwitchoverVar != null)){
-            try {
-                Integer valOfVar = new Integer(drmJobSubmission.getProperty(altSwitchoverVar));
-                //System.out.println("---- valOfVar "+ valOfVar);
-                
-                
-                Integer altSwitchoverPoint = new Integer(altSwitchover);
-               
-                if (valOfVar >= altSwitchoverPoint){
-                    partition = altPartition;
-                }
-            } catch (Exception e){
-                // swallow
-                log.error(e);
-            }
+        partition = drmJobSubmission.getProperty("job.slurm.partition");
+        if (partition == null){
+            partition = drmJobSubmission.getQueue("shared");
         }
         
         
@@ -300,7 +271,6 @@ public class SlurmJobRunner implements JobRunner {
                             "#SBATCH -D " + workDirPath  + "\n" +
                             "#SBATCH --output="+workDirPath+"/stdout.txt\n" +
                             "#SBATCH --error="+workDirPath+"/stderr.txt\n" +
-                            "#SBATCH --nodes=1\n" +     // no parallel jobs here
                             "#SBATCH --ntasks-per-node="+ntasksPerNode+"\n" +
                             "#SBATCH --mem="+ memFormatG(memRequested) + "\n" +
                             "#SBATCH --cpus-per-task="+ nCPU + "\n" +
