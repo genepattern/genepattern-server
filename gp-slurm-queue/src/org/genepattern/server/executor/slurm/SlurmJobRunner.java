@@ -210,7 +210,7 @@ public class SlurmJobRunner implements JobRunner {
         Integer cpusPerTaskGPUOveride =  config.getGPIntegerProperty(jobContext, "slurm.cpus.per.task", null); // GPU uses 10
         String gpuMemoryOveride =  config.getGPProperty(jobContext, "slurm.gpu.memory", null); // GPU uses 186 GB
         String nGPU = config.getGPProperty(jobContext, "slurm.ngpus", null);
-        String nNodes = config.getGPProperty(jobContext, "slurm.nnodes", null);
+        String nNodes = config.getGPProperty(jobContext, "slurm.nnodes", "1");
          
         
         File workingDirectory = new File(workDirPath);
