@@ -4,6 +4,7 @@
 package org.genepattern.server.message;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -40,6 +41,14 @@ public class SystemMessage implements Serializable {
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
+    
+    public String getFormattedStartTime(){
+        String pattern = "dd MMMM yyyy, HH:mm";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        return simpleDateFormat.format(startTime);
+    }
+    
+    
     public Date getEndTime() {
         return endTime;
     }

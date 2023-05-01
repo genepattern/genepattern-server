@@ -4,17 +4,36 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk">
     <head>
     </head>
     <body>
 
         <t:div forceId="true" id="systemMessage">
-            <t:div id="systemMessageForm" forceId="true" styleClass="systemMessageForm" style="display: none;">
+             <t:div id="systemMessageForm" forceId="true" styleClass="systemMessageForm" style="display: none;">
 				<img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/delete.gif" style="float:right; position: relative; right: 2px; top: 2px;" id="systemMessageClose" />
                 <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " />
 				<script type="text/javascript" language="javascript">
 					var showMessage = jq.cookie("showSystemMessage");
+				
+					// keep track of the last message viewed (on this computer by this user)
+					// so that we show new messages
+					var lastSystemMessageIdStr = jq.cookie("SystemMessageLastSeenId");
+					if (lastSystemMessageIdStr == null) lastSystemMessageIdStr = "-1;" 
+					try {
+						var lastSystemMessageId = parseInt(lastSystemMessageIdStr);
+						var currentMessageId = parseInt("#{systemMessageBean.systemMessage.id}")
+						if (currentMessageId > lastSystemMessageId) {
+							showMessage = true;
+							alert('its new!')
+						}
+					} catch (ex){
+						alert('fail');
+					}
+						
+					
+					
 					if (showMessage !== "false") {
 						jq("#systemMessageForm").show();
 					}
@@ -24,13 +43,15 @@
 					jq("#systemMessageClose").click(function() {
 						jq("#systemMessageForm").hide();
 						jq.cookie("showSystemMessage", "false");
-						
+						jq.cookie("SystemMessageLastSeenId", "#{systemMessageBean.systemMessage.id}");
 						jq(".showSystemMessageSpan").show();
 					});
 					
 					function showSystemMessage() {
 						jq("#systemMessageForm").show();
+						document.getElementById('systemMessageBean_isOpen').value=true;
 						jq.cookie("showSystemMessage", "true");
+						jq.cookie("SystemMessageLastSeenId", "#{systemMessageBean.systemMessage.id}");
 						jq(".showSystemMessageSpan").hide();
 					}
 				</script>
