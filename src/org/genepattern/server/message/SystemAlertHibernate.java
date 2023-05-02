@@ -38,7 +38,14 @@ class SystemAlertHibernate implements ISystemAlert {
         //insert or update SYSTEM_MESSAGE
         HibernateUtil.beginTransaction();
         try {
-            HibernateUtil.getSession().saveOrUpdate(message);
+            // force a new message, not an update JTL 05/02/2023
+            SystemMessage newMsg = new SystemMessage();
+            newMsg.setDeleteOnRestart(message.isDeleteOnRestart());
+            newMsg.setStartTime(message.getStartTime());
+            newMsg.setEndTime(message.getEndTime());
+            newMsg.setMessage(message.getMessage());
+            
+            HibernateUtil.getSession().save(newMsg);
             HibernateUtil.commitTransaction();
         }
         catch (HibernateException e) {
