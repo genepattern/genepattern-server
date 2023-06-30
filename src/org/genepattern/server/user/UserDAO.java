@@ -17,6 +17,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
 /**
@@ -86,6 +87,15 @@ public class UserDAO extends BaseDAO {
             this.mgr.getSession().createQuery(
                     "from org.genepattern.server.user.User order by userId").list();
         return users;
+    }
+    
+    public Long getAllUsersCount() {
+        @SuppressWarnings("unchecked")
+        Criteria criteria = this.mgr.getSession().createCriteria(User.class);
+        criteria.setProjection(Projections.rowCount());
+        Long count = (Long)criteria.uniqueResult();
+        
+        return count;
     }
 
     public void setProperty(String userId, String key, String value) {

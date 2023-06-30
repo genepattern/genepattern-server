@@ -5,6 +5,7 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webservice.server.dao.UsageStatsDAO;
 
 import com.google.common.base.Strings;
 
@@ -105,6 +107,15 @@ public class UserAccountManager {
         this.userGroupsXml=userGroupsXml;
     }
 
+    public static long getTotalUserCount(){
+        
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        long count = (new UserDAO(HibernateUtil.instance())).getAllUsersCount();
+       
+        return count;
+       
+    }
+   
     /**
      * Validate the username before creating a new account.
      * Prohibit creating new user accounts whose names differ only by case.
