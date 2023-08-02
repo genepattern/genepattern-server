@@ -352,6 +352,8 @@ public class GenePatternRestApiV1Client {
         
         if (fileName == null) fileName = outFileHref.substring(outFileHref.lastIndexOf("/"));
         File outFile = new File(outputDir, fileName);
+        File outParentDir = outFile.getParentFile();
+        outParentDir.mkdirs();
         FileOutputStream fos = new FileOutputStream(outFile);
 
         int inByte;
