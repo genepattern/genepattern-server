@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -113,18 +114,65 @@ public class UserGroups implements IGroupMembershipPlugin {
         if (userId==null) {
             return null;
         }
-        return Sets.union(users.get(GroupPermission.PUBLIC), users.get(userId));
+        Set<String> groupMatches = new HashSet<String>();
+        groupMatches.addAll(Sets.union(users.get(GroupPermission.PUBLIC), users.get(userId)));
+        
+        Set<String> groupNames = this.groups.asMap().keySet();
+        //groupNames.remove(GroupPermission.PUBLIC);
+        for (String groupName: groupNames){
+            if (groupName.endsWith(GroupPermission.WILDCARD)){
+                String reg = createRegexFromGlob(groupName);
+                if ( userId.matches(reg) ){
+                    groupMatches.add(groupName);
+                }
+            }
+        }
+        
+        return groupMatches;
     }
 
     @Override
     public boolean isMember(final String userId, final String groupId) {
-        // special-case: hidden wildcard groupId
-        //if (GroupPermission.PUBLIC.equals(groupId)) {
-        //    return true;
-        //}
-        return users.containsEntry(GroupPermission.PUBLIC, groupId) ||
-            users.containsEntry(userId, groupId);
+        
+        if (groupId.endsWith(GroupPermission.WILDCARD)){
+            // For group names that ends with * (WILDCARD) we assume the names in the groups are actually patterns, also ending in * 
+            // and not real names.  This is put in for GP-9463 so that we can have groups with members defined as
+            // Anonymous* and Guest* without knowing in advance the ### that comes after the "Anonymous" part of the name
+            // so that we can impose lower resource limits on anon users.  To make it easy, if a group name ends with a "*"
+            // use the groupName as the pattern (but also include members listed by name normally)
+            
+            String reg = createRegexFromGlob(groupId);
+            return userId.matches(reg) || 
+                    users.containsEntry(GroupPermission.PUBLIC, groupId) ||
+                    users.containsEntry(userId, groupId);
+            
+        } else {
+            
+            // special-case: hidden wildcard groupId
+            //if (GroupPermission.PUBLIC.equals(groupId)) {
+            //    return true;
+            //}
+            return users.containsEntry(GroupPermission.PUBLIC, groupId) ||
+                    users.containsEntry(userId, groupId);
+        }
     }
+    
+    private static String createRegexFromGlob(String glob) {
+        StringBuilder out = new StringBuilder("^");
+        for(int i = 0; i < glob.length(); ++i) {
+            final char c = glob.charAt(i);
+            switch(c) {
+                case '*': out.append(".*"); break;
+                case '?': out.append('.'); break;
+                case '.': out.append("\\."); break;
+                case '\\': out.append("\\\\"); break;
+                default: out.append(c);
+            }
+        }
+        out.append('$');
+        return out.toString();
+    }
+    
     
     public Set<String> getUsers(final String groupId) {
         return groups.get(groupId);
