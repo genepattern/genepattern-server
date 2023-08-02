@@ -9,6 +9,7 @@ import java.util.Comparator;
 public class GroupPermission implements Comparable<GroupPermission>, Serializable {
     /** Group id for public access. */
     final static public String PUBLIC = "*";
+    final static public String WILDCARD = "*";
 
     public enum Permission {
         NONE,
