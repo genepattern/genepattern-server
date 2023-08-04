@@ -208,7 +208,19 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     
-                    
+                    try {
+                        long t1 = System.currentTimeMillis();
+                        
+                        object.put("AnonymousJobsRun",ds.getAnonymousJobsRunCountBetweenDates(startDate, endDate));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("AnonymousJobsRun et (ms): " + (t2-t1));
+                        System.out.println("AnonymousJobsRun et (ms): " + (t2-t1));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
+                    writer.write(" ");
+                    writer.flush();
                     
                     
                     try {
@@ -236,6 +248,9 @@ public class UsageStatsResource {
                     }
                     writer.write(" ");
                     writer.flush();
+                    
+                    
+                    
                     try {
                         long t1 = System.currentTimeMillis();
                         object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
@@ -276,6 +291,20 @@ public class UsageStatsResource {
                     }
                     writer.write(" ");
                     writer.flush();
+                    
+                    try {
+                        long t1 = System.currentTimeMillis();
+                        object.put("AnonymousModuleRunCounts",ds.getAnonymousModuleRunCountsBetweenDates(startDate, endDate));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("AnonymousModuleRunCounts et (ms): " + (t2-t1));
+                        System.out.println("AnonymousModuleRunCounts et (ms): " + (t2-t1));
+                      } catch (Exception e){
+                       e.printStackTrace();
+                       errors.put(e.getMessage());
+                   }
+                   writer.write(" ");
+                   writer.flush();
+                    
                     try {
                         long t1 = System.currentTimeMillis();
                         object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
@@ -326,6 +355,9 @@ public class UsageStatsResource {
                     }
                     writer.write(" ");
                     writer.flush();
+                    
+                    
+                    
                     object.put("ReportGenerationErrors", errors);
                     object.put("ReportGenerationTimings", executionTime);
                 } catch (Exception e){
