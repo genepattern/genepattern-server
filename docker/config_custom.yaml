@@ -41,6 +41,14 @@ default.properties:
     #   Allow users to create new accounts from the login page
     # Default: 
     #   create.account.allowed: true
+
+    ##############################################################
+    # "anonymouse.users.allowed"
+    #   Allow people to use the server anonymously.  Accounts called Anonymous_### 
+    #   will be automatically created for them to use without registering
+    #
+    # Default:
+    #   anonymous.users.allowed: false
     
     ##############################################################
     # File Purge configuration

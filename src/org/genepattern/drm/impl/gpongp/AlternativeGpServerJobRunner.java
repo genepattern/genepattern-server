@@ -116,7 +116,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         ExternalFileManager externalFileManager = DataManager.getExternalFileManager(jobContext);
         
         try {
-            log.info("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
+            log.error("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
              
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);           
             JobInfo ji = jobSubmission.getJobInfo();
@@ -133,7 +133,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                             ji.getTaskLSID()+" is not on the remote system designated to execute it."+
                             "  Contact your admin to inform them.");
             }
-            
+            System.out.println(" -- Successful validation of LSID on remote " + ji.getTaskLSID() + "  " + gpurl);
             
             
             ParameterInfo[] pis = ji.getParameterInfoArray();
@@ -185,6 +185,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            final JsonObject jobJsonObj=new JsonObject();
            jobJsonObj.addProperty("lsid", ji.getTaskLSID()); 
            jobJsonObj.add("params", paramsJsonArray);
+           System.out.println(" --- about to submit remote job");
            URI JobStatusUri = gpRestClient.submitJob(jobJsonObj);
            String uriStr = JobStatusUri.getRawPath();
            

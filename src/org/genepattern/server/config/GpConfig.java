@@ -206,6 +206,9 @@ public class GpConfig {
      */
     public static final String PROP_REQUIRE_PASSWORD="require.password";
     
+    
+    public static final String PROP_ANONYMOUS_ALLOWED="anonymous.users.allowed";
+    
     /**
      * Set 'show.registration.link' to show the link to the registration page on the login page
      *   Default: show.registration.link=true
@@ -841,6 +844,14 @@ public class GpConfig {
         return getGPTrueProperty(serverContext, PROP_REQUIRE_PASSWORD, false);
     }
 
+    /**
+     * Do we allow anonymous users?
+     *    Default: false
+     */
+    public boolean isAnonymousAllowed(final GpContext serverContext) {
+        return getGPTrueProperty(serverContext, PROP_ANONYMOUS_ALLOWED, false);
+    }
+    
     /**
      * Show the link to the registration page on the login page?
      *   Default: true

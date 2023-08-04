@@ -5,6 +5,7 @@ package org.genepattern.server.webapp;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.http.Cookie;
@@ -21,10 +22,13 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.dao.UsageStatsDAO;
 import org.genepattern.util.GPConstants;
+import org.json.JSONArray;
 
 import static org.genepattern.server.webapp.rest.api.v1.oauth.AuthResource.TOKEN_EXPIRY_TIME;
 
@@ -111,6 +115,30 @@ public class LoginManager {
         }
     }
 
+    public void anonymousLogin(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
+    throws AuthenticationException, IOException, Exception {
+      
+       
+        long numusers = UserAccountManager.getTotalUserCount();
+        String gp_username = "Anonymous_"+(numusers+1);
+        String gp_email = gp_username+"@noreply.genepattern.org";
+        String gp_password = UUID.randomUUID().toString(); // password is another random UUID
+        try {
+           
+            UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
+        addUserIdToSession(request, gp_username);
+        attachAccessCookie(response, gp_username);
+       
+        if (redirect) {
+            redirect(request, response);
+        }
+    }
+    
+    
     public void attachAccessCookie(HttpServletResponse response, String username) {
         try {
             OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());

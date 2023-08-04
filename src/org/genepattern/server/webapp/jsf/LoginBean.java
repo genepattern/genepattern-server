@@ -35,6 +35,7 @@ public class LoginBean {
     private final boolean isPasswordRequired;
     private final boolean isCreateAccountAllowed;
     private final boolean isGlobusEnabled;
+    private final boolean isAnonymousAllowed;
 
     public LoginBean() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -42,6 +43,7 @@ public class LoginBean {
         this.isShowRegistrationLink=gpConfig.isShowRegistrationLink(serverContext);
         this.isPasswordRequired=gpConfig.isPasswordRequired(serverContext);
         this.isCreateAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
+        this.isAnonymousAllowed=gpConfig.isAnonymousAllowed(serverContext);
         
         String authClass = gpConfig.getGPProperty(serverContext, "authentication.class");
         if (authClass == null) {
@@ -80,6 +82,10 @@ public class LoginBean {
         return isPasswordRequired;
     }
 
+    public boolean isAnonymousAllowed() {
+        return isAnonymousAllowed;
+    }
+    
     public boolean isUnknownUser() {
         return unknownUser;
     }
@@ -131,5 +137,27 @@ public class LoginBean {
             throw new RuntimeException(e); // @TODO -- wrap in gp system exception.
         }
     }
+    
+    /**
+     * This method is synchronized to prevent two anonymous accounts from being created at the same moment
+     * since the anonymous usernames append the {@link #anonymousLogin(ActionEvent)}of users to make them
+     * unique (UUIDs were too long to display)
+     * @param event
+     */
+    public synchronized void anonymousLogin(ActionEvent event) {
+        
+        try {
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            LoginManager.instance().anonymousLogin(request, response, true);
+        }
+        catch (Exception e) {
+           
+                throw new RuntimeException(e);
+            
+        }
+        
+    }
+    
 
 }
