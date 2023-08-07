@@ -38,11 +38,10 @@
             <tr>
                 <td width="400" valign="top">
                     <h:form onsubmit="return validateForm(this);" id="loginForm">
-                        <table width="330">
+                        <table width="100%">
                             <tr>
-                                <td><span style="font-weight: bold;"> Sign in to
-					GenePattern</span></td>
-                                <td align="right"><h:outputLink
+                                <td><h2>Sign in to GenePattern</h2></td>
+                                <td align="right" text-align="right"><h:outputLink
                                         value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
                                         rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
                                     Click to Register
@@ -80,7 +79,7 @@
                                 <f:attribute name="forceId" value="true" />
                             </t:inputSecret>
                         </h:panelGrid>
-                        <h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
+                        <h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" style="margin-left:66px" value="Sign in" />
                         <br />
                         <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
                                       rendered="#{loginBean.passwordRequired}">
@@ -101,27 +100,26 @@
                           
                     </h:form>
                 </td>
-                
-                <td width="400" valign="top">
-                    
-                </td>
-            </tr>
-            <tr>
-             <td width="400" valign="top">
+                  <td width="40" valign="top">
+                  </td>
+              
+                     <td width="400" valign="top">
              <t:div rendered="#{loginBean.anonymousAllowed}">
-             <hr/>    <br />
+                 
 			<h:form onsubmit="return this;" id="loginFormAnon">
-			 
-			   <img src="/gp/images/i_logo-anonymous.png" alt="Globus" height="27px" style="margin-top:8px;margin-bottom:20px;margin-right:10px;float:left;cursor: pointer;" title="Sign on anonymously" /><h:commandLink actionListener="#{loginBean.anonymousLogin}" value="Sign on anonymously" /><br/>
-			   You may use this link to sign on anonymously.  Once your session expires you will not be able to login to the anonymous account again so be sure to download any results you wish to keep.
-			</h:form>
+			   <h2 style="margin-bottom:20px">Enter as Guest</h2>
+			   <img src="/gp/images/i_logo-anonymous.png" alt="Globus" height="27px" style="margin-top:8px;margin-bottom:40px;margin-right:10px;float:left;cursor: pointer;" title="Sign on anonymously" /> 
+			   <div>Enter GenePattern as a guest.  Once your session expires you will not be able to login to the anonymous guest account again, so be sure to download any results you wish to keep.
+			<br/><br/>
+			<h:commandButton id="signInGuest" actionListener="#{loginBean.anonymousLogin}" value="Enter as Guest" />
+			</div></h:form>
 			
 			</t:div>
+			
 			</td>
-                <td width="400" valign="top">
-                    
-                </td>
+                
             </tr>
+            
         </table>
     </ui:define>
 
