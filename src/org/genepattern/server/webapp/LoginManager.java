@@ -120,7 +120,7 @@ public class LoginManager {
       
        
         long numusers = UserAccountManager.getTotalUserCount();
-        String gp_username = "Guest_"+(numusers+1);
+        String gp_username = "guest_"+(numusers+1);
         String gp_email = gp_username+"@noreply.genepattern.org";
         String gp_password = UUID.randomUUID().toString(); // password is another random UUID
         try {
