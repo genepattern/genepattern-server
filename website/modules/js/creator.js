@@ -2191,7 +2191,26 @@ function updatedefaultcontainers()
     
 }
     
-    
+function creatorValidateModuleCPU(){
+	
+    var jobCpuCount = $('input[name="jobCpuCount"]').val();
+    if (jobCpuCount.trim().length == 0)  return;
+	var x = document.getElementById("jobCpuDefaults");
+	for (i = 0; i < x.options.length; i++) {
+		 if (jobCpuCount == x.options[i].value) return;
+    }
+	alert("The default CPU selected, "+jobCpuCount+", is not one of the configured options for this GenePattern server.  It will work as intended but you should contact this server's administrator to see if adjusting the default CPU configuration is warranted.")
+}    
+
+function creatorValidateModuleMemory(){
+	var jobMemory = $('input[name="jobMemory"]').val();
+	if (jobMemory.trim().length == 0)  return;
+	var x = document.getElementById("jobMemoryDefaults");
+	for (i = 0; i < x.options.length; i++) {
+        if (jobMemory == x.options[i].value) return;
+    }
+	alert("The default memory selected, "+jobMemory+", is not one of the configured options for this GenePattern server.  It will work as intended but you should contact this server's administrator to see if adjusting the default memory configuration is warranted.")
+}
 
 function updatemodulecategories()
 {

@@ -521,7 +521,7 @@
                         Job Memory:
                     </td>
                     <td colspan="3">
-                        <input type="search" name="jobMemory" list="jobMemoryDefaults"  autocomplete="off" size="70"/>
+                        <input type="search" name="jobMemory" list="jobMemoryDefaults" onfocusout="creatorValidateModuleMemory()" autocomplete="off" size="70"/>
                         
                         <datalist id="jobMemoryDefaults">
 						 	<option value="2G"/>
@@ -538,7 +538,7 @@
                         Job cpuCount:
                     </td>
                     <td colspan="3">
-                        <input type="search" name="jobCpuCount"  list="jobCpuDefaults" autocomplete="off" size="70"/>
+                        <input type="search" name="jobCpuCount"  list="jobCpuDefaults" onfocusout="creatorValidateModuleCPU()" autocomplete="off" size="70"/>
                          <datalist id="jobCpuDefaults">
 						 	<option value="1"/>
 						  	<option value="3"/>
