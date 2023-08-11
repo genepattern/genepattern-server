@@ -281,11 +281,11 @@ public class UsageStatsDAO extends BaseDAO {
         @SuppressWarnings("deprecation")
         PreparedStatement pstmt1 = getSession().connection().prepareStatement(
                 "select count(*) from ANALYSIS_JOB where (date_completed BETWEEN ? and ?)  "  
-                + " and (user_id in ( select user_id from GP_USER where user_id like 'Anonymous_%' OR user_id like 'Guest_%'))");
+                + " and (user_id in ( select user_id from GP_USER where user_id like 'Anonymous_%' OR user_id like 'Guest_%' OR user_id like 'guest_%'))");
         @SuppressWarnings("deprecation")      
         PreparedStatement pstmt2 = getSession().connection().prepareStatement(
                 "select count(*) from ANALYSIS_JOB_ARCHIVE where (date_completed BETWEEN ? and ?)  "  
-                + " and (user_id in ( select user_id from GP_USER where user_id like 'Anonymous_%' OR user_id like 'Guest_%'))");
+                + " and (user_id in ( select user_id from GP_USER where user_id like 'Anonymous_%' OR user_id like 'Guest_%' OR user_id like 'guest_%'))");
               
           
    
@@ -451,7 +451,7 @@ public class UsageStatsDAO extends BaseDAO {
     public JSONArray getAnonymousModuleRunCountsBetweenDates(Date startDate, Date endDate) throws Exception {
         JSONArray moduleCounts = new JSONArray();
        
-       String userInclusionClause =  " and ((AJ.user_id like 'Anonymous_%') OR (AJ.user_id like 'Guest_%')) ";
+       String userInclusionClause =  " and ((AJ.user_id like 'Anonymous_%') OR (AJ.user_id like 'Guest_%') OR (AJ.user_id like 'guest_%')) ";
        System.out.println(userInclusionClause);
        
        @SuppressWarnings("deprecation")
