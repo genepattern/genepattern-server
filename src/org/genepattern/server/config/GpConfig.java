@@ -1552,6 +1552,24 @@ $GENEPATTERN_HOME$/tasklib
         }
         return getGPProperty(gpContext, "executor");
     }
+    /**
+     * For the case where we want to have a fail-over executor such as when
+     * delegating to another GP server such as  gp@ucsd which is less reliable
+     * than, say, AWS
+     * @param gpContext
+     * @return
+     */
+    public String getFailoverExecutorId(final GpContext gpContext) {
+        //special-case for pipelines
+        if (gpContext != null && gpContext.getTaskInfo() != null) {
+            final boolean isPipeline=gpContext.getTaskInfo().isPipeline();
+            if (isPipeline) {
+                return CommandExecutorMapper.PIPELINE_EXEC_ID;
+            }
+        }
+        return getGPProperty(gpContext, "failover_executor");
+    }
+    
 
     /**
      * @deprecated should just call getValue(GpContext jobContext, "executor")

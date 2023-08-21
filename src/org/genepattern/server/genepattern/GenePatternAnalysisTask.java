@@ -1787,6 +1787,19 @@ public class GenePatternAnalysisTask {
         }
         return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
     }
+    
+    private static CommandExecutor2 initCmdExec2_failover(final GpConfig gpConfig, final GpContext jobContext, Exception origException) throws Exception {
+        final String executorId=gpConfig.getFailoverExecutorId(jobContext);
+        if (executorId==null) {
+            throw origException;
+        }
+        final CommandExecutor cmdExec=CommandManagerFactory.getCommandManager().getCommandExecutorsMap().get(executorId);
+        if (cmdExec==null) {
+            throw new JobDispatchException("Server error: CommandExecutor not set for failover executorId="+executorId);
+        }
+        return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
+    }
+    
 
     private void runCommand(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
     throws JobDispatchException
@@ -1797,9 +1810,15 @@ public class GenePatternAnalysisTask {
         try {
             task = executor.submit(new Callable<Integer>() {
                 public Integer call() throws Exception {
-                    final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
-                    cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
-                    return JobStatus.JOB_PROCESSING;
+                    try {
+                        final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
+                        cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+                        return JobStatus.JOB_PROCESSING;
+                    } catch (Exception e){
+                        final CommandExecutor2 failoverCmdExec=initCmdExec2_failover(gpConfig, jobContext, e);
+                        failoverCmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+                        return JobStatus.JOB_PROCESSING;
+                    }
                 }
             });
             int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
