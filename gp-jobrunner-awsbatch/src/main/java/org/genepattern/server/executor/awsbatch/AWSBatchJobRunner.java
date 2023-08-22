@@ -1387,7 +1387,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final Map<String,String> inputFileMap=Collections.emptyMap();
 
         final CommandLine cl = initAwsBatchScript(gpJob, inputDir, inputFiles, inputFileMap);
-        if (log.isDebugEnabled()) {
+        if (true) {
             StringBuffer buff = new StringBuffer("aws-batch-script-cmd='");
             buff.append(cl.getExecutable());
             buff.append("' ");
@@ -1397,6 +1397,7 @@ public class AWSBatchJobRunner implements JobRunner {
                 buff.append("'");
             }
             log.debug(buff.toString());
+            System.out.println(buff.toString());
         }
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -1406,9 +1407,29 @@ public class AWSBatchJobRunner implements JobRunner {
         if (!Strings.isNullOrEmpty(linkedStdIn)) {
             cmdEnv.put("GP_STDIN_FILE", linkedStdIn);
         }
-        exec.execute(cl, cmdEnv);
-        String awsJobId =  outputStream.toString();
+        String awsJobId = "-1";
         
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+        try {
+           
+            PumpStreamHandler psh = new PumpStreamHandler(stdout, stderr);
+            exec.setStreamHandler(psh);
+            System.out.println("ENV\n\n"+cmdEnv);
+            System.out.println("CL\n\n"+cl);
+            
+            int errcode = exec.execute(cl, cmdEnv);
+            if (errcode > 0) {
+                System.out.println("    AWS job submission filed: "+ errcode);
+                System.out.println("STDOUT X==========> " + stdout.toString());
+                System.out.println("STDERR X==========> " + stderr.toString());
+            }
+            awsJobId =  stdout.toString();
+        } catch (Throwable t){
+            System.out.println("STDOUT ==========> " + stdout.toString());
+            System.out.println("STDERR ==========> " + stderr.toString());
+            throw t;
+        }
         return new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
             .extJobId(awsJobId)
             .submitTime(new Date())

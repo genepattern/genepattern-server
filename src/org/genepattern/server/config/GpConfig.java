@@ -1553,7 +1553,7 @@ $GENEPATTERN_HOME$/tasklib
         return getGPProperty(gpContext, "executor");
     }
     /**
-     * For the case where we want to have a fail-over executor such as when
+     * GP-9455 For the case where we want to have a fail-over executor such as when
      * delegating to another GP server such as  gp@ucsd which is less reliable
      * than, say, AWS
      * @param gpContext
