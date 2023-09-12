@@ -1,18 +1,24 @@
 package org.genepattern.drm.impl.gpongp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,7 +42,10 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.rest.client.GenePatternRestApiV1Client;
 import org.genepattern.server.rest.client.TaskObj;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -101,6 +110,37 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         return m.getJobInfo(cookie, contextPath, userId, jobNumber);
     }
     
+    public static List<String> parseFileList(File filelist) throws Exception {
+        log.debug("Reading filelist from: "+filelist.getPath());
+        List<String> inputValues = new ArrayList<String>();
+        if (!filelist.canRead()) {
+            throw new Exception("Can't read filelist, "+filelist.getPath());
+        }
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(filelist);
+        }
+        catch (FileNotFoundException e) {
+            //TODO: throw exception
+            return inputValues;
+        }
+        
+        BufferedReader in = null;        
+        try {
+            in = new BufferedReader(fileReader);
+            String line = null;
+            while((line = in.readLine()) != null) {
+                inputValues.add(line);
+            }
+        }
+        finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        return inputValues;
+    }
+    
     
     @Override
     public String startJob(DrmJobSubmission jobSubmission) throws CommandExecutorException {
@@ -120,7 +160,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
              
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);           
             JobInfo ji = jobSubmission.getJobInfo();
-            
+           
             // verify the module exists on the remote GP server
             try {
                 System.out.println(" -- validating LSID on remote " + ji.getTaskLSID());
@@ -144,22 +184,46 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               String val = pis[i].getValue();
               JsonObject P = null;
               if (val.indexOf("<GenePatternURL>") >= 0){
+                  
+                  
                   File serverFile = null;
                   Object value2 = null;
                   GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
-                  serverFile = gpfp.getServerFile();
-                  //
-                  // When an external file manager is in use, its still possible that a file is local (legacy files and a few
-                  // other cases) so we make sure its not local first.
-                  //
-                  if (serverFile.exists()) {
-                      value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
-                  } else if ((externalFileManager != null) ) {
-                      value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
-                  } 
-
-                  P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
-             
+                  
+                  if (gpfp.isFile() && gpfp.getName().endsWith(".list.txt")) {
+                      try {
+                          List<String> inputFilesForParam = parseFileList( gpfp.getServerFile() );
+                          for (int j=0; j < inputFilesForParam.size(); j++){
+                              File localFile = new File(inputFilesForParam.get(j));
+                              if (localFile.exists()) {
+                                  value2 = gpRestClient.uploadFileIfNecessary(true, localFile.getAbsolutePath());
+                              } else if ((externalFileManager != null) ) {
+                                  value2 = new URL(externalFileManager.getDownloadURL(jobContext, localFile));
+                              } 
+            
+                              P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
+                              
+                          }
+                          
+                          
+                      }
+                      catch (Throwable t) {
+                              throw new JobSubmissionException("Error reading filelist from file: "+pis[i].getValue(), t);
+                      }
+                  } else {
+                      serverFile = gpfp.getServerFile();
+                      //
+                      // When an external file manager is in use, its still possible that a file is local (legacy files and a few
+                      // other cases) so we make sure its not local first.
+                      //
+                      if (serverFile.exists()) {
+                          value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                      } else if ((externalFileManager != null) ) {
+                          value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
+                      } 
+    
+                      P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
+                  }
               }  else {
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), val);
               } 
