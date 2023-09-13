@@ -523,7 +523,10 @@ function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterN
             if (customChoices && customChoices.length>0) {
                 // only if the first item in the list is not the empty string
                 if (customChoices[0] != "") {
-                    setInputField(parameterName, customChoices[0], groupId);
+                    for (i=0; i < customChoices.length; i++){
+                        setInputField(parameterName, customChoices[i], groupId);
+                    }
+                    
                 }
             }
         }
