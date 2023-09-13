@@ -62,6 +62,7 @@ import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -193,6 +194,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                   if (gpfp.isFile() && gpfp.getName().endsWith(".list.txt")) {
                       try {
                           List<String> inputFilesForParam = parseFileList( gpfp.getServerFile() );
+                         
+                          P=new JsonObject();
+                          P.addProperty("name", pis[i].getName());
+                          JsonArray valuesArr=new JsonArray();
+                          P.add("values", valuesArr);
                           for (int j=0; j < inputFilesForParam.size(); j++){
                               File localFile = new File(inputFilesForParam.get(j));
                               if (localFile.exists()) {
@@ -200,11 +206,18 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                               } else if ((externalFileManager != null) ) {
                                   value2 = new URL(externalFileManager.getDownloadURL(jobContext, localFile));
                               } 
-            
-                              P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
                               
+                              valuesArr.add(new JsonPrimitive(value2.toString()));
                           }
                           
+                          
+                         
+                         
+                          
+                          
+                          
+                          
+                          paramsJsonArray.add(P); 
                           
                       }
                       catch (Throwable t) {
@@ -223,11 +236,13 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                       } 
     
                       P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
+                      paramsJsonArray.add(P);      
                   }
               }  else {
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), val);
+                  paramsJsonArray.add(P);      
               } 
-              paramsJsonArray.add(P);               
+                      
            }
             if (jobSubmission.getCpuCount() != null){
                 JsonObject pCpu = gpRestClient.createParameterJsonObject("job.cpuCount", jobSubmission.getCpuCount()); 
