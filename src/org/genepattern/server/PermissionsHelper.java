@@ -133,6 +133,10 @@ public class PermissionsHelper implements Serializable {
         //get all of the groups which aren't in group permissions
         Set<String> groupsToAdd = new HashSet<String>();
         groupsToAdd.addAll(groups);
+        // get the list of groups its always available to share to
+        ArrayList<String> alwaysShareTo = UserAccountManager.instance().getAlwaysShareableToUserGroups();
+        groupsToAdd.addAll(alwaysShareTo);
+        
         for(GroupPermission gp : groupPermissions) {
             String groupId = gp.getGroupId();
             groupsToAdd.remove(groupId);

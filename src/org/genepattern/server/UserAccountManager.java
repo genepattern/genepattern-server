@@ -6,6 +6,7 @@ package org.genepattern.server;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,8 @@ public class UserAccountManager {
     
     public static final String PROP_AUTHENTICATION_CLASS = "authentication.class";
     public static final String PROP_GROUP_MEMBERSHIP_CLASS = "group.membership.class";
-
+    public static final String PROP_GROUPS_ALWAYS_SHAREABLE_TO = "groups.always.shareable.to";
+    
     /**
      * The 'username.regex' is a regular expression which matches all valid usernames 
      * and which must not match any invalid usernames. This pattern is used to validate
@@ -83,6 +85,7 @@ public class UserAccountManager {
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
     private UserGroups userGroups = null;
+    private ArrayList<String> alwaysShareableUserGroups = null;
     
     //this property is optionally (when set) used in the default group membership class, UserGroups
     private File userGroupsXml=null;
@@ -422,6 +425,11 @@ public class UserAccountManager {
         return userGroups;
     }
     
+    public ArrayList<String> getAlwaysShareableToUserGroups(){
+        return this.alwaysShareableUserGroups;
+    }
+    
+    
     /**
      * If necessary reload user and groups information by reloading the IAuthenticationPlugin and IGroupMembershipPlugins.
      * This supports one specific use-case: when GP default group membership is used, and an admin edits the configuration file,
@@ -492,6 +500,17 @@ public class UserAccountManager {
                 this.userGroups = UserGroups.initFromConfig(gpConfig);
             }
             this.groupMembership = userGroups;
+            
+            String groupsAlwaysOnShareMenu = gpConfig.getGPProperty(GpContext.getServerContext(), PROP_GROUPS_ALWAYS_SHAREABLE_TO, null);
+            String[] shareableGroupNames =     groupsAlwaysOnShareMenu.split(",");
+            ArrayList<String> shareableGroupNamesList = new ArrayList<String>();
+            for (int i=0; i< shareableGroupNames.length; i++ ) {
+                String nom = shareableGroupNames[i].trim();
+                if (nom.length() >0) {
+                    shareableGroupNamesList.add(nom);
+                }
+            }
+            this.alwaysShareableUserGroups = shareableGroupNamesList;
         }
         else {
             try {
