@@ -502,15 +502,20 @@ public class UserAccountManager {
             this.groupMembership = userGroups;
             
             String groupsAlwaysOnShareMenu = gpConfig.getGPProperty(GpContext.getServerContext(), PROP_GROUPS_ALWAYS_SHAREABLE_TO, null);
-            String[] shareableGroupNames =     groupsAlwaysOnShareMenu.split(",");
             ArrayList<String> shareableGroupNamesList = new ArrayList<String>();
-            for (int i=0; i< shareableGroupNames.length; i++ ) {
-                String nom = shareableGroupNames[i].trim();
-                if (nom.length() >0) {
-                    shareableGroupNamesList.add(nom);
+            
+            if (groupsAlwaysOnShareMenu != null) {
+                String[] shareableGroupNames =     groupsAlwaysOnShareMenu.split(",");
+                for (int i=0; i< shareableGroupNames.length; i++ ) {
+                    String nom = shareableGroupNames[i].trim();
+                    if (nom.length() >0) {
+                        shareableGroupNamesList.add(nom);
+                    }
                 }
             }
             this.alwaysShareableUserGroups = shareableGroupNamesList;
+            
+            
         }
         else {
             try {
