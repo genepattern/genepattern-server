@@ -12,6 +12,9 @@
 
 
 <ui:composition template="/templates/common.xhtml">
+
+
+    
     <ui:define name="validationInit">
         <script type="text/javascript" language="javascript">
             /* <![CDATA[ */
@@ -27,13 +30,48 @@
                     document.cookie = "GenePattern=" + $("#username").val() + "|" +
                             encodeURIComponent(btoa($("#password").val())) + ";path=/;domain=" + window.location.hostname;
                 });
+                
+                // If cookies have not been accepted, show the banner
+                if (get_cookie("cookiesaccepted") !== "true") {
+                	$("#cookies").dialog({"title":"GenePattern Cookie policy", "width":"400px", "position": [260,360], "resizeable":false});
+                	$(".ui-dialog-titlebar").hide();
+                	$('#cookies').dialog({resizable: false}); 
+
+                }
+
+                // Activate the Read More button
+                $("#cookies .read-more").click(() => window.open('https://www.genepattern.org/about-cookies#gsc.tab=0'));
+
+                // Activate the Accept button
+                $("#cookies .accept").click(() => {
+                    $("#cookies").dialog('close');
+                    document.cookie = "cookiesaccepted=true";
+                });
+                
             });
+            
+            function get_cookie(cname) {
+                let name = cname + "=";
+                let decodedCookie = decodeURIComponent(document.cookie);
+                let ca = decodedCookie.split(';');
+                for(let i = 0; i <ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1);
+                    if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+                }
+                return "";
+            }
+
+      
+            
+            
             /* ]]> */
 
         </script>
     </ui:define>
     <ui:define name="pageTitle">GenePattern Sign in</ui:define>
     <ui:define name="body">
+    
         <table cols="2">
             <tr>
                 <td width="400" valign="top">
@@ -121,8 +159,32 @@
             </tr>
             
         </table>
+        <style>
+#cookies {
+   
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+.ui-dialog, .ui-dialog-content {
+    border: 1px solid transparent;
+    border-radius: 2px;
+    
+}
+
+    </style>
+        <footer id="cookies" class="alert alert-info" style="display: none;">
+        <p>GenePattern uses cookies to determine which files, jobs and data belong to your account. We do not
+            share user information. To use GenePattern , click Accept below. </p>
+        <p style="align:right"><button class="btn btn-default read-more" style="float: right;margin-right:10px">Read More</button> <button class="btn btn-primary accept" style="float: right;" >Accept</button></p>
+        </footer>
     </ui:define>
 
 
 </ui:composition>
+
+
+
 </html>
