@@ -112,6 +112,8 @@ public class AWSBatchJobRunner implements JobRunner {
     // 's3-root' aka S3_PREFIX
     public static final String PROP_AWS_S3_ROOT="aws-s3-root";
 
+    public  CommandProperties jobRunnerProperties;
+    
     /**
      * Set the 'job.awsbatch.job-definition-name' property to link a particular
      * version of a module to a particular version of an aws batch job definition.
@@ -168,11 +170,10 @@ public class AWSBatchJobRunner implements JobRunner {
     protected static final boolean handleQuoting = false;
     
     public void setCommandProperties(CommandProperties properties) {
-        log.debug("setCommandProperties");
-        if (properties==null) {
-            log.debug("commandProperties==null");
-            return;
-        } 
+        
+        jobRunnerProperties = properties;
+        log.error("------ ---- --- -- -- - - setCommandProperties "+ properties.toProperties());
+        
     }
 
     public void start() {
@@ -237,6 +238,8 @@ public class AWSBatchJobRunner implements JobRunner {
 
     protected String getCheckStatusScript(final DrmJobRecord jobRecord) {
         final File checkStatusScript=getAwsBatchScriptFile(jobRecord, PROP_STATUS_SCRIPT, DEFAULT_STATUS_SCRIPT);
+        log.error("\n======== CHECK STATUS SCRIPT IS: " +checkStatusScript+ "\n");
+        log.error("\n======== JOB RUNNER PROS ARE: " +jobRunnerProperties.toProperties() + "\n");
         return ""+checkStatusScript;
     }
     
@@ -1039,12 +1042,25 @@ public class AWSBatchJobRunner implements JobRunner {
         return file;
     }
 
-    protected static File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
-        final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
-        return getAwsBatchScriptFile(gpConfig, jobContext, filename.getValue());
+    protected  File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
+        final Value filenameValue = gpConfig.getValue(jobContext, key, defaultValue);
+        String filename = filenameValue.getValue();
+        
+        if (filename.equalsIgnoreCase(defaultValue.getValue())) {
+            String jobrunnerValue = jobRunnerProperties.getProperty(key);
+            if (jobrunnerValue != null) {
+                // take the value sent in in preference to the default
+                if ( ! jobrunnerValue.equalsIgnoreCase(defaultValue.getValue())) {
+                    filename = jobrunnerValue;
+                }
+            }
+        }
+        
+        
+        return getAwsBatchScriptFile(gpConfig, jobContext, filename);
     }
     
-    protected static File getAwsBatchScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
+    protected  File getAwsBatchScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
         if (gpJob != null) {
             return getAwsBatchScriptFile(gpJob.getGpConfig(), gpJob.getJobContext(), key, defaultValue);
         }
@@ -1052,7 +1068,7 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
 
-    protected static File getAwsBatchScriptFile(final DrmJobRecord jobRecord, final String key, final Value defaultValue) {
+    protected  File getAwsBatchScriptFile(final DrmJobRecord jobRecord, final String key, final Value defaultValue) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         return getAwsBatchScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
     }
@@ -1086,7 +1102,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * First pass the arguments needed by the AWS launch script, then follow
      * with the normal GenePattern command line
      */
-    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob, final File inputDir, final Set<File> inputFiles, final Map<String, String> inputFileMap) throws CommandExecutorException {
+    protected  CommandLine initAwsBatchScript(final DrmJobSubmission gpJob, final File inputDir, final Set<File> inputFiles, final Map<String, String> inputFileMap) throws CommandExecutorException {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
         }
