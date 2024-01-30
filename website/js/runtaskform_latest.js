@@ -1774,7 +1774,12 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
                     }
                     var draggableParamName = draggablePRow.attr("id");
                     var draggableGroupId = draggable.parents(".valueEntryDiv").first().data("groupId");
+ 					var draggableFileObjListings = getFilesForGroup(draggableGroupId, draggableParamName);
 
+					console.log(draggableFileObjListings);
+					
+					
+					
                     var targetPRow = target.parents(".pRow").first();
                     if (targetPRow === undefined || targetPRow === null || targetPRow.size() === 0) {
                         //do nothing since this is not expected
@@ -1790,19 +1795,29 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
                     validateMaxFiles(targetParamName, fileObjListings.length + 1);
 
+					var fileObj = {
+                        name: filename,
+                        id: fileId++
+                    };
+
 					// JTL 01/30/2024 GP-9514 we can drag-n-drop URLs but not uploadable
 					// files so check if the filename is a URL and punt if it is not
 					if (! isValidUrl(filename)){
 						console.log("...... Invalid URL dropped " + filename);	
-						throw new Error('Cannot move uploaded files between parameters.  This only works for URLS.');
+						//throw new Error('Cannot move uploaded files between parameters.  This only works for URLS.');
+						for (var i=0; i< draggableFileObjListings.length; i++){
+							var sourceFileObj = draggableFileObjListings[i];
+							if (filename == sourceFileObj.name ){
+								// move the File object across
+								fileObj.object = sourceFileObj.object;
+							}
+						}
+		
 					} else {
 						console.log("===== VALID URL dropped " + filename);	
 					}
 
-                    var fileObj = {
-                        name: filename,
-                        id: fileId++
-                    };
+                    
                     fileObjListings.push(fileObj);
                     updateFilesForGroup(targetGroupId, targetParamName, fileObjListings);
                     updateParamFileTable(targetParamName, null, groupId);
