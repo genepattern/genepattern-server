@@ -20,7 +20,9 @@ import org.genepattern.drm.impl.lsf.core.CmdException;
 import org.genepattern.drm.impl.lsf.core.CommonsExecCmdRunner;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.CommandProperties;
 
 /**
  * Implementation of the JobRunner interface for Slurm
@@ -31,7 +33,7 @@ public class SlurmJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(SlurmJobRunner.class);
 
     private HashMap<Integer, DrmJobStatus> statusMap = new HashMap<Integer, DrmJobStatus>();
-    
+    public  CommandProperties jobRunnerProperties;
     
     public String remotePrefix ;
     public boolean failIfStderr = false;
@@ -40,6 +42,15 @@ public class SlurmJobRunner implements JobRunner {
         super();
         System.out.println("Initializing SlurmJobRunner");
     }
+    
+    
+    public void setCommandProperties(CommandProperties properties) {
+        
+        jobRunnerProperties = properties;
+        log.error("------ ---- --- -- -- - - setCommandProperties "+ properties.toProperties());
+        
+    }
+    
     /**
      * If configured by the server admin, write the command line into a log file
      * in the working directory for the job.
@@ -418,7 +429,7 @@ public class SlurmJobRunner implements JobRunner {
             buff.append(s);
             buff.append(" ");
         }
-        log.debug("slurm job command: " + buff.toString());
+        log.error("slurm job command: " + buff.toString());
         
         try {
             output = commandRunner.runCmd(commandArray);
@@ -581,8 +592,8 @@ public class SlurmJobRunner implements JobRunner {
      */
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
-        DrmJobStatus status = _getStatus(drmJobRecord);
-        
+         
+        DrmJobStatus status = this._getStatus(drmJobRecord);
         if (status != null)
             status = updateJobRunnerJobDetails(drmJobRecord, status);
         
@@ -593,6 +604,7 @@ public class SlurmJobRunner implements JobRunner {
     
     public DrmJobStatus updateJobRunnerJobDetails(DrmJobRecord drmJobRecord, DrmJobStatus status){
         DrmJobStatus finalStatus = status;
+         
         try {
             int gpJobNo = drmJobRecord.getGpJobNo();
             DrmJobStatus oldStatus = statusMap.get(gpJobNo);
@@ -600,6 +612,7 @@ public class SlurmJobRunner implements JobRunner {
             // first time here
             if ((oldStatus == null) && (!status.getJobState().equals(DrmJobState.TERMINATED))) {
                 statusMap.put(gpJobNo, status);
+                return status;
             }
             // nothing has changed so nothing to do
             if (oldStatus.getJobState().equals(status.getJobState())){
@@ -627,6 +640,7 @@ public class SlurmJobRunner implements JobRunner {
             }
            
         } catch (Exception e){
+            log.error(e);
             e.printStackTrace();
          
             log.error(e);
@@ -721,6 +735,17 @@ public class SlurmJobRunner implements JobRunner {
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
         
+        if (remotePrefix == null) {
+            try {
+                GpConfig config = ServerConfigurationFactory.instance();
+                GpContext jobContext = GpContext.createContextForJob(drmJobRecord.getGpJobNo());
+                remotePrefix = jobRunnerProperties.get("remote.exec.prefix").getValue();
+                failIfStderr = config.getGPBooleanProperty(jobContext, "job.error_status.stderr", false);
+            } catch (Throwable t) {
+                remotePrefix = "/expanse/projects/mesirovlab/genepattern/servers/ucsd.prod/resources/wrapper_scripts/run-on-expanse.sh  ";
+            }
+        }
+        
         String[] remotePrefixArray = remotePrefix.split("\\s+");
         List<String> prefixArray = Arrays.asList(remotePrefixArray);
         ArrayList<String> commandArray = new ArrayList<String>();
@@ -756,11 +781,15 @@ public class SlurmJobRunner implements JobRunner {
                 slurmStatusString = output.get(output.size()-1);
                 log.error("SLURM STATUS FOR JOB " +drmJobRecord.getGpJobNo() + " is " + slurmStatusString);
             }
-            return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
+            DrmJobStatus ret =  slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
+            
+            log.error(" == DRM STATUS FOR JOB " +drmJobRecord.getGpJobNo() + " is " + ret);
+            return ret;
         }
         catch (Exception e) {
             // It is likely that this job finished a long time ago, mark as failed
             log.error("Exception checking job status with sacct: " + e);
+            log.error("E   failed command was: " + e);
             
             Thread.currentThread().interrupt();
             return null;
