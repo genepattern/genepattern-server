@@ -1790,6 +1790,15 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
                     validateMaxFiles(targetParamName, fileObjListings.length + 1);
 
+					// JTL 01/30/2024 GP-9514 we can drag-n-drop URLs but not uploadable
+					// files so check if the filename is a URL and punt if it is not
+					if (! isValidUrl(filename)){
+						console.log("...... Invalid URL dropped " + filename);	
+						throw new Error('Cannot move uploaded files between parameters.  This only works for URLS.');
+					} else {
+						console.log("===== VALID URL dropped " + filename);	
+					}
+
                     var fileObj = {
                         name: filename,
                         id: fileId++
@@ -2033,6 +2042,15 @@ function createModeToggle(parameterName) {
 
     return toggleChoiceFileDiv;
 }
+
+const isValidUrl = urlString=> {
+      try { 
+      	return Boolean(new URL(urlString)); 
+      }
+      catch(e){ 
+      	return false; 
+      }
+  }
 
 //initialize the params object with info about the parameters
 function initParams(parameterGroups, parameters, batchParams) {
