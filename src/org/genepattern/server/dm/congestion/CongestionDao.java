@@ -47,7 +47,8 @@ public class CongestionDao extends BaseDAO {
         if ("".equals(queue)) { selectCase = "is null"; }
         else { selectCase = "= :queue"; }
 
-        String hql = "select count(*) from job_runner_job jrj where jrj.queue_id " + selectCase + " and jrj.start_time is null and jrj.end_time is null ";
+        String hql = "select count(*) from job_runner_job jrj where jrj.queue_id " + selectCase + " and jrj.start_time is null and jrj.end_time is null and jrj.job_state not in ('DONE', 'FAILED', 'ABORTED', 'CANCELLED') and status_message not like 'Cancellation requested%'     ";
+        System.out.println("\n\n====== QUERY IS \n" + hql +"\n\n=====");
         Query query = HibernateUtil.getSession().createSQLQuery(hql);
         if (!"".equals(queue)) query.setString("queue", queue);
         query.setReadOnly(true);
