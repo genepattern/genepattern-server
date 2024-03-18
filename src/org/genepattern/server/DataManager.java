@@ -392,15 +392,26 @@ public class DataManager {
             final UserUploadDao dao = new UserUploadDao(mgr);
             UserUpload old = dao.selectUserUpload(user, filePath);
             directory = UserUpload.isDirectory(old);
-        }
-        
-        // If the file exists, rename the file on the file system
+        }  
+            
         if (oldFile.exists()) {
             renamed = oldFile.renameTo(newFileAbsolute);
-            if (!renamed) {
+            if (!renamed && !nonLocalFile) {
                 log.error("Error renaming file: " + oldFile.getPath());
                 return renamed;
             }
+            if (nonLocalFile){
+                try {
+                    ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                    if (!directory){
+                        renamed = externalFileManager.moveFile(gpContext, oldFile, newFileAbsolute);
+                    } else {
+                        renamed = externalFileManager.moveDirectory(gpContext, oldFile, newFileAbsolute);
+                    }
+                } catch (IOException e) {
+                    renamed = false;
+                }
+            } 
         }
         else {
             
