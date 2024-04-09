@@ -1,7 +1,9 @@
 package org.genepattern.server.executor.awsbatch;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -13,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +32,10 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 
 
 public class AWSS3ExternalFileManager extends ExternalFileManager {
@@ -97,7 +103,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
            String s = null;
            String redirectUrl = null;
            while ((s = stdInput.readLine()) != null) {
-               System.out.println("==== REDIRECT URL result IS :" + s);
+               
                log.debug(s);
                redirectUrl = s;
            }  
@@ -161,16 +167,30 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
-        String execArgs[];
+        String execArgs;
         if (recursive){
-            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", "s3://"+bucket+ "/"+bucketRoot+fromFile.getAbsolutePath(), "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()+"/", "--recursive"};
+            execArgs = " s3 mv \"s3://"+bucket+ "/"+bucketRoot+fromFile.getAbsolutePath()+"\"  \"s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath() + "/\" --recursive";
         } else {
-            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", "s3://"+bucket+ "/"+bucketRoot+fromFile.getAbsolutePath(), "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};
+            execArgs = " s3 mv \"s3://"+bucket+ "/"+bucketRoot+fromFile.getAbsolutePath()+"\" \"s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()+"\"";
               
         }
         
+        File mvfile = File.createTempFile("awsmv",".sh");
+        
+        BufferedWriter fw = new BufferedWriter(new FileWriter(mvfile));
+        fw.write("#!/bin/bash\n");
+        fw.write(awsfilepath+awsfilename+ "  " +execArgs);
+        fw.close();
+        Set<PosixFilePermission> perms = Files.readAttributes(mvfile.toPath(),PosixFileAttributes.class).permissions();
+        perms.add(PosixFilePermission.GROUP_EXECUTE);
+        perms.add(PosixFilePermission.OWNER_EXECUTE);
+        
+        Files.setPosixFilePermissions(mvfile.toPath(), perms);
+        
+        
+        
         boolean success = false;
-        Process proc = Runtime.getRuntime().exec(execArgs);
+        Process proc = Runtime.getRuntime().exec(mvfile.getAbsolutePath());
         try {
             proc.waitFor(3, TimeUnit.MINUTES);
         
@@ -369,9 +389,11 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             //         2020-12-01 13:19:01    4931101 tedslaptop/Users/liefeld/gp/users/739701.jpg
             HashMap<String, GpFilePath> parentsAdded = new HashMap<String, GpFilePath>();
             while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
+                try {
+                
                 String[] lineParts = s.split("\\s+");
-                String name = lineParts[3];
+                int idx = s.indexOf(lineParts[3]);
+                String name = s.substring(idx);
                 
                 Long length = new Long(lineParts[2]);
                 Date lastModified = parseDateFormat(lineParts[0]+" "+lineParts[1]);
@@ -407,12 +429,18 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
                     gpfile.setLastModified(lastModified);
                     foundFiles.add(gpfile);
                 }
+            } catch (Exception e) {
+                log.error(e);
+                //throw e;
+                continue;
+            }
             }
        } catch (Exception e){
             log.debug(e);
             proc.destroyForcibly();
             proc = null;
-            return new ArrayList<GpFilePath>();
+            return foundFiles;
+          
             
         } finally {
             proc.destroy();

@@ -5,6 +5,8 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
@@ -16,6 +18,8 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.MailSender;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 
 public class ForgotPasswordBean {
@@ -54,9 +58,48 @@ public class ForgotPasswordBean {
     }
 
   
+    protected  boolean isValidEmailAddress(String email) {
+        boolean result = true;
+        try {
+            InternetAddress emailAddr = new InternetAddress(email);
+            emailAddr.validate();
+        } catch (AddressException ex) {
+            result = false;
+        }
+        return result;
+    }
 
     private String resetPasswordDefault() {
-        final User user = new UserDAO(HibernateUtil.instance()).findById(username);
+        UserDAO userDao = new UserDAO(HibernateUtil.instance());
+        User user = userDao.findById(username);
+        
+        if ((user == null) && (isValidEmailAddress(username))) {
+            List<User> usersForEmail = userDao.getUsersByEmail(username);
+            if (usersForEmail.size() == 1) {
+                user = usersForEmail.get(0);
+            } else if  (usersForEmail.size() > 1) {
+               ArrayList<String> usernames = new ArrayList<String>(usersForEmail.size()); 
+              
+               int i=0;
+               for (User aUser: usersForEmail) {
+                  
+                   usernames.add(aUser.getUserId());
+               }
+               try {
+                   sendCantResetPasswordSelectOneUsername(username, usernames);
+                   setInfoIfJSF("An email has been sent to " + username + ".");
+                   return "success";
+               }
+               catch (Exception e) {
+                   log.error(e);
+                   setErrorIfJSF("Unable to send email to '"+username+"': " + e.getLocalizedMessage() + ". " +
+                           "Contact the GenePattern server administrator for help.");
+                   return "failure";
+               }
+            }
+        }
+        
+        
         if (user == null) {
             setErrorIfJSF("User not registered: " + username);
             return "failure";
@@ -108,6 +151,24 @@ public class ForgotPasswordBean {
             .message("Your GenePattern password has been reset to "
                             + newPassword
                             + ".\nPlease sign in to GenePattern to update your password.")
+        .build();
+        m.sendMessage();
+    }
+    
+    
+    protected void sendCantResetPasswordSelectOneUsername(final String to, List<String> allUsernames) throws Exception {
+        StringBuffer allUsernamesFormatted = new StringBuffer();
+        for (String username : allUsernames) {
+            allUsernamesFormatted.append("\t");
+            allUsernamesFormatted.append(username);
+            allUsernamesFormatted.append(",\n");
+        }
+        final MailSender m = new MailSender.Builder()
+            .to(to)
+            .subject("To reset your GenePattern Password")
+            .message("Your GenePattern password has not been been reset because there are multiple accounts using the same email address. The usernames associated with this email address are \n\n"
+                            + allUsernamesFormatted.toString()
+                            + ".\n\nPlease select one and re-enter it in the GenePattern forgot password page to update your password.")
         .build();
         m.sendMessage();
     }
