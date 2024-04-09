@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -158,17 +159,26 @@ public class ForgotPasswordBean {
     
     protected void sendCantResetPasswordSelectOneUsername(final String to, List<String> allUsernames) throws Exception {
         StringBuffer allUsernamesFormatted = new StringBuffer();
+        
         for (String username : allUsernames) {
             allUsernamesFormatted.append("\t");
             allUsernamesFormatted.append(username);
             allUsernamesFormatted.append(",\n");
         }
+        // remove that last ',' which is not needed, but leave the newline
+        allUsernamesFormatted.deleteCharAt(allUsernamesFormatted.length()-3);  
+        
+        // forgot password link like https://cloud.genepattern.org/gp/pages/forgotPassword.jsf
+        GpConfig gpConfig =  ServerConfigurationFactory.instance();
+        String forgotPassUrl = gpConfig.getGpUrl() + "/pages/forgotPassword.jsf";
+        
         final MailSender m = new MailSender.Builder()
             .to(to)
             .subject("To reset your GenePattern Password")
-            .message("Your GenePattern password has not been been reset because there are multiple accounts using the same email address. The usernames associated with this email address are \n\n"
+            .message("Your GenePattern password has not been been reset because there are multiple accounts using the same email address. The usernames associated with this email address are: \n\n"
                             + allUsernamesFormatted.toString()
-                            + ".\n\nPlease select one and re-enter it in the GenePattern forgot password page to update your password.")
+                            + "\nPlease select one and re-enter it in the GenePattern forgot password page ("
+                            + forgotPassUrl +") to update your password.")
         .build();
         m.sendMessage();
     }
