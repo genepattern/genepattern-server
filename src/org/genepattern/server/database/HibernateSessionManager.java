@@ -56,6 +56,7 @@ public class HibernateSessionManager {
     protected final static String[] hbmXmls() {
         return new String[]{
                 "org/genepattern/server/domain/AnalysisJob.hbm.xml", 
+                "org/genepattern/server/domain/AnalysisJobArchive.hbm.xml", 
                 "org/genepattern/server/domain/BatchJob.hbm.xml", 
                 "org/genepattern/server/domain/JobStatus.hbm.xml", 
                 "org/genepattern/server/domain/Lsid.hbm.xml", 

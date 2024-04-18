@@ -94,6 +94,7 @@ public class ProvenanceFinder {
             result.setLsid(lsid);
         }
         catch (Exception e) {
+            e.printStackTrace();
             log.error(e);
         }
         return result;
@@ -126,6 +127,7 @@ public class ProvenanceFinder {
         files.add(fileURL);
 
         while (!files.isEmpty()) {
+            System.out.println("Remaining files in pipeline provenance: " + files.size());
             String aFile = files.get(0);
             if (aFile == null) {
                 continue;
@@ -161,7 +163,7 @@ public class ProvenanceFinder {
         int jobid = -1;
         try {
             jobid = Integer.parseInt(jobNoStr);
-            return new AnalysisDAO().getJobInfo(jobid);
+            return new AnalysisDAO().getJobInfo(jobid, true);
         } 
         catch (Throwable t) {
             log.error("Error getting JobInfo for jobid="+jobNoStr, t);
@@ -508,7 +510,12 @@ public class ProvenanceFinder {
                 Integer jobNo = new Integer(jobNoStr);
                 Integer pipeNo = (Integer) jobOrder.get(jobNo);
                 attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
-                JobInfo priorJob = new AnalysisDAO().getJobInfo(jobNo);
+                JobInfo priorJob = null;
+                try {
+                    priorJob= new AnalysisDAO().getJobInfo(jobNo, true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 String name = getParamFromURL(value, "filename");
                 
                 // Special case code for handling special characters

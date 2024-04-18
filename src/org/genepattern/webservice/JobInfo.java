@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.AnalysisJobArchive;
 
 /**
  * Used to hold information about particular job
@@ -106,6 +107,52 @@ public class JobInfo implements Serializable {
         this.deleted = aJob.getDeleted();
     }
 
+    /**
+     * Construct a JobInfo object from an AnalysisJob.
+     * @param aJob
+     * @throws IllegalArgumentException if the AnalysisJob is missing a required parameter.
+     */
+    public JobInfo(AnalysisJobArchive aJob) {
+        if (aJob == null) {
+            throw new IllegalArgumentException("Invalid null arg in constructor, JobInfo(AnalysisJob)");
+        }
+        if (aJob.getJobNo() == null) {
+            throw new IllegalArgumentException("aJob.jobNo is null");
+        }
+
+        String statusName = "";
+        if (aJob.getJobStatus() == null) {
+            log.error("aJob.jobStatus is null, jobNo="+aJob.getJobNo());
+            if (log.isDebugEnabled()) {
+                log.debug(new Exception("aJob.jobStatus is null, jobNo="+aJob.getJobNo()));
+            }
+        }
+        else {
+            statusName = aJob.getJobStatus().getStatusName();
+        }
+        
+        this.jobNo = aJob.getJobNo().intValue();
+        this.taskID = aJob.getTaskId();
+        this.status = statusName;
+        this.submittedDate = aJob.getSubmittedDate();
+        this.completedDate = aJob.getCompletedDate();
+        this.parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo());
+        this.userId = aJob.getUserId();
+        this.lsid = aJob.getTaskLsid();
+        this.taskName = aJob.getTaskName();
+
+        if (aJob.getParent()==null) {
+            this.parentJobNo=-1;
+            log.debug("aJob.parent is null, setting to -1");
+        }
+        else {
+            this.parentJobNo = aJob.getParent();
+        }
+        this.deleted = aJob.getDeleted();
+    }
+
+    
+    
     /**
      * Removes all parameters with the given name.
      * 

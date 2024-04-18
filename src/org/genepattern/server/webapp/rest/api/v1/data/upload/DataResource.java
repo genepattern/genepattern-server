@@ -831,6 +831,7 @@ public class DataResource {
             return Response.ok().entity("Created Pipeline: " + pipelineName + " " + message).build();
         }
         catch (Exception ex) {
+            ex.printStackTrace();
             return Response.status(500).entity("Unable to create pipeline: " + ex.getLocalizedMessage()).build();
         }
     }

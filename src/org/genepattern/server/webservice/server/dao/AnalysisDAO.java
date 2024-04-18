@@ -35,6 +35,7 @@ import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
+import org.genepattern.server.domain.AnalysisJobArchive;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
@@ -1109,7 +1110,11 @@ public class AnalysisDAO extends BaseDAO {
     public AnalysisJob getAnalysisJob(int jobNo) {
         String hql = " from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
+        
         query.setInteger("jobNo", jobNo);
+        
+        System.out.println("QUERY STRING: " + query.getQueryString());
+        
         AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
         // If jobNo not found
         if (aJob == null) {
@@ -1118,6 +1123,21 @@ public class AnalysisDAO extends BaseDAO {
         return aJob;
     }
 
+    
+    public AnalysisJobArchive getAnalysisJobFromArchive(int jobNo) {
+        String hql = " from org.genepattern.server.domain.AnalysisJobArchive where jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobNo);
+        System.out.println("QUERY AJA: " + query.getQueryString());
+        AnalysisJobArchive aJob = (AnalysisJobArchive) query.uniqueResult();
+        
+        // If jobNo not found
+        if (aJob == null) {
+            throw new JobIDNotFoundException("AnalysisDAO:getJobInfo JobID " + jobNo + " not found");
+        }
+        return aJob;
+    }
+    
     /**
      * Fetches JobInformation
      * 
@@ -1128,13 +1148,47 @@ public class AnalysisDAO extends BaseDAO {
      * @throws OmnigeneException
      */
     public JobInfo getJobInfo(int jobNo) {
-        AnalysisJob aJob = getAnalysisJob(jobNo);
-        if (aJob.getDeleted()) {
-            log.error("AnalysisDAO.getJobInfo("+jobNo+"): job is deleted!");
-            return null;
-        }
-        return new JobInfo(aJob);
+        
+        return  getJobInfo(jobNo, false);
     }
+    /**
+     * Fetches JobInformation.  Allow deleted jobs to be used with the flag 
+     * so that we can create provenance pipelines from deleted jobs
+     * 
+     * @param jobNo
+     * @throws OmnigeneException
+     * @throws RemoteException
+     * @return <CODE>JobInfo</CODE>
+     * @throws OmnigeneException
+     */
+    public JobInfo getJobInfo(int jobNo, boolean deletedOK) {
+        AnalysisJob aJob = null;
+        AnalysisJobArchive archiveJob = null;
+        try {
+            aJob = getAnalysisJob(jobNo);
+            if (aJob.getDeleted() && !deletedOK) {
+                log.error("AnalysisDAO.getJobInfo("+jobNo+"): job is deleted!");
+                return null;
+            }
+            return new JobInfo(aJob);
+            
+        } catch(JobIDNotFoundException jobIDException) {
+            
+            //throw new JobIDNotFoundException("AnalysisDAO:getJobInfo JobID " + jobNo + " not found");
+            if ((aJob == null) && deletedOK){
+                archiveJob = getAnalysisJobFromArchive(jobNo);
+                System.out.println("AnalysisJobArchive -- returned");
+            }
+            if (archiveJob.getDeleted() && !deletedOK) {
+                log.error("AnalysisDAO.getJobInfo("+jobNo+"): job is deleted!");
+                return null;
+            }
+            return new JobInfo(archiveJob);
+        }
+       
+    }
+  
+    
     
     public List<Integer> getAnalysisJobIds(Date date) {
         String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";

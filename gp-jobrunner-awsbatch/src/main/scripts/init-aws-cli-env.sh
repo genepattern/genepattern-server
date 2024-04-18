@@ -26,7 +26,7 @@ CONDA_PS1_BACKUP="\h:\W \u\$ "
 
 # these 2 lines are for Peter Carr's laptop only
 MINICONDA2_HOME=/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/
-export PATH="${PATH}:${MINICONDA2_HOME}/bin:/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/envs/ame/bin/"
+export PATH="${PATH}:${MINICONDA2_HOME}/bin:/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/envs/ame/bin/:/usr/local/bin/:/usr/local/opt/python@3.11/libexec/bin/"
 # export PATH=$PATH:/Users/liefeld/ana_conda_4/anaconda/envs/awscli/bin:/Applications/OpenCRAVAT.app/Contents/Resources/launchers:/Users/liefeld/.sdkman/candidates/grails/current/bin:/Users/liefeld/ana_conda_4/anaconda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/liefeld/tools/ant/apache-ant-1.10.1/bin
 
 
@@ -35,7 +35,7 @@ echo $PATH > ~/path.txt
 # -u  aws-cli/1.11.87
 #source activate awscli
 # accidentally named the conda env "ame" with -name instead of --name
-source activate base
+#source activate base
 
 
 # set AWS_PROFILE if not already set
