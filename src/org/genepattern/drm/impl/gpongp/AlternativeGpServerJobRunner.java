@@ -210,13 +210,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                               valuesArr.add(new JsonPrimitive(value2.toString()));
                           }
                           
-                          
                          
-                         
-                          
-                          
-                          
-                          
                           paramsJsonArray.add(P); 
                           
                       }
@@ -264,6 +258,16 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            final JsonObject jobJsonObj=new JsonObject();
            jobJsonObj.addProperty("lsid", ji.getTaskLSID()); 
            jobJsonObj.add("params", paramsJsonArray);
+           
+           final JsonArray tagsJsonArray=new JsonArray();
+           JsonPrimitive elementHost = new JsonPrimitive(config.getGpUrl());
+           tagsJsonArray.add(elementHost);
+           JsonPrimitive elementUser = new JsonPrimitive( ji.getUserId());
+           tagsJsonArray.add(elementUser);
+           JsonPrimitive elementJob = new JsonPrimitive("" + ji.getJobNumber());
+           tagsJsonArray.add(elementJob);
+           tagsJsonArray.add(tagsJsonArray);
+           
            System.out.println(" --- about to submit remote job");
            URI JobStatusUri = gpRestClient.submitJob(jobJsonObj);
            String uriStr = JobStatusUri.getRawPath();
