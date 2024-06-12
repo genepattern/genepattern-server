@@ -269,6 +269,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            System.out.println("Launched remote job ID: "+ externalJobId);
            gpRestClient.addComment(externalJobId, "Launched from " + config.getGpUrl() + " for user " + ji.getUserId()+ " original job id:  " + ji.getJobNumber());
            
+           gpRestClient.addTag(externalJobId, "delegated");
            gpRestClient.addTag(externalJobId,config.getGpUrl());
            gpRestClient.addTag(externalJobId,ji.getUserId());
            gpRestClient.addTag(externalJobId,"" + ji.getJobNumber());
