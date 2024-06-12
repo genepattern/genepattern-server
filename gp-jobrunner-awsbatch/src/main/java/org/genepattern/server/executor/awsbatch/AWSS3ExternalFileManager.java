@@ -411,10 +411,12 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
                     while (!(parent.equals(rootDir)) && (parent.getAbsolutePath().startsWith(rootDir.getAbsolutePath()))) {
                         if (parentsAdded.get(parent.getAbsolutePath()) == null) {  //check if we added it already
                             GpFilePath gpfileParent = getUploadFile(userContext, rootDir, parent);
-                            gpfileParent.setKind("directory");
-                            gpfileParent.setLastModified(lastModified);
-                            foundFiles.add(gpfileParent);
-                            parentsAdded.put(parent.getAbsolutePath(), gpfileParent);
+                            if (gpfileParent != null) { 
+                                gpfileParent.setKind("directory");
+                                gpfileParent.setLastModified(lastModified);
+                                foundFiles.add(gpfileParent);
+                                parentsAdded.put(parent.getAbsolutePath(), gpfileParent);
+                            }
                         }
                         parent = parent.getParentFile();
                         
@@ -455,13 +457,11 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             //special-case, block 'tmp'
             //GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath, (LSID)null);
             File userRootDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
-            
-            
             File rel = FileUtil.relativizePath(userRootDir, uploadFile);
             
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, userUploadDir, rel);
             if (DataManager.isTmpDir(uploadFilePath)) {
-                throw new  Exception("Can't save file with reserved filename: " + rel.getPath());
+                return null;
             }
 
             return uploadFilePath;
@@ -564,3 +564,5 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     }
 
 }
+
+
