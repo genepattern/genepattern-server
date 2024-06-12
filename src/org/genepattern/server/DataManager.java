@@ -643,7 +643,11 @@ public class DataManager {
                 ArrayList<GpFilePath> files = externalFileManager.listFiles(userContext, uploadDir);
                 for (GpFilePath file : files) {
                     // have to act differently when we don't actually have a file
+                    try {
                     handleNonLocalFileSync(dao, file, uploadDir, userContext);
+                    } catch (Throwable t) {
+                        log.error("Could not add file during sync: " + file.getServerFile().getAbsolutePath());
+                    }
                 }
             } else {
                 // Add new entries to the database,

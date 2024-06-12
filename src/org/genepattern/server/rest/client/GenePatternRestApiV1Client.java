@@ -441,6 +441,49 @@ public class GenePatternRestApiV1Client {
         return success;
     }
     
+    public JsonObject addTag(int jobNo, String tag) throws Exception{
+        final HttpClient client = HttpClients.createDefault();
+        
+        URI tagUri = new URI(this.jobsUrl + "/" + jobNo + "/tags/add?tagText="+tag);
+        HttpPost post = new HttpPost(tagUri);
+        // for this call it cannot set the user-agent to GenePatternAPI since its meant to be used from the js web browser
+        post.setHeader("Authorization", basicAuth);
+      
+        HttpResponse response;
+        try {
+            response = client.execute(post);
+            System.out.println("RESPONSE WAS: " + response.toString());
+        }
+        catch (ClientProtocolException e) {
+            throw new Exception("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        catch (IOException e) {
+            throw new Exception("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final JsonObject success;
+        //when adding a job, expecting a status code of ...
+        //   200, OK
+        //   201, created
+        //   202, accepted
+        if (statusCode >= 200 && statusCode < 300) {
+            System.out.println("Successs");
+           
+            JsonParser parser = new JsonParser();
+            success = parser.parse(new InputStreamReader(response.getEntity().getContent())).getAsJsonObject();
+           
+        }
+        else {
+            success=null;
+        }
+        if (success == null) {
+            
+            String message="POST addTag failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            System.out.println(message);
+            throw new Exception(message);
+        }
+        return success;
+    }
     
     public URI submitJob(JsonObject job) throws Exception {
         final HttpClient client = HttpClients.createDefault();

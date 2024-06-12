@@ -259,15 +259,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            jobJsonObj.addProperty("lsid", ji.getTaskLSID()); 
            jobJsonObj.add("params", paramsJsonArray);
            
-           final JsonArray tagsJsonArray=new JsonArray();
-           JsonPrimitive elementHost = new JsonPrimitive(config.getGpUrl());
-           tagsJsonArray.add(elementHost);
-           JsonPrimitive elementUser = new JsonPrimitive( ji.getUserId());
-           tagsJsonArray.add(elementUser);
-           JsonPrimitive elementJob = new JsonPrimitive("" + ji.getJobNumber());
-           tagsJsonArray.add(elementJob);
-           tagsJsonArray.add(tagsJsonArray);
-           
+          
            System.out.println(" --- about to submit remote job");
            URI JobStatusUri = gpRestClient.submitJob(jobJsonObj);
            String uriStr = JobStatusUri.getRawPath();
@@ -277,6 +269,9 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            System.out.println("Launched remote job ID: "+ externalJobId);
            gpRestClient.addComment(externalJobId, "Launched from " + config.getGpUrl() + " for user " + ji.getUserId()+ " original job id:  " + ji.getJobNumber());
            
+           gpRestClient.addTag(externalJobId,config.getGpUrl());
+           gpRestClient.addTag(externalJobId,ji.getUserId());
+           gpRestClient.addTag(externalJobId,"" + ji.getJobNumber());
            
         } catch (Exception e) {
             System.out.println("--------------- --- -- - Failed to start remote job");
