@@ -15,6 +15,16 @@ import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpVersion;
+import org.apache.commons.httpclient.methods.MultipartPostMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
@@ -171,9 +181,11 @@ public class RegistrationBean {
                     gpConfig, HibernateUtil.instance(), 
                     username, password, email);
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
-            if (this.isJoinMailingList()){
-                sendJoinMailingListRequest();
-            }
+            //if (this.isJoinMailingList()){
+            //    sendJoinMailingListRequest();
+            //}
+            sendJoinMailingListRequestToGoogleForm();
+            
             //redirect to main page
             HttpServletRequest request = UIBeanHelper.getRequest();
             HttpServletResponse response = UIBeanHelper.getResponse();
@@ -186,6 +198,40 @@ public class RegistrationBean {
         }
     }
 
+    
+    public void sendJoinMailingListRequestToGoogleForm() {
+        final GpContext serverContext = GpContext.getServerContext();
+        final String mailingListURL = "https://docs.google.com/forms/d/e/1FAIpQLSdh9GctwwdwcU4pMRQ6oHkq8z_OKtHyTXoE7gM9_qluGDWB1A/formResponse";
+
+        try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            
+            HttpPost post = new HttpPost(mailingListURL);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addTextBody("entry.1909733611", gpConfig.getGenePatternURL().toExternalForm()); // server name/url
+            builder.addTextBody("entry.561147514", this.getUsername()); // user id
+            builder.addTextBody("entry.2129501642", this.getEmail()); // user email
+            builder.addTextBody("entry.464952996", this.isJoinMailingList()?"Yes":"No"); // Yes/No to join list
+            post.setEntity(builder.build());
+
+            CloseableHttpClient client = HttpClients.createDefault();
+            CloseableHttpResponse response = client.execute(post);
+
+            // Get the token from the response
+            if (response.getStatusLine().getStatusCode() < 300) {
+                UIBeanHelper.setInfoMessage("You have successfully been registered in the GenePattern users mailing list.");
+            } else {
+                UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
+            }
+            response.close();
+            client.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e);
+            UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
+        }
+    }
+    
     public void sendJoinMailingListRequest() {
         final GpContext serverContext=GpContext.getServerContext();
         final String mailingListURL=gpConfig.getGPProperty(serverContext, 
