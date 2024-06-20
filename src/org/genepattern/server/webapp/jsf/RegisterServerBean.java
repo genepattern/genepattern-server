@@ -27,6 +27,11 @@ import javax.faces.validator.ValidatorException;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
@@ -154,17 +159,54 @@ public class RegisterServerBean {
         return URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
     }
 
+    /**
+     * register to the google form in gdive shared GenePattern Dev drive, GenePattern Registrations folder
+     */
+    public void sendJoinMailingListRequestToGoogleForm() {
+        final GpContext serverContext = GpContext.getServerContext();
+        final String mailingListURL = "https://docs.google.com/forms/d/e/1FAIpQLSdh9GctwwdwcU4pMRQ6oHkq8z_OKtHyTXoE7gM9_qluGDWB1A/formResponse";
+
+        try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            
+            HttpPost post = new HttpPost(mailingListURL);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addTextBody("entry.1909733611", gpConfig.getGenePatternURL().toExternalForm()); // server name/url
+            builder.addTextBody("entry.561147514", this.name); // user id
+            builder.addTextBody("entry.2129501642", this.getEmail()); // user email
+            builder.addTextBody("entry.464952996", this.joinMailingList?"Yes":"No"); // Yes/No to join list
+            post.setEntity(builder.build());
+
+            CloseableHttpClient client = HttpClients.createDefault();
+            CloseableHttpResponse response = client.execute(post);
+
+            // Get the token from the response
+            if (response.getStatusLine().getStatusCode() < 300) {
+                UIBeanHelper.setInfoMessage("You have successfully been registered in the GenePattern users mailing list.");
+            } else {
+                UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
+            }
+            response.close();
+            client.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e);
+            UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
+        }
+    }
+    
+    /**
+     * register to the google form in gdive shared GenePattern Dev drive, GenePattern Registrations folder
+     */
     public String  registerServer() {
         AboutBean about = new AboutBean();
-        
+        final String mailingListURL = "https://docs.google.com/forms/d/e/1FAIpQLSfBv4T-EoAt3QZ0JZy6mSQop4lboe6dxuQtJfdBNnADqrHTIg/viewform?vc=0&c=0&w=1&flr=0";
+
         String os = GpConfig.getJavaProperty("os.name") + ", "+ GpConfig.getJavaProperty("os.version");
         String genepatternVersion = about.getGenePatternVersion();
         String buildTag = about.getBuildTag();
-        URLConnection conn = null;
-        URL url = null;
+       
         try {
-            url = new URL(registrationUrl);
-
             //set proxy crededentials if necessary
             String user = System.getProperty("http.proxyUser");
             String pass = System.getProperty("http.proxyPassword");
@@ -172,41 +214,50 @@ public class RegisterServerBean {
                 Authenticator.setDefault(new SimpleAuthenticator(user, pass));
             }
 
-            conn = url.openConnection();
-            ((HttpURLConnection)conn).setRequestMethod("POST");
-            conn.setDoOutput(true);
-
-            String data = encodeParameter("component","Server");
-            data += "&" + encodeParameter("gpversion",genepatternVersion);
-            data += "&" + encodeParameter("build",buildTag);
-            data += "&" + encodeParameter("os", os);
-             
-            data += "&" + encodeParameter("name",this.name);
+            HttpPost post = new HttpPost(mailingListURL);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addTextBody("entry.539101541", "Server"); // server name/url     
+            builder.addTextBody("entry.1975737952", genepatternVersion); 
+            builder.addTextBody("entry.302228630", buildTag); 
+            builder.addTextBody("entry.907783692", os); 
+            builder.addTextBody("entry.356956727", this.name); 
             if (title != null) {
-                data += "&" + encodeParameter("title",this.title);
+                builder.addTextBody("entry.1081184978",this.title ); 
             }
-            data += "&" + encodeParameter("email",this.email);
-            data += "&" + encodeParameter("organization",this.organization);
-            data += "&" + encodeParameter("department",this.department);
-            data += "&" + encodeParameter("address1",this.address1);
-            if (address2 != null) {
-                data += "&" + encodeParameter("address2",this.address2);
-            }
-            data += "&" + encodeParameter("city",this.city);
-            data += "&" + encodeParameter("state",this.state);
-            if (zipCode != null) {
-                data += "&" + encodeParameter("zip",this.zipCode);
-            }
-            data += "&" + encodeParameter("country",this.country);
-            data += "&" + encodeParameter("join", ""+this.joinMailingList);
-            data += "&" + encodeParameter("os", os);
-            
-            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-            wr.write(data);
-            wr.flush();
-            wr.close();
+            builder.addTextBody("entry.1072140504", this.email); 
+            builder.addTextBody("entry.2057995533", this.organization); 
+            builder.addTextBody("entry.1334818563", this.department); 
+            builder.addTextBody("entry.1797915332", this.address1); 
            
-            int responseCode = ((HttpURLConnection)conn).getResponseCode();
+            if (address2 != null) {
+                builder.addTextBody("entry.1876686604", this.address2); 
+            }
+            builder.addTextBody("entry.1115948849", this.city); 
+            builder.addTextBody("entry.956388725",this.state ); 
+            builder.addTextBody("entry.686968971", this.country);
+           
+          
+            if (zipCode != null) {
+                builder.addTextBody("entry.1265947495", this.zipCode);
+            }
+            
+           if (this.joinMailingList){
+               // need to do this
+               sendJoinMailingListRequestToGoogleForm();
+           }
+           
+            
+            post.setEntity(builder.build());
+
+            CloseableHttpClient client = HttpClients.createDefault();
+            CloseableHttpResponse response = client.execute(post);
+
+       
+            response.close();
+            client.close();
+            
+           
+            int responseCode = response.getStatusLine().getStatusCode();
             if (responseCode < 200 || responseCode >= 400) {
                 throw new HttpException();
             }
@@ -230,6 +281,12 @@ public class RegisterServerBean {
         }
         catch (Exception e) {
             return handleException(e);
+        } finally {
+            try {
+                saveIsRegistered(mgr);
+            }  catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 
