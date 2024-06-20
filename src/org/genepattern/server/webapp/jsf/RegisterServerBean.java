@@ -200,50 +200,39 @@ public class RegisterServerBean {
      */
     public String  registerServer() {
         AboutBean about = new AboutBean();
-        final String mailingListURL = "https://docs.google.com/forms/d/e/1FAIpQLSfBv4T-EoAt3QZ0JZy6mSQop4lboe6dxuQtJfdBNnADqrHTIg/viewform?vc=0&c=0&w=1&flr=0";
-
+        //final String mailingListURL = "https://docs.google.com/forms/d/e/1FAIpQLSfBv4T-EoAt3QZ0JZy6mSQop4lboe6dxuQtJfdBNnADqrHTIg/viewform?vc=0&c=0&w=1&flr=0";
+        final String mailingListURL = "https://docs.google.com/forms/u/1/d/e/1FAIpQLSfBv4T-EoAt3QZ0JZy6mSQop4lboe6dxuQtJfdBNnADqrHTIg/formResponse";
         String os = GpConfig.getJavaProperty("os.name") + ", "+ GpConfig.getJavaProperty("os.version");
         String genepatternVersion = about.getGenePatternVersion();
         String buildTag = about.getBuildTag();
        
         try {
-            //set proxy crededentials if necessary
-            String user = System.getProperty("http.proxyUser");
-            String pass = System.getProperty("http.proxyPassword");
-            if ((user != null) && (pass != null)) {
-                Authenticator.setDefault(new SimpleAuthenticator(user, pass));
-            }
-
             HttpPost post = new HttpPost(mailingListURL);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.addTextBody("entry.539101541", "Server"); // server name/url     
             builder.addTextBody("entry.1975737952", genepatternVersion); 
             builder.addTextBody("entry.302228630", buildTag); 
             builder.addTextBody("entry.907783692", os); 
-            builder.addTextBody("entry.356956727", this.name); 
-            if (title != null) {
-                builder.addTextBody("entry.1081184978",this.title ); 
-            }
+            builder.addTextBody("entry.356956727", this.name);   
+            builder.addTextBody("entry.1081184978", ""+this.title );     
             builder.addTextBody("entry.1072140504", this.email); 
             builder.addTextBody("entry.2057995533", this.organization); 
             builder.addTextBody("entry.1334818563", this.department); 
-            builder.addTextBody("entry.1797915332", this.address1); 
-           
-            if (address2 != null) {
-                builder.addTextBody("entry.1876686604", this.address2); 
-            }
+            builder.addTextBody("entry.1797915332", this.address1);    
+            builder.addTextBody("entry.1876686604", ""+this.address2);    
             builder.addTextBody("entry.1115948849", this.city); 
             builder.addTextBody("entry.956388725",this.state ); 
-            builder.addTextBody("entry.686968971", this.country);
-           
-          
-            if (zipCode != null) {
-                builder.addTextBody("entry.1265947495", this.zipCode);
-            }
+            builder.addTextBody("entry.1265947495", this.country);   
+            builder.addTextBody("entry.686968971", ""+this.zipCode);
+            
             
            if (this.joinMailingList){
                // need to do this
-               sendJoinMailingListRequestToGoogleForm();
+               try {
+                   sendJoinMailingListRequestToGoogleForm();
+               } catch (Exception e) {
+                   log.error(e);
+               }
            }
            
             
@@ -253,15 +242,15 @@ public class RegisterServerBean {
             CloseableHttpResponse response = client.execute(post);
 
        
-            response.close();
-            client.close();
-            
+           
            
             int responseCode = response.getStatusLine().getStatusCode();
             if (responseCode < 200 || responseCode >= 400) {
                 throw new HttpException();
             }
-
+            response.close();
+            client.close();
+         
             saveIsRegistered(mgr);
             if (!UserAccountManager.userExists(mgr, email)) {
                 UserAccountManager.createUser(
