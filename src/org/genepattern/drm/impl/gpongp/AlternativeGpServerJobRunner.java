@@ -577,6 +577,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                 final GpContext serverContext = GpContext.getServerContext();
                 final ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
                 int numOutputFilesRetrieved = 0;
+                ArrayList<String> nonRetreivedFileNames = new ArrayList<String>(); 
                 for (int i=0; i < outputFiles.size();i++){
                     final String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
                     String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
@@ -600,15 +601,14 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     
                     log.debug("Saving remote result file " + outFileNameAndPath + " to " + dir.getAbsolutePath());
                     File outFile = new File(dir, outFileNameAndPath);
-                    final String finalName = outFileNameAndPath;
-                    
-                   
+                    final String finalName = outFileNameAndPath;           
                     
                     Boolean processFlag = downloadsInProgress.get(finalName);
                     Boolean alreadyDownloading = ((processFlag != null) && (processFlag == true));
                     
                     
                     if ((!outFile.exists())  && (!alreadyDownloading) ){
+                        nonRetreivedFileNames.add(name);
                         //
                         // Here we use a separate thread to download the files because for jobs with lots of
                         // files or large files, the download can take longer than the polling frequency and if we just
@@ -657,11 +657,31 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         numOutputFilesRetrieved +=1;
                     }  else if (outFile.exists() && (alreadyDownloading)){
                        // presumably the download is not yet complete
+                        nonRetreivedFileNames.add(name);
                     }
                 }
                 log.debug("    ---- Found "+numOutputFilesRetrieved+ " of " + outputFiles.size());
                 
-                if (numOutputFilesRetrieved == outputFiles.size()){
+                
+                Integer prevTries = outputFileRetryCount.get(localJobId);
+                if (prevTries == null) prevTries = 1;
+                else prevTries++;
+                outputFileRetryCount.put(localJobId, prevTries);
+                
+                if ((numOutputFilesRetrieved == outputFiles.size()) || (prevTries > 9)){
+                    // generate an error since all files were not retrieved
+                    if (numOutputFilesRetrieved != outputFiles.size()) {
+                       boolean first = true;
+                       StringBuffer buff = new StringBuffer("Files not retrieved: ");
+                       for (String filename: nonRetreivedFileNames) {
+                           if (!first) buff.append(",  ");
+                           buff.append(filename);
+                           first = false;
+                       }
+                       statusBuilder =  new DrmJobStatus.Builder(drmJobRecord.getExtJobId(), DrmJobState.FAILED)
+                                .jobStatusMessage("Failed to download all output files from remote system. Found "+numOutputFilesRetrieved+ " of " + outputFiles.size() + "\n"+ buff.toString());
+                    }
+                    
                     if (externalFileManager != null){
                         for (int i=0; i < outputFiles.size();i++){
                             String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
@@ -730,6 +750,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     if ((submitTime != null) && (!submitTime.isEmpty())) statusBuilder.submitTime(getDate(submitTime));
                     //statusBuilder.startTime(getDate(startTime));
                     //statusBuilder.submitTime(getDate(submitTime));
+                    
+                  
                     
                 }
             }
