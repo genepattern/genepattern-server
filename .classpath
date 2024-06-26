@@ -117,7 +117,6 @@
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
 	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
@@ -170,5 +169,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/gson-2.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-j-8.0.32.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
