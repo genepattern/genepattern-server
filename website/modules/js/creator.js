@@ -1481,7 +1481,60 @@ function changeParameterType(element) {
                     $(this).prepend(selectDropDownType);
 
                     addsectioncollapseimages();
-                }
+                } else {
+					 
+					$(this).prepend("<p class='heading editChoicesHeading'>Step 2: Enter Choices</p>");
+ 
+ 					isOK = element.parents(".parameter").find("input[name='userSuppliedOK']").val() == "True" ;
+                    
+					 
+					var selectUserSuppliedOKButton = $('<input type="radio" name="userSuppliedOKradio" class="userSuppliedOKChoice" value="True" /><label for="radio1">User supplied values allowed</label>');
+                    var selectUserSuppliedNOTOKButton = $('<input type="radio" name="userSuppliedOKradio" class="userSuppliedNOTOKChoice" value="False"/><label for="radio1" >Restrict to drop-down list</label>');
+
+					selectUserSuppliedOKButton.click(function () {
+                        if ($(this).data("prevSelection") == "OK") {
+                            //do nothing since no change from previous selection
+                            return;
+                        }
+                        
+                        $(this).parents(".editChoicesDialog").find("input[name='userSuppliedOK']").val("True");
+                        
+                       
+                        $(this).find('input[name="userSuppliedOK"]').val('BARbarBAR');
+                        
+                        $(this).parents(".selectUserSuppliedOKDiv").find(".userSuppliedOKChoice").data("prevSelection", "OK");
+                        $(this).data("prevSelection", "OK");
+                        });
+                    selectUserSuppliedNOTOKButton.click(function () {
+	                    if ($(this).data("prevSelection") == "NOT_OK") {
+	                        //do nothing since no change from previous selection
+	                        return;
+	                    }
+	                    $(this).parents(".editChoicesDialog").find("input[name='userSuppliedOK']").val("False");
+                       
+                        $(this).find('input[name="userSuppliedOK"]').val('FOOFOO');
+       
+                       
+	                    $(this).parents(".selectUserSuppliedOKDiv").find(".userSuppliedNOTOKChoice").data("prevSelection", "NOT_OK");
+	                    $(this).data("prevSelection", "NOT_OK");
+                    });
+                    if (isOK){
+						selectUserSuppliedOKButton.click();
+					} else {
+						selectUserSuppliedNOTOKButton.click();
+					}
+                    
+
+					// GP-9659 add ability for text choice lists to allow user-defined values as well
+					var selectUserSuppliedOKDiv = $("<div class='selecttUserSuppliedOKDiv hcontent'/>");
+                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Select this option to allow users to enter values not on the drop-down list</p>").prepend(selectUserSuppliedOKButton).appendTo(selectUserSuppliedOKDiv);
+                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Select this option to restrict users to ONLY values on the drop-down list<br/> with a list of files found at a remote location</p>").prepend(selectUserSuppliedNOTOKButton).appendTo(selectUserSuppliedOKDiv);
+                    $(this).prepend(selectUserSuppliedOKDiv);
+                    
+					var selectUserSuppliedOKTitle = $("<p class='heading edittUserSuppliedOKHeading'>Step 1: Select drop-down type</p>");
+                    $(this).prepend(selectUserSuppliedOKTitle);
+					
+				}
             },
             close: function () {
                 $(this).dialog("destroy");
@@ -1590,6 +1643,10 @@ function changeParameterType(element) {
     //also create hidden fields for the ftp directory and file filter
     editChoicesLink.parent().append("<input type='hidden' name='choiceDir'/>");
     editChoicesLink.parent().append("<input type='hidden' name='choiceDirFilter'/>");
+
+	// also create hidden field for userSuppliedOK or not (GP-9659)
+	editChoicesLink.parent().append("<input type='hidden' name='userSuppliedOK'/>");
+    
 
     editChoicesLink.parent().find("input[name='choicelist']").change(function () {
         var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
@@ -2878,6 +2935,16 @@ function loadParameterInfo(parameters)
                 newParameter.find('input[name="choicelist"]').trigger("change");
             }
         }
+        
+        // GP-9659
+        var userSuppliedOK = parameters[i].userSuppliedValuesOK
+        //var user_supplied_values_ok =document.querySelector('input[name="userSuppliedOKradio"]:checked').value
+        if (userSuppliedOK !== undefined  && values !== undefined && values !== null && values.length > 0  &&  type != "FILE" ) {
+			 newParameter.find("input[name='userSuppliedOK']").val('True');
+		} else {
+			 newParameter.find("input[name='userSuppliedOK']").val('False');
+		}
+       
 
         if(parameters[i].minValue != undefined && parameters[i].minValue != null)
         {
@@ -3211,6 +3278,10 @@ function getParametersJSON()
         {
             parameter["choiceDirFilter"] = ($(this).find('input[name="choiceDirFilter"]').val());
         }
+        
+        var user_supplied_values_ok =document.querySelector('input[name="userSuppliedOKradio"]:checked').value
+       
+        parameter["userSuppliedValuesOK"] = user_supplied_values_ok;
 
         //add other remaining attributes
         var allAttrs = $(this).data("allAttrs");

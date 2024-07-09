@@ -903,7 +903,7 @@ table.deloptions
     cursor: move;
 }
 
-.selectChoiceTypeDiv
+.selectChoiceTypeDiv, .selecttUserSuppliedOKDiv
 {
     margin: 4px 0 20px 1px;
 }
@@ -919,7 +919,7 @@ a.staticChoiceLink
     margin-top: 8px;
 }
 
-p.editChoiceEntry
+p.editChoiceEntry, p.editUserSuppliedOKEntry
 {
     font-size: 10px;
     font-style: italic;
@@ -931,7 +931,7 @@ p.editChoiceEntry
     margin-left: 1px;
 }
 
-p.editChoicesHeading {
+p.editChoicesHeading, p.edittUserSuppliedOKHeading {
     border-bottom: 1px solid #bb8;
     margin-bottom: 1px;
     color: #333;
