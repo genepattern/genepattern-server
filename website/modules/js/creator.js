@@ -1527,8 +1527,8 @@ function changeParameterType(element) {
 
 					// GP-9659 add ability for text choice lists to allow user-defined values as well
 					var selectUserSuppliedOKDiv = $("<div class='selecttUserSuppliedOKDiv hcontent'/>");
-                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Select this option to allow users to enter values not on the drop-down list</p>").prepend(selectUserSuppliedOKButton).appendTo(selectUserSuppliedOKDiv);
-                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Select this option to restrict users to ONLY values on the drop-down list<br/> with a list of files found at a remote location</p>").prepend(selectUserSuppliedNOTOKButton).appendTo(selectUserSuppliedOKDiv);
+                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Allow users to enter addditional values not on the drop-down list").prepend(selectUserSuppliedOKButton).appendTo(selectUserSuppliedOKDiv);
+                    $("<div/>").append("<p class='editUserSuppliedOKEntry'>Restrict users to values on the drop-down list").prepend(selectUserSuppliedNOTOKButton).appendTo(selectUserSuppliedOKDiv);
                     $(this).prepend(selectUserSuppliedOKDiv);
                     
 					var selectUserSuppliedOKTitle = $("<p class='heading edittUserSuppliedOKHeading'>Step 1: Select drop-down type</p>");
