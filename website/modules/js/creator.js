@@ -3281,9 +3281,14 @@ function getParametersJSON()
             parameter["choiceDirFilter"] = ($(this).find('input[name="choiceDirFilter"]').val());
         }
         
-        var user_supplied_values_ok =document.querySelector('input[name="userSuppliedOKradio"]:checked').value
+        
+        if($(this).find('input[name="userSuppliedOK"]').val().length > 0)
+        {
+            parameter["userSuppliedValuesOK"] = ($(this).find('input[name="userSuppliedOK"]').val());
+        }
+        //var user_supplied_values_ok =document.querySelector('input[name="userSuppliedOKradio"]:checked').value
        
-        parameter["userSuppliedValuesOK"] = user_supplied_values_ok;
+        //parameter["userSuppliedValuesOK"] = user_supplied_values_ok;
 
         //add other remaining attributes
         var allAttrs = $(this).data("allAttrs");
