@@ -1486,11 +1486,12 @@ function changeParameterType(element) {
 					$(this).prepend("<p class='heading editChoicesHeading'>Step 2: Enter Choices</p>");
  
  					isOK = element.parents(".parameter").find("input[name='userSuppliedOK']").val() == "True" ;
-                    
-					 
+                    //isOK1 = element.parents(".parameter").find("input[name='userSuppliedOK']").val()
+                  
+				 
 					var selectUserSuppliedOKButton = $('<input type="radio" name="userSuppliedOKradio" class="userSuppliedOKChoice" value="True" /><label for="radio1">User supplied values allowed</label>');
                     var selectUserSuppliedNOTOKButton = $('<input type="radio" name="userSuppliedOKradio" class="userSuppliedNOTOKChoice" value="False"/><label for="radio1" >Restrict to drop-down list</label>');
-
+ 
 					selectUserSuppliedOKButton.click(function () {
                         if ($(this).data("prevSelection") == "OK") {
                             //do nothing since no change from previous selection
@@ -1498,25 +1499,26 @@ function changeParameterType(element) {
                         }
                         
                         $(this).parents(".editChoicesDialog").find("input[name='userSuppliedOK']").val("True");
-                        
+                        element.parents(".parameter").find("input[name='userSuppliedOK']").val("True")
                        
-                        $(this).find('input[name="userSuppliedOK"]').val('BARbarBAR');
+                        $(this).find('input[name="userSuppliedOK"]').val('"True"');
                         
                         $(this).parents(".selectUserSuppliedOKDiv").find(".userSuppliedOKChoice").data("prevSelection", "OK");
                         $(this).data("prevSelection", "OK");
+                        element.parents(".parameter").find("input[name='userSuppliedOK']").val("True")
                         });
                     selectUserSuppliedNOTOKButton.click(function () {
-	                    if ($(this).data("prevSelection") == "NOT_OK") {
+	                    if ($(this).data("prevSelection") == "FALSE") {
 	                        //do nothing since no change from previous selection
 	                        return;
 	                    }
 	                    $(this).parents(".editChoicesDialog").find("input[name='userSuppliedOK']").val("False");
                        
-                        $(this).find('input[name="userSuppliedOK"]').val('FOOFOO');
-       
+                        
+       					element.parents(".parameter").find("input[name='userSuppliedOK']").val("False")
                        
-	                    $(this).parents(".selectUserSuppliedOKDiv").find(".userSuppliedNOTOKChoice").data("prevSelection", "NOT_OK");
-	                    $(this).data("prevSelection", "NOT_OK");
+	                    $(this).parents(".selectUserSuppliedOKDiv").find(".userSuppliedNOTOKChoice").data("prevSelection", "FALSE");
+	                    $(this).data("prevSelection", "FALSE");
                     });
                     if (isOK){
 						selectUserSuppliedOKButton.click();

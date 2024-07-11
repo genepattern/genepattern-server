@@ -1029,6 +1029,16 @@ function setParamOptionalOrRequired(parameterInfo) {
     }
 }
 
+function setParameterChoiceListUserSuppliedValuesOK(parameterInfo){
+	// GP-9659 used for choice lists where additional values can also be supplied by the user
+	run_task_info.params[parameterInfo.name]["userSuppliedOK"] = false; // default value
+	
+	if (parameterInfo.hasOwnProperty('userSuppliedValuesOK')) {
+	    run_task_info.params[parameterInfo.name]["userSuppliedOK"] = parameterInfo.userSuppliedValuesOK.toLowerCase() === 'true';
+	}
+	
+}
+
 function setParamDisplayName(parameterInfo) {
     //set the display name
     run_task_info.params[parameterInfo.name]["displayname"] = parameterInfo.name;
@@ -1055,6 +1065,10 @@ function initParam(parameterInfo, index, batchParams) {
 
     //set whether this parameter is required or not
     setParamOptionalOrRequired(parameterInfo);
+
+    // GP-9659 sets whether a choice list parameter can also accept user suuplied values
+    // that are not on the list
+    setParameterChoiceListUserSuppliedValuesOK(parameterInfo);
 
     //set the type of input field to display
     setParamFieldType(parameterInfo);

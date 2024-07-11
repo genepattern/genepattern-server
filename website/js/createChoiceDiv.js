@@ -166,12 +166,31 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             }
         }
 
+		if (paramDetails.userSuppliedOK){
+			
+		} else {}
+
         //display drop down showing available file choices
         var choiceId = parameterName;
         if (groupId !== null) {
             choiceId = choiceId+"_"+groupId;
         }
         var choice = $("<select class='choice' id='"+choiceId+"' />");
+        var datalist = null;
+		if (paramDetails.userSuppliedOK){
+//			 <input type="search" name="dockerImage" list="dockerImageDefaults" size="100"/>
+//                        
+//           <datalist id="dockerImageDefaults">
+//			    <option value="jupyter/datascience-notebook:r-3.6.3"/>
+//				<option value="genepattern/docker-perl52:0.2"/>
+//			</datalist>
+			// user supplied means we use a normal input with a datalist
+			choice = $("<input type='search' list='"+choiceId+"_defaults'  class='choice' id='"+choiceId+"' />");
+			
+			datalist = $("<datalist id='"+choiceId+"_defaults'/>")
+			 
+		}
+		
 
         if(paramDetails.allowMultiple)
         {
@@ -209,21 +228,31 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         	}
         }
         
+        
         for(var c=0;c<choiceInfo.choices.length;c++)
         {
-        //    choiceMapping[choiceInfo.choices[c].value] = choiceInfo.choices[c].label;
-            choice.append("<option value='"+choiceInfo.choices[c].value+"'>"
-                    + choiceInfo.choices[c].label+"</option>");
+        	//    choiceMapping[choiceInfo.choices[c].value] = choiceInfo.choices[c].label;
+        	anOption = "<option value='"+choiceInfo.choices[c].value+"'>"
+                    + choiceInfo.choices[c].label+"</option>";
+            if (paramDetails.userSuppliedOK){
+				datalist.append(anOption);
+			} else {
+					
+				choice.append(anOption);
+			}
+            
             if(choiceInfo.choices[c].label.length > longChars)
             {
                 longChars = choiceInfo.choices[c].label.length;
             }
         }
         
-        
-
         selectChoiceDiv.append(choice);
-
+        
+        if (paramDetails.userSuppliedOK){
+        	selectChoiceDiv.append(datalist);
+		}
+		
         var noneSelectedText = "Select an option";
 
         var cMinWidth = Math.log(longChars) * 100;
@@ -284,117 +313,122 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             return true;
         };
 
-        choice.multiselect({
-            multiple: paramDetails.allowMultiple,
-            header: paramDetails.allowMultiple,
-            selectedText:  function(numChecked, numTotal, checkedItems)
-            {
-                var item1 = $(this)[0].element;
-
-                //show the list of values
-                if(numChecked == 1)
-                {
-                    //return $(item1).find("option[value='" + $(item1).val() + "']").html();
-                    return $(item1).find("option:selected").text();
-                }
-                else if(numChecked < 5) //show the list of values
-                {
-                    var paramName = $(item1).data("pname");
-                    var groupId = $(item1).data("groupId");
-
-                    var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
-                    var textList = [];
-
-                     
-                    for(var l=0 ;l < checkedItems.length;l++)
-                    {
-                        var value = checkedItems[l].value;
-                        var optionText = item1.find("option[value='" + value + "']").text();
-                        textList.push(optionText);
-                    }
-
-                    return textList.join(", ");
-                }
-                else
-                {
-                    return numChecked + " selected";
-                }
-            },
-            minWidth: cMinWidth,
-            menuWidth: cMinWidth,
-            
-            noneSelectedText: noneSelectedText,
-            classes: 'mSelect',
-            checkAll: function() {
-                var result = validateSelectionFunc(this, $(this).val());
-
-                if(result == false)
-                {
-                    //unselect everything since it is over limit
-                    $(this).multiselect("uncheckAll");
-                }
-            },
-            uncheckAll: function(event)
-            {
-                var valuesList = [];
-            },
-            click: function (event, ui) {
-                var paramName = $(this).data("pname");
-                var groupId = getGroupId($(this));
-
-                var values = getValuesForGroup(groupId, paramName).slice();
-
-                if(values === undefined || values === null || !run_task_info.params[paramName].allowMultiple || values == "")
-                {
-                    values = [];
-                }
-
-                if(ui.checked && ui.value !== "")
-                {
-                    //add the value
-                    values.push(ui.value);
-                }
-                else
-                {
-                    //remove the value
-                    var index = $.inArray(ui.value, values);
-                    values.splice(index, 1);
-                }
-                return validateSelectionFunc(this, values);
-            }
-        });
-
-        choice.multiselect("refresh");
-
-        //disable if no choices are found
-        if(choiceInfo.choices.length == 0)
-        {
-            choice.multiselect("disable");
-        }
-
-        choice.data("maxValue", paramDetails.maxValue);
-        //set the default value
-        choice.children("option").each(function()
-        {
-            if(paramDetails.default_value != "" && $(this).val() == paramDetails.default_value)
-            {
-                $(this).parent().val(paramDetails.default_value);
-                $(this).parent().data("default_value", paramDetails.default_value);
-                $(this).parent().multiselect("refresh");
-            } else if(paramDetails.default_value == "" && $(this).val() == paramDetails.default_value){
-            	$(this).parent().val(paramDetails.default_value);
-                $(this).parent().data("default_value", paramDetails.default_value);
-                $(this).parent().multiselect("refresh");
-            }
-            	
-        });
-
+ 	    if (!paramDetails.userSuppliedOK) {
+	        choice.multiselect({
+	            multiple: paramDetails.allowMultiple,
+	            header: paramDetails.allowMultiple,
+	            selectedText:  function(numChecked, numTotal, checkedItems)
+	            {
+	                var item1 = $(this)[0].element;
+	
+	                //show the list of values
+	                if(numChecked == 1)
+	                {
+	                    //return $(item1).find("option[value='" + $(item1).val() + "']").html();
+	                    return $(item1).find("option:selected").text();
+	                }
+	                else if(numChecked < 5) //show the list of values
+	                {
+	                    var paramName = $(item1).data("pname");
+	                    var groupId = $(item1).data("groupId");
+	
+	                    var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
+	                    var textList = [];
+	
+	                     
+	                    for(var l=0 ;l < checkedItems.length;l++)
+	                    {
+	                        var value = checkedItems[l].value;
+	                        var optionText = item1.find("option[value='" + value + "']").text();
+	                        textList.push(optionText);
+	                    }
+	
+	                    return textList.join(", ");
+	                }
+	                else
+	                {
+	                    return numChecked + " selected";
+	                }
+	            },
+	            minWidth: cMinWidth,
+	            menuWidth: cMinWidth,
+	            
+	            noneSelectedText: noneSelectedText,
+	            classes: 'mSelect',
+	            checkAll: function() {
+	                var result = validateSelectionFunc(this, $(this).val());
+	
+	                if(result == false)
+	                {
+	                    //unselect everything since it is over limit
+	                    $(this).multiselect("uncheckAll");
+	                }
+	            },
+	            uncheckAll: function(event)
+	            {
+	                var valuesList = [];
+	            },
+	            click: function (event, ui) {
+	                var paramName = $(this).data("pname");
+	                var groupId = getGroupId($(this));
+	
+	                var values = getValuesForGroup(groupId, paramName).slice();
+	
+	                if(values === undefined || values === null || !run_task_info.params[paramName].allowMultiple || values == "")
+	                {
+	                    values = [];
+	                }
+	
+	                if(ui.checked && ui.value !== "")
+	                {
+	                    //add the value
+	                    values.push(ui.value);
+	                }
+	                else
+	                {
+	                    //remove the value
+	                    var index = $.inArray(ui.value, values);
+	                    values.splice(index, 1);
+	                }
+	                return validateSelectionFunc(this, values);
+	            }
+	        });
+	
+	        choice.multiselect("refresh");
+		
+	        //disable if no choices are found
+	        if(choiceInfo.choices.length == 0)
+	        {
+	            choice.multiselect("disable");
+	        }
+	
+	        choice.data("maxValue", paramDetails.maxValue);
+	        //set the default value
+	        choice.children("option").each(function()
+	        {
+	            if(paramDetails.default_value != "" && $(this).val() == paramDetails.default_value)
+	            {
+	                $(this).parent().val(paramDetails.default_value);
+	                $(this).parent().data("default_value", paramDetails.default_value);
+	                $(this).parent().multiselect("refresh");
+	            } else if(paramDetails.default_value == "" && $(this).val() == paramDetails.default_value){
+	            	$(this).parent().val(paramDetails.default_value);
+	                $(this).parent().data("default_value", paramDetails.default_value);
+	                $(this).parent().multiselect("refresh");
+	            }
+	            	
+	        });
+		}
         //select initial values if there are any
         if ( initialValuesList != undefined &&  initialValuesList != null) {
             var matchingValueList = [];
+            var optionsHolder = choice;
+            if (paramDetails.userSuppliedOK) optionsHolder = datalist;
+            
+            
             for(var n=0;n<initialValuesList.length;n++)
             {
-                choice.find("option").each(function()
+                optionsHolder.find("option").each(function()
                 {
                     if(initialValuesList[n] == $(this).val())
                     {
@@ -455,7 +489,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             }
 
-            choice.multiselect("refresh");
+            if (!paramDetails.userSuppliedOK) choice.multiselect("refresh");
         }
         else
         {
