@@ -211,6 +211,13 @@ button.urlButton
     height: 17px;
 }
 
+.paramsTable input[type=search]
+{
+    padding-inline: 0px;
+    height: 23px;
+    width: 295px;
+}
+
 .fileDiv
 {
     vertical-align: bottom;
