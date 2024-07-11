@@ -847,10 +847,10 @@ public class AWSBatchJobRunner implements JobRunner {
             final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
             String allLsids = gpConfig.getGPProperty(jobContext, ExternalFileManager.pullZipsForLSIDsKey);
             String[] lsidsToPullZipsFor = allLsids.split(",");
-            String lsid = jobRecord.getLsid();
+            String lsid = jobRecord.getLsid().trim();
             boolean pullZip = false;
             for (String anLsid: lsidsToPullZipsFor){
-                if (lsid.startsWith(anLsid)){
+                if (lsid.startsWith(anLsid.trim())){
                     pullZip = true;
                     break;
                 }
