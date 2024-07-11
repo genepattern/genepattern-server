@@ -166,10 +166,6 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             }
         }
 
-		if (paramDetails.userSuppliedOK){
-			
-		} else {}
-
         //display drop down showing available file choices
         var choiceId = parameterName;
         if (groupId !== null) {
@@ -178,17 +174,20 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         var choice = $("<select class='choice' id='"+choiceId+"' />");
         var datalist = null;
 		if (paramDetails.userSuppliedOK){
-//			 <input type="search" name="dockerImage" list="dockerImageDefaults" size="100"/>
-//                        
-//           <datalist id="dockerImageDefaults">
-//			    <option value="jupyter/datascience-notebook:r-3.6.3"/>
-//				<option value="genepattern/docker-perl52:0.2"/>
-//			</datalist>
-			// user supplied means we use a normal input with a datalist
+
 			choice = $("<input type='search' list='"+choiceId+"_defaults'  class='choice' id='"+choiceId+"' />");
 			
 			datalist = $("<datalist id='"+choiceId+"_defaults'/>")
-			 
+			
+			$( choice ).on( "change", function() {
+				// GP-9659 no multiselect possible when you might provide your own value
+				// on top of those in the list
+				var elem = $(this);
+				var paramName = $(elem).data("pname");
+				var groupId = getGroupId($(elem));
+				valueList = [elem.val()];   
+            	updateValuesForGroup(groupId, paramName, valueList);
+			} );
 		}
 		
 
