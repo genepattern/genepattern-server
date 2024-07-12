@@ -488,7 +488,13 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             }
 
-            if (!paramDetails.userSuppliedOK) choice.multiselect("refresh");
+            if (!paramDetails.userSuppliedOK) {
+				choice.multiselect("refresh");
+			} else {
+				// for the user supplied values or list, we cannot do multiselect or batch (without developing a new UI
+				// control to do it anyway, so its much simpler here, since there can only be one value)
+				choice.val( initialValuesList[0]);
+			}
         }
         else
         {
