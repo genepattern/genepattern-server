@@ -216,15 +216,25 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         // add a default --select an option -- to the top
         // <option disabled selected value> -- select an option -- </option>
         if ((!choiceMapping[""]) && ((paramDetails.default_value == "") || (paramDetails.default_value === null))){
-        	if (paramDetails.required == true){
-	        	var pleaseSelectLabel =  " -- select an option -- ";
-	        	choiceMapping[""] =pleaseSelectLabel;
-	        	choice.append("<option disabled value=''>"+pleaseSelectLabel+"</option>");
-        	} else {
-        		var pleaseSelectLabel =  " ";
-	        	choiceMapping[""] =pleaseSelectLabel;
-	        	choice.append("<option value=''>"+pleaseSelectLabel+"</option>");
-        	}
+
+			if (paramDetails.required == true) {
+				var pleaseSelectLabel = " -- select an option -- ";
+				choiceMapping[""] = pleaseSelectLabel;
+				choice.append("<option disabled value=''>" + pleaseSelectLabel + "</option>");
+
+			} else {
+				var pleaseSelectLabel = " ";
+				choiceMapping[""] = pleaseSelectLabel;
+				choice.append("<option value=''>" + pleaseSelectLabel + "</option>");
+			}
+
+			if (paramDetails.userSuppliedOK) {
+				// GP-9659 its a choice OR a user supplied value.  Do we want this for optional as well as required params?
+				var pleaseSelectLabel = " -- select an option or type in a new value -- ";
+				choiceMapping[""] = pleaseSelectLabel;
+				datalist.append("<option disabled value=''>" + pleaseSelectLabel + "</option>");
+				$(choice).attr("placeholder", pleaseSelectLabel);
+			}	
         }
         
         
