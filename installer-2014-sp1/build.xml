@@ -15,7 +15,7 @@
             </filterset>
         </copy>
 
-        <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2014SP1/build">
+        <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2014SP1_rh9/build">
             <arg line="${basedir}/GP_server.iap_xml"/>
         </exec>
 
