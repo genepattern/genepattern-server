@@ -190,7 +190,19 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 			} );
 		}
 		
-
+          
+	      	$( choice ).on("change", function(e) {
+	        	e.target.setAttribute("placeholder", e.target.value);
+	        	e.target.value = "";
+	      	});
+	      	$( choice ).on("focus", function(e) {
+	        	e.target.setAttribute("placeholder", e.target.value);
+	        	e.target.value = "";
+	      	});
+	      	$( choice ).on("blur", function(e) {
+	        	e.target.value = e.target.getAttribute("placeholder");
+	      	});
+				
         if(paramDetails.allowMultiple)
         {
             choice.attr("multiple", "multiple");
