@@ -188,10 +188,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 				valueList = [elem.val()];   
             	updateValuesForGroup(groupId, paramName, valueList);
 			} );
-		}
-		
-          
-	      	$( choice ).on("change", function(e) {
+			$( choice ).on("change", function(e) {
 	        	e.target.setAttribute("placeholder", e.target.value);
 	        	e.target.value = "";
 	      	});
@@ -202,6 +199,10 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 	      	$( choice ).on("blur", function(e) {
 	        	e.target.value = e.target.getAttribute("placeholder");
 	      	});
+		}
+		
+          
+	      	
 				
         if(paramDetails.allowMultiple)
         {
