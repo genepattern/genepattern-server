@@ -952,6 +952,7 @@ public class DataResource {
             if (!isInTransaction) {
                 mgr.commitTransaction();
             } 
+            JobObjectCache.removeJobFromCache(jobInfo.getJobNumber());
         }
         catch (Throwable e) {
             log.error("Error saving record of output file to DB, filename="+gpResultFilePath.getRelativePath(), e);
