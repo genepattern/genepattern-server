@@ -22,7 +22,7 @@ jobs:
           -H "Content-Type: application/json" \
           https://api.github.com/repos/genepattern/github-actions-testing/dispatches \
           --data '{"event_type": "my-event", "client_payload": { "ref": "${{ github.ref }}", "ref2": "TED_DID_THIS" }}'
-
+         
   build_and_push:
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +39,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ github.ref#refs/tags/ }}
+          tags: ${{ env.IMAGE_NAME }}:${{ github.ref | split: '/' | last }}
           platforms: linux/amd64,linux/arm64
           build-args: |
-            GP_INSTALLER=https://github.com/genepattern/genepattern-server/releases/download/${{ github.ref#refs/tags/ }}/GPserver.bin
+            GP_INSTALLER=https://github.com/genepattern/genepattern-server/releases/download/${{ github.ref | split: '/' | last }}/GPserver.bin
