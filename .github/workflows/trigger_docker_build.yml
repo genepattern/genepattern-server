@@ -56,7 +56,7 @@ jobs:
           # REF_IN=release/tags/v3.9.11-rc.5-b250
         
           echo TAG IS $REF_IN
-          
+          docker login -u liefeld -p ${{ secrets.teds_dockerhub_token }}
           VERSION=${REF_IN#*/tags/}
           INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/${VERSION}/GPserver.bin
           echo Image name is ${IMAGE_NAME}:${VERSION}
@@ -64,6 +64,6 @@ jobs:
           docker buildx build --platform linux/amd64,linux/arm64 --build-arg GP_INSTALLER=${INSTALLER_URL} -t ${IMAGE_NAME}:${VERSION} --push docker
           
           # TBD PUSH THE IMAGE INTO DOCKERHUB
-          docker login -u liefeld -p ${{ secrets.teds_dockerhub_token }}
-          docker push ${IMAGE_NAME}:${VERSION}
+          #docker login -u liefeld -p ${{ secrets.teds_dockerhub_token }}
+          #docker push ${IMAGE_NAME}:${VERSION}
           echo DONE
