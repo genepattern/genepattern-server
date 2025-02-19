@@ -319,7 +319,7 @@
   <init-param>
   <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
-   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf</param-value>
+   <param-value>getTaskDoc.jsp,/module/doc, getTaskDocError.jsp, about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>home.page</param-name>
@@ -406,7 +406,7 @@
   <filter-name>RegistrationFilter</filter-name>
   <url-pattern>*.jsf</url-pattern>
  </filter-mapping>
-<filter-mapping>
+ <filter-mapping>
   <filter-name>RegistrationFilter</filter-name>
   <url-pattern>*.jsp</url-pattern>
  </filter-mapping>
@@ -419,6 +419,7 @@
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>*.jsp</url-pattern>
  </filter-mapping>
+
  <filter-mapping>
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>*.jsf</url-pattern>
@@ -440,6 +441,7 @@
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>*.jsp</url-pattern>
  </filter-mapping>
+
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>*.jsf</url-pattern>

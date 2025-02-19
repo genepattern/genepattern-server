@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,17 +29,23 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.FileUtil;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UploadDirectoryZipWriter;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -47,16 +54,24 @@ import org.genepattern.server.dm.Node;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.job.output.GpFileType;
+import org.genepattern.server.job.output.JobOutputFile;
+import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+
 import org.genepattern.server.webapp.rest.api.v1.job.GpLink;
 import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCache;
 import org.genepattern.server.webapp.uploads.UploadFileServlet;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadTreeJSON;
 import org.genepattern.server.webservice.server.ProvenanceFinder;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -157,6 +172,97 @@ public class DataResource {
         }
     }
 
+    
+    /**
+     * XXX GP-9808 JTL 011725 
+     * 
+     * Add a new file to be used as output to a job. Return the URI for the uploaded file in the 'Location'
+     * header of the response.
+     *
+     * 
+     * Requires authentication with a valid gp user id.
+     * 
+     * Expected response codes:
+     *     ?, this method requires authentication, if there is not a valid gp user logged in, respond with basic authentication request.
+     *     
+     *     201 - Created
+     *     
+     *     411 - Length required
+     *     413 - Request entity too large
+     *     500 - Internal server error
+     * 
+     * Example usage:
+     * <pre>
+       curl -u test:test -X POST --data-binary @all_aml_test.cls "http://127.0.0.1:8080/gp/rest/v1/data/upload/job_output?name=all_aml_test.cls&job_id=12345"
+     * </pre>
+     * 
+     * @param request
+     * @param filename
+     * @param in
+     * 
+     * @return an HTTP response
+     */
+    @POST
+    @Path("/upload/job_output") 
+    public Response handlePostJobOutput(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @HeaderParam("Content-Length") String contentLength,
+            final @QueryParam("name") String filename,
+            final @QueryParam("jobid") String job_id_str,
+            final InputStream in)
+    {
+        try { 
+                       
+            Integer job_id = null;
+            try {
+                job_id = Integer.parseInt(job_id_str);
+            } catch (NumberFormatException e) {
+                return Response.status(Status.BAD_REQUEST).entity("Invalid job_id format").build();
+            }
+            
+            
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext userContext=Util.getUserContext(request);
+            final long maxNumBytes=initMaxNumBytes(contentLength, userContext); 
+            GpContext jobContext = Util.getJobContext(request, ""+ job_id);
+            JobInfo jobInfo = jobContext.getJobInfo();
+            
+            
+            PermissionsHelper ph = new PermissionsHelper(
+                    userContext.isAdmin(), //final boolean _isAdmin,
+                    userContext.getUserId(), // final String _userId,
+                    jobInfo.getJobNumber(), // final int _jobNo,
+                    jobInfo.getUserId(), //final String _rootJobOwner,
+                    jobInfo.getJobNumber()//, //final int _rootJobNo,
+            );
+
+            if (!ph.canWriteJob()) {
+                return Response.status(Status.UNAUTHORIZED).entity("User does not have permission to write files to this job").build();
+            
+            }
+            
+            final GpFilePath gpFilePath=writeJobOutputFile(gpConfig, userContext, in, filename, jobInfo, jobContext, maxNumBytes);
+            
+            
+            
+            final String location = UrlUtil.getHref(request, gpFilePath);
+            return Response.status(201)
+                    .header("Location", location)
+                    .entity(location).build();
+        }
+        catch (WebApplicationException e) {
+            //propagate these up to the calling method, for standard REST API error handling
+            throw e;
+        }
+        catch (Throwable t) {
+            log.error(t);
+            //all others convert to internal server error
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+    
+    
     /**
      * Add a new file to the uploads directory of the current user, specifically when you 
      * want to use the file as a job input file in a subsequent call to add a job.
@@ -781,6 +887,149 @@ public class DataResource {
         writeBytesToFile(userContext, in, gpFilePath, maxNumBytes);
         return gpFilePath;
     }
+    
+    
+    /**
+     * This method saves the data file uploaded from the REST client into a 
+     * job output directory within the job_results folder.  The user must own the job
+     * or an exception is thrown.
+     * 
+     * @param userContext
+     * @param in
+     * @return
+     * @throws Exception
+     */
+    GpFilePath writeJobOutputFile(final GpConfig gpConfig, final GpContext userContext, final InputStream in, final String filename, final JobInfo jobInfo, GpContext jobContext, final long maxNumBytes) 
+    throws WebApplicationException
+    {
+        if (userContext==null) {
+            throw new IllegalArgumentException("userContext==null");
+        }
+        if (userContext.getUserId()==null || userContext.getUserId().length()==0) {
+            throw new IllegalArgumentException("userContext.userId not set");
+        }
+        
+        File expectedJobDir = new File(GenePatternAnalysisTask.getJobDir(gpConfig, jobContext, ""+jobInfo.getJobNumber()));
+        if (!expectedJobDir.exists()) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND).entity("Job directory not found").build());
+        }
+        File absJobResultFile = new File(expectedJobDir, filename);
+        File relJobResultFile = new File(filename);
+        GpFilePath gpResultFilePath=null;
+        try {
+            //File userRootDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
+            //File rel = FileUtil.relativizePath(userRootDir, jobResultFile);
+            
+            gpResultFilePath=new JobResultFile(jobInfo, relJobResultFile);
+            //createJobInputDir(gpConfig, userContext, filename);
+        }
+        catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+        }
+
+        
+        
+        try {
+            // save it
+            writeToFile(in, gpResultFilePath.getServerFile().getCanonicalPath(), maxNumBytes);
+           
+        }
+        catch (Throwable e) {
+            log.error("Error writing output file to disk, filename="+gpResultFilePath.getRelativePath(), e);
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+        }
+        try {
+            // and save it to the database as well
+            final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+            final boolean isInTransaction=mgr.isInTransaction();
+            if (!isInTransaction) mgr.beginTransaction();
+            JobOutputDao dao=new JobOutputDao(mgr);
+            JobOutputFile jof =  JobOutputFile.from( ""+jobInfo.getJobNumber(), expectedJobDir, relJobResultFile, GpFileType.FILE);
+            dao.recordOutputFile(jof);
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            } 
+            JobObjectCache.removeJobFromCache(jobInfo.getJobNumber());
+        }
+        catch (Throwable e) {
+            log.error("Error saving record of output file to DB, filename="+gpResultFilePath.getRelativePath(), e);
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+        }
+        
+        // final step, we need to add an analysis parameter of mode out to the jobs analysis parameters
+        // in the database
+        try {
+            final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+            final boolean isInTransaction = mgr.isInTransaction();
+            if (!isInTransaction)
+                mgr.beginTransaction();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
+            JobInfo jobInfo2 = dao.getJobInfo(jobInfo.getJobNumber());
+            if (jobInfo2 == null) {
+                throw new WebApplicationException(
+                        Response.status(Response.Status.NOT_FOUND).entity("Job not found").build());
+            }
+           AnalysisJob theJob= dao.getAnalysisJob(jobInfo.getJobNumber());
+           addFileToOutputParameters(jobInfo2, filename, filename);
+           dao.updateJob(jobInfo.getJobNumber(), jobInfo2.getParameterInfo(), theJob.getJobStatus().getStatusId());
+            
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+            
+        } catch (Throwable e) {
+            log.error("Error adding record of output file to AnalysisJob in DB, filename="+gpResultFilePath.getRelativePath(), e);
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+        }
+        // and if there is an externalFileManager in play, lets push that up
+        // to the external file system
+        try {
+            ExternalFileManager externalFileManager = DataManager.getExternalFileManager(jobContext);
+            
+            if (externalFileManager != null)
+                externalFileManager.syncLocalFileToRemote(jobContext, gpResultFilePath.getServerFile(), true);   
+            
+        }
+        catch (Throwable e) {
+            log.error("Error sync-ing file from local to S3, filename=" + gpResultFilePath.getRelativePath(), e);
+            // don't throw an error, this should still be OK as long as there is disk space
+        }
+        
+        return gpResultFilePath;
+    }
+    
+   
+    private static void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label) {
+        if (jobInfo == null) {
+            log.error("null jobInfo arg!");
+            return;
+        }
+        fileName = jobInfo.getJobNumber() + "/" + fileName;
+        ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
+        paramOut.setAsOutputFile();
+        
+      
+        ParameterInfo[] params =  jobInfo.getParameterInfoArray();
+        for (int i=0; i< params.length; i++){
+            if (params[i].isOutputFile()){
+                if (params[i].getName().equals(label) && params[i].getValue().equals(fileName)){
+                    // don't add it again
+                    params[i] = paramOut;
+                    return;
+                }
+            }
+            
+        }
+        
+        jobInfo.addParameterInfo(paramOut);
+    }
+
+    
 
     private String createPipelineMessage(final GpConfig gpConfig, final GpContext userContext, List<ParameterInfo> params) throws UnsupportedEncodingException {
         String toReturn = "";
