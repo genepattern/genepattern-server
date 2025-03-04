@@ -12,6 +12,7 @@
         </element>
       </element>
       <element id="javaee-facet-resources" facet="gp-trunk/web/Web" />
+      <element id="dir-copy" path="$PROJECT_DIR$/build" />
     </root>
   </artifact>
 </component>

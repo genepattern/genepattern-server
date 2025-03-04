@@ -63,7 +63,7 @@ public class JavascriptHandler {
      * 
      * @throws Exception
      */
-    protected static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
+    protected static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap, int jobId) throws Exception
     {
         final StringBuffer launchUrl = new StringBuffer();
         // For servlets in the default (root) context, HttpServletRequest.getContextPath returns ""
@@ -92,6 +92,7 @@ public class JavascriptHandler {
                 queryMap.putAll(paramName, paramValues);
             }
         }
+        queryMap.put("job.id", String.valueOf(jobId));
 
         final String queryString=buildQueryString(queryMap);
         if (!Strings.isNullOrEmpty(queryString)) {
@@ -151,9 +152,9 @@ public class JavascriptHandler {
         return mainFile;
     }
 
-    public static String saveLaunchUrl(GpConfig gpConfig, TaskInfo taskInfo, File outputDir,  Map<String, List<String>> substitutedValuesMap) throws Exception
+    public static String saveLaunchUrl(GpConfig gpConfig, TaskInfo taskInfo, File outputDir,  Map<String, List<String>> substitutedValuesMap, int jobId) throws Exception
     {
-        final String launchUrl=generateLaunchUrl(gpConfig, taskInfo, substitutedValuesMap);
+        final String launchUrl=generateLaunchUrl(gpConfig, taskInfo, substitutedValuesMap, jobId);
 
         PrintWriter writer = null;
         try {

@@ -42,6 +42,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/installer-2014-sp1/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gp-macapp/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/gp-macapp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
