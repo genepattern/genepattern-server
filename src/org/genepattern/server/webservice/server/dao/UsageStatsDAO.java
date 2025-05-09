@@ -98,7 +98,7 @@ public class UsageStatsDAO extends BaseDAO {
         ResultSet rs = null;
         
         @SuppressWarnings("deprecation")
-        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(USER_ID) from gp_user where (user_id like 'guest%) and (registration_date BETWEEN ? and ?)  "+ userExclusionClause);
+        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(USER_ID) from gp_user where (user_id like 'guest%') and (registration_date BETWEEN ? and ?)  "+ userExclusionClause);
              
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
         pstmt.setDate(2, new java.sql.Date(endDate.getTime()));

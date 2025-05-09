@@ -150,8 +150,8 @@ public class UsageStatsResource {
                         long t1 = System.currentTimeMillis();
                         object.put("NewGuestsWithJobs", ds.getCountGuestUsersWithJobsAndRegistrationsBetweenDates(startDate, endDate, excludedUsers));
                         long t2 = System.currentTimeMillis();
-                        executionTime.put("NewGuestRegistrations et (ms): " + (t2-t1));
-                        System.out.println("NewGuestRegistrations et (ms): " + (t2-t1));
+                        executionTime.put("NewGuestWithJob et (ms): " + (t2-t1));
+                        System.out.println("NewGuestWithJob et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -162,8 +162,8 @@ public class UsageStatsResource {
                         long t1 = System.currentTimeMillis();
                         object.put("NewUsersWithJobs", ds.getCountNonGuestUsersWithJobsAndRegistrationsBetweenDates(startDate, endDate, excludedUsers));
                         long t2 = System.currentTimeMillis();
-                        executionTime.put("NewGuestRegistrations et (ms): " + (t2-t1));
-                        System.out.println("NewGuestRegistrations et (ms): " + (t2-t1));
+                        executionTime.put("NewGuestUsersWithJobs et (ms): " + (t2-t1));
+                        System.out.println("NewUsersWithJobs et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
