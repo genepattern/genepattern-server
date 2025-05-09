@@ -93,6 +93,30 @@ public class UsageStatsDAO extends BaseDAO {
         return count;
     }
     
+    public int getGuestRegistrationCountBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
+        Integer count = null;
+        ResultSet rs = null;
+        
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(USER_ID) from gp_user where (user_id like 'guest%) and (registration_date BETWEEN ? and ?)  "+ userExclusionClause);
+             
+        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+          
+        try {
+            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        return count;
+    }
+    
+    
+    
     public JSONArray getUserRegistrationsBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
         JSONArray users = new JSONArray();
         ResultSet rs = null;
@@ -146,6 +170,75 @@ public class UsageStatsDAO extends BaseDAO {
         }
         return users;
     }
+    
+
+public int getCountGuestUsersWithJobsAndRegistrationsBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
+    Integer count = null;
+
+    @SuppressWarnings("deprecation")
+    PreparedStatement pstmt = getSession().connection().prepareStatement(
+        "SELECT COUNT(DISTINCT AJ.USER_ID) " +
+        "FROM ANALYSIS_JOB AJ " +
+        "INNER JOIN GP_USER GU ON AJ.USER_ID = GU.USER_ID " +
+        "WHERE AJ.date_completed BETWEEN ? AND ? " +
+        "AND GU.registration_date BETWEEN ? AND ? " +
+        "AND GU.USER_ID LIKE 'guest%' " +
+        userExclusionClause
+    );
+
+    pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+    pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+    pstmt.setDate(3, new java.sql.Date(startDate.getTime()));
+    pstmt.setDate(4, new java.sql.Date(endDate.getTime()));
+
+    ResultSet rs = null;
+    try {
+        rs = pstmt.executeQuery();
+        if (rs.next()) {
+            count = rs.getInt(1);
+        }
+    } finally {
+        if (rs != null) {
+            rs.close();
+        }
+    }
+
+    return count != null ? count : 0;
+}
+
+public int getCountNonGuestUsersWithJobsAndRegistrationsBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
+    Integer count = null;
+
+    @SuppressWarnings("deprecation")
+    PreparedStatement pstmt = getSession().connection().prepareStatement(
+        "SELECT COUNT(DISTINCT AJ.USER_ID) " +
+        "FROM ANALYSIS_JOB AJ " +
+        "INNER JOIN GP_USER GU ON AJ.USER_ID = GU.USER_ID " +
+        "WHERE AJ.date_completed BETWEEN ? AND ? " +
+        "AND GU.registration_date BETWEEN ? AND ? " +
+        "AND GU.USER_ID NOT LIKE 'guest%' " +
+        userExclusionClause
+    );
+
+    pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+    pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+    pstmt.setDate(3, new java.sql.Date(startDate.getTime()));
+    pstmt.setDate(4, new java.sql.Date(endDate.getTime()));
+
+    ResultSet rs = null;
+    try {
+        rs = pstmt.executeQuery();
+        if (rs.next()) {
+            count = rs.getInt(1);
+        }
+    } finally {
+        if (rs != null) {
+            rs.close();
+        }
+    }
+
+    return count != null ? count : 0;
+}
     
     
     public int getTotalRegistrationCount(String userExclusionClause) throws Exception {
