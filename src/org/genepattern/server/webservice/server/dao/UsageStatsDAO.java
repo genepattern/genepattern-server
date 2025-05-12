@@ -182,8 +182,7 @@ public int getCountGuestUsersWithJobsAndRegistrationsBetweenDates(Date startDate
         "INNER JOIN GP_USER GU ON AJ.USER_ID = GU.USER_ID " +
         "WHERE AJ.date_completed BETWEEN ? AND ? " +
         "AND GU.registration_date BETWEEN ? AND ? " +
-        "AND GU.USER_ID LIKE 'guest%' " +
-        userExclusionClause
+        "AND GU.USER_ID LIKE 'guest%' " 
     );
 
     pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -216,8 +215,7 @@ public int getCountNonGuestUsersWithJobsAndRegistrationsBetweenDates(Date startD
         "INNER JOIN GP_USER GU ON AJ.USER_ID = GU.USER_ID " +
         "WHERE AJ.date_completed BETWEEN ? AND ? " +
         "AND GU.registration_date BETWEEN ? AND ? " +
-        "AND GU.USER_ID NOT LIKE 'guest%' " +
-        userExclusionClause
+        "AND GU.USER_ID NOT LIKE 'guest%' " 
     );
 
     pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
