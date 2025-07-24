@@ -241,16 +241,80 @@ public class GlobusClient {
         return je;
     }
     
-    public JsonElement getJsonResponse(HttpURLConnection con) throws UnsupportedEncodingException, IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+    public JsonElement getJsonTransferResponse(HttpURLConnection con) throws UnsupportedEncodingException, IOException {
+        BufferedReader br; // = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+        if (con.getResponseCode() >= 400) {
+            br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "utf-8"));
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                  response.append(responseLine.trim());
+            }
+            // if its a mapped collection it will have a 403 and a message like this with the UUID of the endpoint
+            //{"code": "ConsentRequired",
+            //  "message": "Missing required data_access consent",
+            //  "request_id": "CMwelg7oJ",
+            //  "required_scopes": ["urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/6c54cade-bde5-45c1-bdea-f4bd71dba2cc/data_access]"],
+            //  "resource": "/operation/endpoint/6c54cade-bde5-45c1-bdea-f4bd71dba2cc/ls"}
+            JsonParser jp = new JsonParser();
+            JsonObject je = jp.parse(response.toString()).getAsJsonObject();
+            if (je.get("code").getAsString().equalsIgnoreCase("ConsentRequired")) {
+                String required_scopes = je.getAsJsonArray("required_scopes").get(0).getAsString();
+                throw new GlobusConsentRequiredException(response.toString(), required_scopes);
+                
+            }
+            // some other form of error
+            throw new IOException("Error in transfer response: "+response.toString());
+        } else {
+            br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+        }
+        
         StringBuilder response = new StringBuilder();
         String responseLine = null;
         while ((responseLine = br.readLine()) != null) {
               response.append(responseLine.trim());
         }
-        JsonParser jp = new JsonParser();
-        JsonElement je = jp.parse(response.toString());
-        return je;
+        try {
+            JsonParser jp = new JsonParser();
+            JsonElement je = jp.parse(response.toString());
+            return je;
+        } catch (Exception e) {
+            log.error("ERROR GLOBUS JSON: "+e.getMessage() +"\n\n"+response.toString()+"\n");
+            throw e;
+        }
+    }
+
+    
+    
+    public JsonElement getJsonResponse(HttpURLConnection con) throws UnsupportedEncodingException, IOException {
+        BufferedReader br; // = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+        if (con.getResponseCode() >= 400) {
+            log.error("GLOBUS JSON RESPONSE 400 or greater: "+con.getResponseCode());
+            br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "utf-8"));
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                  response.append(responseLine.trim());
+            }
+            log.error("ERROR GLOBUS JSON: "+response.toString());
+            
+        } else {
+            br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+        }
+        
+        StringBuilder response = new StringBuilder();
+        String responseLine = null;
+        while ((responseLine = br.readLine()) != null) {
+              response.append(responseLine.trim());
+        }
+        try {
+            JsonParser jp = new JsonParser();
+            JsonElement je = jp.parse(response.toString());
+            return je;
+        } catch (Exception e) {
+            log.error("ERROR GLOBUS JSON: "+e.getMessage() +"\n\n"+response.toString()+"\n");
+            throw e;
+        }
     }
 
     public  String[] getTransferToken(OAuthJSONAccessTokenResponse oAuthResponse) {
@@ -497,8 +561,16 @@ public class GlobusClient {
             String taskId = null;
             JsonElement transferResponse = null;
             
-            transferResponse =  getJsonResponse(connection);
-            taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
+            try {
+                transferResponse = getJsonTransferResponse(connection);
+                taskId = transferResponse.getAsJsonObject().get("task_id").getAsString();
+            }
+            catch (GlobusConsentRequiredException e) {
+                // need to get the user to consent to the data access
+                // so we can transfer the files
+                throw e;
+            }
+
             
             // spawn a new thread to wait for completion
            
@@ -553,8 +625,17 @@ public class GlobusClient {
         
         
         JsonElement jsonResponse = null;
+        try {
+            jsonResponse =  getJsonTransferResponse(connection);
         
-        jsonResponse =  getJsonResponse(connection);
+        } catch (GlobusConsentRequiredException e) {
+            // here means we have a mapped collection and don't have the proper consent
+            log.error("GLOBUS SOURCE FILE EXCEPTION BEFORE TRANSFER: " + e.getMessage());
+            throw e;
+        }
+            
+            
+        log.error("GLOBUS SOURCE FILE DETAILS ARE: "+jsonResponse.toString());
         
         try {
             return jsonResponse.getAsJsonObject().get("DATA").getAsJsonArray().get(0).getAsJsonObject();
@@ -897,3 +978,15 @@ public class GlobusClient {
   
     
 }
+
+class GlobusConsentRequiredException extends IOException {
+    public String scope;
+    
+    public GlobusConsentRequiredException(String message, String reqScope) {
+        
+        super(message);
+        scope = reqScope;
+    }
+}
+
+
