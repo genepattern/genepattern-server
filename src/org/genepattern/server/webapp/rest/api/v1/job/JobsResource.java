@@ -495,6 +495,17 @@ public class JobsResource {
         final GpContext userContext=Util.getUserContext(request);
 
         try {
+            
+//          
+//          if ((userId == null || userId.isEmpty()) && (!userContext.isAdmin()))     {
+//               userId_ = userContext.getUserId();
+//             
+//              IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+//              Set<String> usersGroups =  usersGroups = groupMembership.getGroups(userId_);
+//              
+
+//          }
+            
             final String gpUrl=UrlUtil.getBaseGpHref(request);
             final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
