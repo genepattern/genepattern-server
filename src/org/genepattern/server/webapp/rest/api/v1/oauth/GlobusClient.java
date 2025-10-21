@@ -242,26 +242,15 @@ public class GlobusClient {
     }
     
     public JsonElement getJsonResponse(HttpURLConnection con) throws UnsupportedEncodingException, IOException {
-        BufferedReader br; // = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
-        if (con.getResponseCode() >= 400) {
-            br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "utf-8"));
-        } else {
-            br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
-        }
-        
+        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
         StringBuilder response = new StringBuilder();
         String responseLine = null;
         while ((responseLine = br.readLine()) != null) {
               response.append(responseLine.trim());
         }
-        try {
-            JsonParser jp = new JsonParser();
-            JsonElement je = jp.parse(response.toString());
-            return je;
-        } catch (Exception e) {
-            log.error("ERROR GLOBUS JSON: "+e.getMessage() +"\n\n"+response.toString()+"\n");
-            throw e;
-        }
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(response.toString());
+        return je;
     }
 
     public  String[] getTransferToken(OAuthJSONAccessTokenResponse oAuthResponse) {

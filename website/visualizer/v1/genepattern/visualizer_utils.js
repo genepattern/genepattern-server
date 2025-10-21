@@ -21,11 +21,48 @@ export function auth_token() {
 }
 
 /**
+ * Returns the __original__ parameters passed to the visualizer, null if unavailable
+ *
+ * @returns {null|*}
+ */
+export function original_parameters() {
+    const params = new URLSearchParams(new URL(window.location).search);
+    if (params.has('__original__')) {
+        try { return JSON.parse(params.get('__original__')) }
+        catch (e) { console.log('Error parsing __original__'); return null; }
+    }
+    else return null;
+}
+
+/**
+ * Get the value of the original parameter, obtained from __original__, null if unavailable
+ *
+ * @param name
+ * @returns {null|*}
+ */
+export function original_param(name) {
+    const og = original_parameters()
+    if (og) {
+        try {
+            if (name in og)
+                if (Array.isArray(og[name] && og[name].length === 1)) return og[name][0];
+                else return og[name];
+        } catch (e) {}
+    }
+    return null;
+}
+
+/**
  * Get the value of the specified task parameter, passed in as input to this visualizer
  *
  * @returns {string}
  */
-export function param(name) {
+export function param(name, use_original=false) {
+    if (use_original) {
+        const original = original_param(name);
+        if (original !== null && original !== undefined) return original;
+    }
+
     const params = new URLSearchParams(new URL(window.location).search);
     return params.get(name);
 }
