@@ -44,7 +44,9 @@ import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -496,20 +498,20 @@ public class JobsResource {
 
         try {
             
-//          
-//          if ((userId == null || userId.isEmpty()) && (!userContext.isAdmin()))     {
-//               userId_ = userContext.getUserId();
-//             
-//              IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-//              Set<String> usersGroups =  usersGroups = groupMembership.getGroups(userId_);
-//              
+          String userId_ = userId;
+        
+          
+          if ((userId == null || userId.isEmpty()) && (!userContext.isAdmin()))     {
+               userId_ = userContext.getUserId();
+             
+           
 
-//          }
+          }
             
             final String gpUrl=UrlUtil.getBaseGpHref(request);
             final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
-                    .userId(userId)
+                    .userId(userId_)
                     .groupId(groupId)
                     .batchId(batchId)
                     .tag(tag)
