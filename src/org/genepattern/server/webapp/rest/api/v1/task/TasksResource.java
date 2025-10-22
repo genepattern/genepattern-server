@@ -4,6 +4,9 @@
 package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -12,6 +15,8 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -52,6 +57,8 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.KeySortedProperties;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -262,6 +269,78 @@ public class TasksResource {
             eulaInfoJson.put("contentError", e.getLocalizedMessage());
         }
         return eulaInfoJson;
+    }
+
+    /**
+     * Rapid prototype method to install a module from an uploaded zip file.
+     * 
+     * Example usage:
+     * <pre>
+     * 
+     * curl -u <username>:<password> -X POST  -F "file=@module.zip" -F "privacy=1" http://<server-host>:<port>/gp/rest/v1/tasks/installModule
+     * </pre>
+     * @param uploadedInputStream
+     * @param fileDetail
+     * @param request
+     * @param privacy                One of GPConstants.ACCESS_PUBLIC (=1) or GPConstants.ACCESS_PRIVATE (=2)
+     * @return
+     */
+    @POST
+    @Path("/installModule")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response installModule(
+            @FormDataParam("file") InputStream uploadedInputStream,
+            @FormDataParam("file") FormDataContentDisposition fileDetail,
+            @FormDataParam("privacy") int privacy,
+            
+            @Context HttpServletRequest request
+    ) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext userContext=Util.getUserContext(request);
+
+        
+            
+        String userId = userContext.getUserId();
+        
+        
+        // Example response
+        JSONObject result = new JSONObject();
+        try {
+            
+            File moduleZip = saveToTempFile(uploadedInputStream, fileDetail.getFileName());
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
+            FileDataSource dataSource = new FileDataSource(moduleZip);
+            DataHandler dataHandler = new DataHandler(dataSource);
+            taskIntegratorClient.importZip(dataHandler, privacy);
+            
+            result.put("status", "success");
+            result.put("message", "Module installed.");
+        } catch (Exception e) {
+            // Handle error
+            try {
+                result.put("status", "failure");
+                result.put("message", "JSON error: " + e.getMessage());
+            }
+            catch (JSONException jsonException) {
+                // This should never happen
+            }          
+        }
+        return Response.ok(result.toString()).build();
+    }
+    
+    
+    
+    private File saveToTempFile(InputStream uploadedInputStream, String fileName) throws IOException {
+        File tempFile = File.createTempFile("module_upload_", "_" + fileName);
+        try (OutputStream out = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = uploadedInputStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+        return tempFile;
     }
 
     /**
