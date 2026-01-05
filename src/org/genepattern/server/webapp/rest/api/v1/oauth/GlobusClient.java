@@ -852,9 +852,9 @@ public class GlobusClient {
        
       String execArgs[];
       if (recursive){
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp","--recursive",fromFileS3Url, toFileS3Url};
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "sync", fromFileS3Url, toFileS3Url};
       } else {
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", fromFileS3Url, toFileS3Url};
+          execArgs = new String[] {awsfilepath+awsfilename, "s3", "sync", fromFileS3Url, toFileS3Url};
       }
       boolean success = false;
       Process proc = Runtime.getRuntime().exec(execArgs);
@@ -862,10 +862,6 @@ public class GlobusClient {
           // proc.waitFor(3, TimeUnit.MINUTES);
           proc.waitFor();
           success = (proc.exitValue() == 0);
-          if (!success){
-              //logStdout(proc, "copy s3 file"); 
-              //logStderr(proc, "copy s3 file"); 
-          }
           
       } catch (Exception e){
          // log.debug(e);
