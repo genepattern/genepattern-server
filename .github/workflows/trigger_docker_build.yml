@@ -56,8 +56,8 @@ jobs:
           # REF_IN=release/tags/v3.9.11-rc.5-b250
         
           echo new TAG IS $REF_IN
-          docker login -u genepatterndev -p ${{ secrets.teds_dockerhub_token }}
-          #echo "${{ secrets.teds_dockerhub_token }}" | docker login -u liefeld --password-stdin
+          #docker login -u genepatterndev -p ${{ secrets.teds_dockerhub_toke }}
+          echo "${{ secrets.teds_dockerhub_token }}" | docker login -u genepatterndev --password-stdin
           VERSION=${REF_IN#*/tags/}
           INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/${VERSION}/GPserver.bin
           echo Image name is ${IMAGE_NAME}:${VERSION}
