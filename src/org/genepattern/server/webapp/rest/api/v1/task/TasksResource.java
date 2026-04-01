@@ -299,7 +299,7 @@ public class TasksResource {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=Util.getUserContext(request);
 
-        
+        log.error("INSTALLING MODULE NOW: "+fileDetail.getFileName());
             
         String userId = userContext.getUserId();
         
@@ -312,7 +312,9 @@ public class TasksResource {
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
             FileDataSource dataSource = new FileDataSource(moduleZip);
             DataHandler dataHandler = new DataHandler(dataSource);
-            taskIntegratorClient.importZip(dataHandler, privacy);
+            String resultStr = taskIntegratorClient.importZip(dataHandler, privacy);
+            
+            log.error("Module install success response: "+resultStr);
             
             result.put("status", "success");
             result.put("message", "Module installed.");
