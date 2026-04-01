@@ -60,8 +60,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     public void downloadFile(GpContext userContext, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException {
         try {
            String redirectUrl = getDownloadURL(userContext, file);
-           resp.sendRedirect(redirectUrl+"&genepatternUrl="+URLEncoder.encode(req.getRequestURL().toString()));
-           
+           //resp.sendRedirect(redirectUrl+"&genepatternUrl="+URLEncoder.encode(req.getRequestURL().toString()));
+           resp.sendRedirect(redirectUrl); 
         } catch (Exception e){
             e.printStackTrace();
             log.debug(e);

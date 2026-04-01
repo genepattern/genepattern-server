@@ -408,39 +408,72 @@ class TransferWaitThread extends Thread {
     public static boolean s3MoveFile(GpContext userContext, String fromFileS3Url, File toFile, boolean recursive) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
-        String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
-        String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
-         
-        String execArgs[];
-        if (recursive){
-            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", "--recursive", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
-                
-        } else {
-            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
-        }
-        
-        boolean success = false;
-        Process proc = Runtime.getRuntime().exec(execArgs);
         try {
-            // proc.waitFor(3, TimeUnit.MINUTES);
-            proc.waitFor();
-            success = (proc.exitValue() == 0);
-            if (!success){
-                logStdout(proc, "copy s3 file"); 
-                logStderr(proc, "copy s3 file"); 
+            String bucket = getBucketName(gpConfig, userContext);
+            String bucketRoot = getBucketRoot(gpConfig, userContext);
+            String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+            String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
+             
+    //        String execArgs[];
+    //        if (recursive){
+    //            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", "--recursive", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
+    //                
+    //        } else {
+    //            execArgs = new String[] {awsfilepath+awsfilename, "s3", "mv", fromFileS3Url, "s3://"+bucket+ "/"+bucketRoot+toFile.getAbsolutePath()};             
+    //        }
+            //Process proc = Runtime.getRuntime().exec(execArgs);
+            
+            String[] syncArgs = {awsfilepath + awsfilename, "s3", "sync", fromFileS3Url, "s3://" + bucket + "/" + bucketRoot + toFile.getAbsolutePath()};
+            Process syncProc = Runtime.getRuntime().exec(syncArgs);
+            
+            boolean success = false;
+            
+            try {
+                // proc.waitFor(3, TimeUnit.MINUTES);
+                syncProc.waitFor();
+                success = (syncProc.exitValue() == 0);
+                if (!success){
+                    logStdout(syncProc, "mv sync s3 file"); 
+                    logStderr(syncProc, "mv sync file"); 
+                }
+                
+            } catch (Exception e){
+                log.error(e);
+                return false;
+                
+            } finally {
+                syncProc.destroy();
             }
             
-        } catch (Exception e){
-            log.debug(e);
-            return false;
             
-        } finally {
-            proc.destroy();
+            String[] rmArgs = {awsfilepath + awsfilename, "s3", "rm", fromFileS3Url};
+            Process rmProc = Runtime.getRuntime().exec(rmArgs);
+            boolean success2 = false;
+            
+            try {
+                // proc.waitFor(3, TimeUnit.MINUTES);
+                rmProc.waitFor();
+                success2 = (rmProc.exitValue() == 0);
+                if (!success2){
+                    logStdout(rmProc, "mv delete after sync s3 file"); 
+                    logStderr(rmProc, "mv delete after sync s3 file"); 
+                }
+                
+            } catch (Exception e){
+                log.error(e);
+                return false;
+                
+            } finally {
+                rmProc.destroy();
+            }
+            
+            return success && success2;
+        } catch (Exception e){
+            log.error(e);
+            return false;
         }
-        return success;
-    
+            
+        
     }
     static String getBucketName(final GpConfig gpConfig, GpContext userContext) {
         String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
@@ -634,7 +667,7 @@ class TransferInWaitThread extends TransferWaitThread {
         String myS3EndpointRoot = gpConfig.getGPProperty(this.userContext, OAuthConstants.OAUTH_S3_ENDPOINT_ROOT, "/Users/liefeld/Desktop/GlobusEndpoint/");
         ExternalFileManager efManager = DataManager.getExternalFileManager(this.userContext);
         
-      
+        log.error("FINALIZE GLOBUS Checking for S3 file at " + myS3EndpointRoot + user +"/globus/"+file);
         
         if (verifyS3FileExists(this.userContext, myS3EndpointRoot + user +"/globus/"+file)) {
             // file path like /gp/users/jliefeld@ucsd.edu/test2.txt
@@ -647,11 +680,17 @@ class TransferInWaitThread extends TransferWaitThread {
             
             GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, getFinalFilePath( file), (LSID)null);
       
+            log.error("FINALIZE GLOBUS Moving S3 file from " + myS3EndpointRoot + user +"/globus/"+file + " to " + uploadFilePath.getServerFile().getAbsolutePath());
             // move the file within S3 to the desired location   
-            s3MoveFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile(), this.recursive);
+            boolean mvSuccess = s3MoveFile(this.userContext, myS3EndpointRoot + user +"/globus/"+file, uploadFilePath.getServerFile(), this.recursive);
+            
+            log.error("FINALIZE GLOBUS S3 move success = " + mvSuccess);
+            
             
             JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, this.userContext);
             BigInteger size = statusObject.get("bytes_transferred").getAsBigInteger();
+            
+            log.error("FINALIZE GLOBUS Setting file size to " + size.longValue()+ " for BigInteger "+ size.toString());
             
             uploadFilePath.setFileLength(new Long(size.longValue()));
             uploadFilePath.setLastModified(new Date());
@@ -669,9 +708,17 @@ class TransferInWaitThread extends TransferWaitThread {
                 
                 
             } else {
-                hib.beginTransaction();
-                fileUtil.updateUploadsDb(hib, uploadFilePath, false);
-                hib.commitTransaction();
+                try {
+                    log.error("FINALIZE GLOBUS Updating uploads db for " + uploadFilePath.getServerFile().getAbsolutePath());
+                    hib.beginTransaction();
+                    fileUtil.updateUploadsDb(hib, uploadFilePath, false);
+                    hib.commitTransaction();
+                    log.error("FINALIZE GLOBUS SUCCESS - Updated uploads db for " + uploadFilePath.getServerFile().getAbsolutePath());
+                }
+                catch (Exception e) {
+                    log.error("FINALIZE GLOBUS Error updating uploads db for " + uploadFilePath.getServerFile().getAbsolutePath(), e);
+                    throw e;
+                }
             }
             
             

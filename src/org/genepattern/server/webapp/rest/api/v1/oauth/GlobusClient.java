@@ -851,11 +851,9 @@ public class GlobusClient {
       String awsfilename = gpConfig.getGPProperty(userContext, "aws-cli", "aws-cli.sh");
        
       String execArgs[];
-      if (recursive){
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "sync", fromFileS3Url, toFileS3Url};
-      } else {
-          execArgs = new String[] {awsfilepath+awsfilename, "s3", "sync", fromFileS3Url, toFileS3Url};
-      }
+      
+      execArgs = new String[] {awsfilepath+awsfilename, "s3", "sync", fromFileS3Url, toFileS3Url};
+      
       boolean success = false;
       Process proc = Runtime.getRuntime().exec(execArgs);
       try {
