@@ -1,0 +1,415 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:us-east-1:718039241689:generatedTemplate/db066ebc-129b-4d9d-b696-b9fba2147a0d"
+Resources:
+  BatchComputeEnvironmentComputeenvironmentspotgenepatternflex:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "spot-genepattern-flex"
+      ComputeResources:
+        MaxvCpus: 256
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        AllocationStrategy: "SPOT_PRICE_CAPACITY_OPTIMIZED"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "SPOT"
+        MinvCpus: 0
+        LaunchTemplate:
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423"
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "optimal"
+        Ec2KeyPair: "GenePattern"
+        Tags:
+          Name: "GP compute flex spot"
+        DesiredvCpus: 0
+      State: "ENABLED"
+  BatchComputeEnvironmentComputeenvironmentRNASeqLargeDisk111423a:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "RNASeq_Large_Disk_111423-a"
+      ComputeResources:
+        MaxvCpus: 256
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        AllocationStrategy: "SPOT_PRICE_CAPACITY_OPTIMIZED"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "SPOT"
+        MinvCpus: 0
+        LaunchTemplate:
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423_large_disk"
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "optimal"
+        Ec2KeyPair: "GenePattern"
+        Tags:
+          Name: "RNASeq_large_disk_111423"
+        DesiredvCpus: 0
+      State: "ENABLED"
+  BatchJobQueueJobqueuegpnewbeta:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/small-base-030926"
+        Order: 1
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/spot-genepattern-flex"
+        Order: 2
+      Priority: 110
+      State: "ENABLED"
+      JobQueueName: "gp-new-beta"
+      Tags: {}
+  BatchComputeEnvironmentComputeenvironmentGPGPU0527253:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "GP_GPU_052725_3"
+      ComputeResources:
+        AllocationStrategy: "SPOT_PRICE_CAPACITY_OPTIMIZED"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "SPOT"
+        MinvCpus: 0
+        LaunchTemplate:
+          Version: "$Default"
+          Overrides: []
+          LaunchTemplateName: "GP_GPU_052725_3"
+        MaxvCpus: 256
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "g4dn"
+        - "g5"
+        - "g6"
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        - ImageType: "ECS_AL2_NVIDIA"
+        Ec2KeyPair: "GenePattern"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        DesiredvCpus: 0
+      State: "ENABLED"
+  BatchJobQueueJobqueueRNASeqlargedisk:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/RNASeq_Large_Disk_111423-a"
+        Order: 1
+      Priority: 50
+      State: "ENABLED"
+      JobQueueName: "RNASeq_large_disk"
+      Tags: {}
+  BatchJobQueueJobqueuetfsites4gb:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/tfsites-4GB-awslinux2023"
+        Order: 1
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/tfsites-8gb-awslinux2023"
+        Order: 2
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/spot-genepattern-flex"
+        Order: 3
+      JobQueueType: "ECS"
+      Priority: 120
+      State: "ENABLED"
+      JobQueueName: "tfsites-4gb"
+      Tags: {}
+  BatchComputeEnvironmentComputeenvironmentverylarge2TBdisk030926:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "very_large_2TB_disk_030926"
+      ComputeResources:
+        MaxvCpus: 256
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        AllocationStrategy: "SPOT_PRICE_CAPACITY_OPTIMIZED"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "SPOT"
+        MinvCpus: 0
+        LaunchTemplate:
+          Version: "$Latest"
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423_2TB_disk_mutpanning"
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "optimal"
+        Ec2KeyPair: "GenePattern"
+        Tags:
+          Name: "2TB_disk_compute"
+        DesiredvCpus: 0
+      State: "ENABLED"
+  BatchJobQueueJobqueuegpclouddefault:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/small-base-030926"
+        Order: 1
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/spot-genepattern-flex"
+        Order: 2
+      Priority: 100
+      State: "ENABLED"
+      JobQueueName: "gp-cloud-default"
+      Tags: {}
+  BatchJobQueueJobqueuetfsites8gb:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/tfsites-8gb-awslinux2023"
+        Order: 1
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/spot-genepattern-flex"
+        Order: 2
+      JobQueueType: "ECS"
+      Priority: 200
+      State: "ENABLED"
+      JobQueueName: "tfsites-8gb"
+      Tags: {}
+  BatchJobQueueJobqueueCoGAPS:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/very_large_2TB_disk_030926"
+        Order: 1
+      Priority: 100
+      State: "ENABLED"
+      JobQueueName: "CoGAPS"
+      Tags: {}
+  BatchComputeEnvironmentComputeenvironmenttfsites4GBawslinux2023:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "tfsites-4GB-awslinux2023"
+      ComputeResources:
+        AllocationStrategy: "BEST_FIT_PROGRESSIVE"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "EC2"
+        MinvCpus: 0
+        LaunchTemplate:
+          Version: "$Default"
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423"
+        MaxvCpus: 4
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "c5.large"
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        Tags:
+          name: "tfsites-4gb-alwayson"
+        DesiredvCpus: 0
+      State: "ENABLED"
+  BatchComputeEnvironmentComputeenvironmenttfsites8gbawslinux2023:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "tfsites-8gb-awslinux2023"
+      ComputeResources:
+        AllocationStrategy: "BEST_FIT_PROGRESSIVE"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "EC2"
+        MinvCpus: 0
+        LaunchTemplate:
+          Version: "$Default"
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423"
+        MaxvCpus: 32
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "c5.xlarge"
+        Ec2Configuration:
+        - ImageType: "ECS_AL2023"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        Tags:
+          name: "tfsites-8gb-alwayson"
+        DesiredvCpus: 0
+      State: "ENABLED"
+      Tags:
+        name: "tfsites-8gb-alwayson"
+  BatchComputeEnvironmentComputeenvironmentsmallbase021224:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/service-role/AWSBatchServiceRole"
+      ComputeEnvironmentName: "small-base-021224"
+      ComputeResources:
+        MaxvCpus: 6
+        Ec2Configuration:
+        - ImageType: "ECS_AL2"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        AllocationStrategy: "BEST_FIT_PROGRESSIVE"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "EC2"
+        MinvCpus: 0
+        LaunchTemplate:
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423"
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "c5.large"
+        Ec2KeyPair: "GenePattern"
+        Tags:
+          name: "small-base-compute"
+        DesiredvCpus: 0
+      State: "DISABLED"
+  BatchJobQueueJobqueuegpbetadefault:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/small-base-030926"
+        Order: 1
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/spot-genepattern-flex"
+        Order: 2
+      Priority: 100
+      State: "ENABLED"
+      JobQueueName: "gpbeta-default"
+      Tags: {}
+  BatchJobQueueJobqueueGPU:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/GP_GPU_052725_3"
+        Order: 1
+      JobQueueType: "ECS"
+      Priority: 1
+      State: "ENABLED"
+      JobQueueName: "GPU"
+      Tags:
+        Name: "GPU_batch_compute"
+  BatchComputeEnvironmentComputeenvironmentsmallbase030926:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::ComputeEnvironment"
+    DeletionPolicy: "Retain"
+    Properties:
+      Type: "MANAGED"
+      ServiceRole: "arn:aws:iam::718039241689:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
+      ComputeEnvironmentName: "small-base-030926"
+      ComputeResources:
+        MaxvCpus: 6
+        Ec2Configuration:
+        - ImageType: "ECS_AL2"
+        SecurityGroupIds:
+        - "sg-da5437a0"
+        AllocationStrategy: "BEST_FIT_PROGRESSIVE"
+        Subnets:
+        - "subnet-8b9d75a6"
+        - "subnet-52279e5e"
+        - "subnet-ad937df6"
+        - "subnet-7430a111"
+        - "subnet-cc0cd485"
+        - "subnet-a907ea95"
+        Type: "EC2"
+        MinvCpus: 2
+        LaunchTemplate:
+          Overrides: []
+          LaunchTemplateName: "GP_Batch_111423"
+        InstanceRole: "arn:aws:iam::718039241689:instance-profile/ecsInstanceRole"
+        InstanceTypes:
+        - "c5.large"
+        Ec2KeyPair: "GenePattern"
+        Tags:
+          name: "small-base-compute"
+        DesiredvCpus: 2
+      State: "ENABLED"
+  BatchJobQueueJobqueueMutPanning:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Batch::JobQueue"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment: "arn:aws:batch:us-east-1:718039241689:compute-environment/very_large_2TB_disk_030926"
+        Order: 1
+      Priority: 10
+      State: "ENABLED"
+      JobQueueName: "MutPanning"
+      Tags: {}
+
