@@ -1,0 +1,31 @@
+<html>
+<head>
+</head>
+<body>
+  
+  <div id="listing" style="font-family: 'Courier New', monospace; white-space: pre;"></div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+  <script type="text/javascript">
+	var S3BL_IGNORE_PATH = true;
+    var BUCKET_URL = '//s3.amazonaws.com/datasets-genepattern-org';
+    var BUCKET_WEBSITE_URL = '//datasets.genepattern.org'
+    var EXCLUDE_FILE = ['index.html', 'list.js'];
+    
+    $(document).ready(function(){
+        $("#linksOnlyButton").click(function(){
+            var x = document.getElementById("linksOnlySection");
+    		if (x.style.display === "none") {
+    		    x.style.display = "block";
+    		} else {
+    		    x.style.display = "none";
+    		}
+        });
+        
+        
+    });
+    
+  </script>
+  <script src="./list.js"></script>
+</body>
+</html>
